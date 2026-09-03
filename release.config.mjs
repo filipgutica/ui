@@ -3,7 +3,7 @@ export default {
   tagFormat: 'v${version}',
   plugins: [
     [
-      '@semantic-release/commit-analyzer',
+      './scripts/analyze-commits.mjs',
       {
         preset: 'conventionalcommits',
         releaseRules: [

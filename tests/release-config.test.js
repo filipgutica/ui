@@ -1,10 +1,11 @@
-import { analyzeCommits } from '@semantic-release/commit-analyzer'
 import { describe, expect, it } from 'vitest'
 
 import releaseConfig from '../release.config.mjs'
+import { analyzeCommits } from '../scripts/analyze-commits.mjs'
 
 const analyzerOptions = releaseConfig.plugins[0][1]
 const context = {
+  env: {},
   logger: { log: () => undefined },
 }
 

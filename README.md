@@ -90,7 +90,10 @@ Commits follow the Conventional Commits format. Releases run from `main`:
 
 - `fix:` publishes a patch release
 - `feat:` publishes a minor release
-- a `BREAKING CHANGE:` footer publishes a major release
+- `BREAKING CHANGE:` or `[BREAKING CHANGE]` anywhere in a commit body publishes
+  a major release
+- the same markers anywhere in an associated merged PR body publish a major
+  release
 
 The `release.yml` workflow publishes through npm trusted publishing with GitHub
 OIDC. Configure the npm package's trusted publisher once with user
