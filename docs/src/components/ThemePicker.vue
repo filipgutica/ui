@@ -22,6 +22,7 @@
             class="theme-choice"
             variant="secondary"
             :aria-pressed="activeTheme === 'Light'"
+            :disabled="Boolean(importingId)"
             @click="applyBuiltIn('light')"
           >
             <span class="theme-swatch" data-appearance="light" aria-hidden="true">
@@ -36,6 +37,7 @@
             class="theme-choice"
             variant="secondary"
             :aria-pressed="activeTheme === 'Dark'"
+            :disabled="Boolean(importingId)"
             @click="applyBuiltIn('dark')"
           >
             <span class="theme-swatch" data-appearance="dark" aria-hidden="true">

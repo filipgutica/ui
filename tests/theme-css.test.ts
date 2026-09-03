@@ -38,6 +38,15 @@ const contrast = (foreground: string, background: string): number => {
     / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
 }
 
+const mix = (foreground: string, background: string, foregroundRatio: number): string => {
+  const foregroundChannels = channels(foreground)
+  const backgroundChannels = channels(background)
+  const mixed = foregroundChannels.map((channel, index) => Math.round(
+    channel * foregroundRatio + backgroundChannels[index]! * (1 - foregroundRatio),
+  ))
+  return `#${mixed.map(channel => channel.toString(16).padStart(2, '0')).join('')}`
+}
+
 describe.each([
   ['light', tokensFor(':root')],
   ['dark', tokensFor(':root.dark')],
@@ -59,5 +68,11 @@ describe.each([
     ['--color-focus', '--color-bg'],
   ])('keeps %s visible against %s', (foreground, background) => {
     expect(contrast(tokens[foreground]!, tokens[background]!)).toBeGreaterThanOrEqual(3)
+  })
+
+  it('keeps danger text readable on its semantic surface', () => {
+    const errorSurface = mix(tokens['--color-error']!, tokens['--color-surface']!, 0.12)
+
+    expect(contrast(tokens['--color-error']!, errorSurface)).toBeGreaterThanOrEqual(4.5)
   })
 })

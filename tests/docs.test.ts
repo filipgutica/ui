@@ -1,5 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 
 import ComponentPage from '../docs/src/components/ComponentPage.vue'
 import ThemePicker from '../docs/src/components/ThemePicker.vue'
@@ -142,6 +143,58 @@ describe('theme picker', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#101218')
     expect(wrapper.text()).toContain('Theme: Test Dark')
+    wrapper.unmount()
+  })
+
+  it('disables competing theme choices without showing a search spinner during import', async () => {
+    let resolveImport: ((response: Response) => void) | undefined
+    const theme = parseVsCodeTheme({
+      fileName: 'test-dark.json',
+      source: JSON.stringify({
+        name: 'Test Dark',
+        type: 'dark',
+        colors: {
+          'editor.background': '#101218',
+          'editor.foreground': '#f4f5f8',
+        },
+      }),
+    })
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        status: 'success',
+        themes: [{
+          id: 'example.test-dark',
+          name: 'Test Dark',
+          publisher: 'example',
+          description: 'A test theme',
+          downloadCount: 1,
+        }],
+      })))
+      .mockImplementationOnce(() => new Promise<Response>(resolve => {
+        resolveImport = resolve
+      }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    await wrapper.get('button').trigger('click')
+    document.querySelector<HTMLFormElement>('.theme-search')
+      ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    await flushPromises()
+
+    const applyButton = [...document.querySelectorAll<HTMLButtonElement>('button')]
+      .find(button => button.textContent?.trim() === 'Apply')
+    applyButton?.click()
+    await nextTick()
+
+    const builtInButtons = [...document.querySelectorAll<HTMLButtonElement>('.theme-choice')]
+    const searchButton = [...document.querySelectorAll<HTMLButtonElement>('button')]
+      .find(button => button.textContent?.trim() === 'Search')
+    expect(builtInButtons.every(button => button.disabled)).toBe(true)
+    expect(searchButton?.disabled).toBe(true)
+    expect(searchButton?.getAttribute('aria-busy')).toBeNull()
+
+    resolveImport?.(new Response(JSON.stringify({ status: 'success', theme })))
+    await flushPromises()
     wrapper.unmount()
   })
 })
