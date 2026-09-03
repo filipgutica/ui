@@ -1,0 +1,59 @@
+@layer components {
+  .fg-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    padding: 0.65rem 0.9rem;
+    color: var(--color-button-text);
+    background: var(--color-button-bg);
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .fg-button:hover:not(:disabled) {
+    background: var(--color-button-hover);
+  }
+
+  .fg-button:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .fg-button:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  .fg-button[data-size="compact"] {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .fg-button[data-variant="secondary"] {
+    border-color: var(--color-border);
+    color: var(--color-text);
+    background: var(--color-surface);
+  }
+
+  .fg-button[data-variant="text"] {
+    padding-inline: 0;
+    color: var(--color-link);
+    background: transparent;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .fg-button[data-variant="text"]:hover:not(:disabled) {
+    color: var(--color-link);
+    background: transparent;
+  }
+
+  :root.high-contrast .fg-button {
+    border-width: 2px;
+    border-color: var(--color-border);
+  }
+}

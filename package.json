@@ -1,0 +1,75 @@
+{
+  "name": "@filipgutica/ui",
+  "version": "0.1.0",
+  "description": "A compact Vue design system with Tailwind CSS and VS Code theme support",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "src/theme.css",
+    "src/components.css",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./theme": {
+      "types": "./dist/theme/index.d.ts",
+      "import": "./dist/theme.js"
+    },
+    "./open-vsx": {
+      "types": "./dist/open-vsx/index.d.ts",
+      "import": "./dist/open-vsx.js"
+    },
+    "./theme.css": "./src/theme.css",
+    "./components.css": "./src/components.css"
+  },
+  "scripts": {
+    "build": "vite build && vue-tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "prepublishOnly": "pnpm verify",
+    "test": "vitest run",
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit",
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "packageManager": "pnpm@11.6.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/filipgutica/ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/filipgutica/ui/issues"
+  },
+  "homepage": "https://github.com/filipgutica/ui#readme",
+  "dependencies": {
+    "jsonc-parser": "^3.3.1",
+    "jszip": "^3.10.1",
+    "reka-ui": "^2.10.4"
+  },
+  "peerDependencies": {
+    "vue": ">=3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.12.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11",
+    "vue": "^3.5.42",
+    "vue-tsc": "^3.3.11"
+  }
+}
