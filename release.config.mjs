@@ -7,6 +7,7 @@ export default {
       {
         preset: 'conventionalcommits',
         releaseRules: [
+          { breaking: true, release: 'major' },
           { type: 'fix', release: 'patch' },
           { type: 'feat', release: 'minor' },
         ],
