@@ -31,12 +31,17 @@
   },
   "scripts": {
     "build": "vite build && vue-tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "docs:build": "vite build --config docs/vite.config.ts",
+    "docs:dev": "vite --config docs/vite.config.ts",
+    "docs:preview": "vite preview --config docs/vite.config.ts",
+    "docs:smoke": "node scripts/docs-smoke.mjs",
+    "docs:typecheck": "vue-tsc -p docs/tsconfig.json --noEmit",
     "prepublishOnly": "pnpm verify",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run --no-ci",
     "test": "vitest run",
     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
-    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm pack --dry-run && publint"
+    "verify": "pnpm typecheck && pnpm docs:typecheck && pnpm test && pnpm build && pnpm docs:build && pnpm pack --dry-run && publint"
   },
   "engines": {
     "node": ">=22.12"
@@ -67,6 +72,7 @@
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
     "@semantic-release/commit-analyzer": "13.0.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.0.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/test-utils": "^2.4.6",
