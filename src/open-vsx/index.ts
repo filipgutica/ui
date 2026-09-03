@@ -13,6 +13,7 @@ import type {
 import { ThemeValidationError, parseVsCodeTheme } from '../theme/index.js'
 
 const OPEN_VSX_ORIGIN = 'https://open-vsx.org'
+const OPEN_VSX_RESOURCE_ORIGIN = 'https://openvsx.eclipsecontent.org'
 const OPEN_VSX_SEARCH_URL = `${OPEN_VSX_ORIGIN}/api/-/search`
 const MAX_SEARCH_BYTES = 512 * 1024
 const MAX_DETAIL_BYTES = 256 * 1024
@@ -67,11 +68,15 @@ const parseJsonObject = (source: string, description: string): Record<string, un
   return value
 }
 
-const trustedOpenVsxUrl = (value: unknown): string | null => {
+const trustedOpenVsxUrl = (
+  value: unknown,
+  { allowResourceOrigin = false }: { allowResourceOrigin?: boolean } = {},
+): string | null => {
   if (typeof value !== 'string') return null
   try {
     const url = new URL(value)
-    return url.origin.toLowerCase() === OPEN_VSX_ORIGIN
+    const origin = url.origin.toLowerCase()
+    return origin === OPEN_VSX_ORIGIN || (allowResourceOrigin && origin === OPEN_VSX_RESOURCE_ORIGIN)
       ? url.toString()
       : null
   } catch {
@@ -144,16 +149,18 @@ const createRequester = (fetchImpl: typeof fetch) => async ({
   limit,
   failureMessage,
   tooLargeMessage,
+  allowResourceOrigin = false,
 }: {
   url: string | URL
   limit: number
   failureMessage: string
   tooLargeMessage: string
+  allowResourceOrigin?: boolean
 }): Promise<Uint8Array> => {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   try {
-    const requestedUrl = trustedOpenVsxUrl(String(url))
+    const requestedUrl = trustedOpenVsxUrl(String(url), { allowResourceOrigin })
     if (!requestedUrl) {
       throw new OpenVsxThemeError('open-vsx-unavailable', failureMessage)
     }
@@ -161,7 +168,7 @@ const createRequester = (fetchImpl: typeof fetch) => async ({
       redirect: 'follow',
       signal: controller.signal,
     })
-    if (!trustedOpenVsxUrl(response.url || requestedUrl)) {
+    if (!trustedOpenVsxUrl(response.url || requestedUrl, { allowResourceOrigin })) {
       throw new OpenVsxThemeError('open-vsx-unavailable', failureMessage)
     }
     if (!response.ok) {
@@ -437,9 +444,10 @@ const getPackageLocation = async ({
   if (!isRecord(detail) || !isRecord(detail.files)) {
     throw new OpenVsxThemeError('unsupported-extension', 'Open VSX returned malformed theme details.')
   }
-  const manifestUrl = trustedOpenVsxUrl(detail.files.manifest)
-  const packageUrl = trustedOpenVsxUrl(detail.files.download)
-  const checksumUrl = trustedOpenVsxUrl(detail.files.sha256)
+  const resourceOrigin = { allowResourceOrigin: true }
+  const manifestUrl = trustedOpenVsxUrl(detail.files.manifest, resourceOrigin)
+  const packageUrl = trustedOpenVsxUrl(detail.files.download, resourceOrigin)
+  const checksumUrl = trustedOpenVsxUrl(detail.files.sha256, resourceOrigin)
   const version = typeof detail.version === 'string' ? detail.version : ''
   if (!manifestUrl || !packageUrl || !checksumUrl || !version) {
     throw new OpenVsxThemeError('unsupported-extension', 'Open VSX returned malformed theme details.')
@@ -459,6 +467,7 @@ const validateAdvertisedThemes = async ({
     limit: MAX_MANIFEST_BYTES,
     failureMessage: 'That extension has no readable manifest.',
     tooLargeMessage: 'That extension manifest is too large.',
+    allowResourceOrigin: true,
   })
   const manifest = parseJsonObject(
     new TextDecoder().decode(manifestBytes),
@@ -488,12 +497,14 @@ const downloadVerifiedPackage = async ({
       limit: MAX_VSIX_BYTES,
       failureMessage: 'That Open VSX theme could not be downloaded.',
       tooLargeMessage: 'That theme extension is too large to import safely.',
+      allowResourceOrigin: true,
     }),
     request({
       url: checksumUrl,
       limit: 256,
       failureMessage: 'That Open VSX theme has no readable checksum.',
       tooLargeMessage: 'That Open VSX checksum response is invalid.',
+      allowResourceOrigin: true,
     }),
   ])
   const expectedChecksum = new TextDecoder().decode(checksumBytes).trim().split(/\s+/)[0]

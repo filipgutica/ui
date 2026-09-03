@@ -79,6 +79,28 @@ redistribute theme assets remain responsible for their licenses.
   this package so applications keep a consistent design language.
 - `@filipgutica/ui/open-vsx` is Node-only. Do not import it into browser bundles.
 
+## Docs and sandbox
+
+Start the component docs and sandbox:
+
+```sh
+pnpm docs:dev
+```
+
+Build the provider-neutral static assets:
+
+```sh
+pnpm docs:build
+```
+
+The docs use hash routes, so the static assets do not require rewrite rules.
+The local Vite server also provides the same-origin `/api/open-vsx` endpoint.
+The theme picker uses this endpoint to search and import Open VSX themes.
+
+A production host must provide the same API endpoint for live Open VSX imports.
+Netlify and Amplify can use a serverless adapter. GitHub Pages needs an external
+API or a catalog of normalized themes built in advance.
+
 ## Development
 
 ```sh

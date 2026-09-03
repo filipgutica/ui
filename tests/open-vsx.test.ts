@@ -127,6 +127,25 @@ describe('Open VSX theme service', () => {
     expect(result.theme.tokens.textPrimary).toBe('#CDD6F4')
   })
 
+  it('accepts extension files served by the Open VSX resource host', async () => {
+    const packageBytes = await packageFixture()
+    const baseFetch = await registryFetch({ packageBytes })
+    const fetchImpl = vi.fn(async (input: string | URL | Request) => {
+      const result = await baseFetch(input)
+      if (String(input).includes('/file/')) {
+        Object.defineProperty(result, 'url', {
+          value: `https://openvsx.eclipsecontent.org/catppuccin/catppuccin-vsc/${String(input).split('/').at(-1)}`,
+        })
+      }
+      return result
+    })
+    const service = createOpenVsxThemeService({ fetchImpl })
+
+    const result = await service.importTheme(extensionId, 'dark')
+
+    expect(result).toMatchObject({ status: 'success', theme: { name: 'Mocha' } })
+  })
+
   it('rejects a package whose checksum does not match', async () => {
     const packageBytes = await packageFixture()
     const fetchImpl = await registryFetch({ packageBytes })
