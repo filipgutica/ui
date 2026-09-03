@@ -623,10 +623,20 @@ export const createOpenVsxThemeService = ({
       })
       const payload: unknown = JSON.parse(new TextDecoder().decode(bytes))
       if (!isRecord(payload) || !Array.isArray(payload.extensions)) throw new Error('invalid response')
-      const themes = payload.extensions.flatMap(candidate => {
+      const candidates = payload.extensions.flatMap(candidate => {
         const summary = searchSummary(candidate)
         return summary ? [summary] : []
       }).slice(0, 12)
+      const compatibility = await Promise.all(candidates.map(async summary => {
+        try {
+          const location = await getPackageLocation({ request, extensionId: summary.id })
+          await validateAdvertisedThemes({ request, manifestUrl: location.manifestUrl })
+          return summary
+        } catch {
+          return null
+        }
+      }))
+      const themes = compatibility.filter((theme): theme is OpenVsxThemeSummary => theme !== null)
       return { status: 'success', themes }
     } catch {
       return { status: 'error', message: 'Open VSX search is unavailable right now.' }

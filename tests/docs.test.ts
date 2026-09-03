@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import ComponentPage from '../docs/src/components/ComponentPage.vue'
 import ThemePicker from '../docs/src/components/ThemePicker.vue'
+import { openVsxApi } from '../docs/open-vsx-plugin.js'
 import { componentDocs } from '../docs/src/component-docs.js'
 import { handleOpenVsxRequest } from '../docs/open-vsx-api.js'
 import { parseDocsHash } from '../docs/src/router.js'
@@ -57,6 +58,15 @@ describe('docs routing', () => {
     ['#/not-a-route', { name: 'not-found' }],
   ])('parses %s', (hash, expected) => {
     expect(parseDocsHash(hash)).toEqual(expected)
+  })
+})
+
+describe('docs preview', () => {
+  it('serves the Open VSX API in development and production preview', () => {
+    const plugin = openVsxApi()
+
+    expect(plugin.configureServer).toBeTypeOf('function')
+    expect(plugin.configurePreviewServer).toBeTypeOf('function')
   })
 })
 

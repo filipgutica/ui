@@ -66,10 +66,10 @@
               v-model="query"
               type="search"
               placeholder="Catppuccin"
-              :disabled="status === 'loading'"
+              :disabled="searching || Boolean(importingId)"
             />
           </UiField>
-          <UiButton type="submit" :loading="status === 'loading'">Search</UiButton>
+          <UiButton type="submit" :loading="searching" :disabled="Boolean(importingId)">Search</UiButton>
           <UiField control-id="theme-appearance" label="Appearance">
             <UiSelect id="theme-appearance" v-model="preferredAppearance">
               <option value="dark">Dark</option>
@@ -117,7 +117,8 @@ const activeTheme = ref('Light')
 const query = ref('Catppuccin')
 const preferredAppearance = ref<'light' | 'dark'>('dark')
 const results = ref<OpenVsxThemeSummary[]>([])
-const status = ref<'idle' | 'loading' | 'error'>('idle')
+const status = ref<'idle' | 'error'>('idle')
+const searching = ref(false)
 const message = ref('')
 const importingId = ref('')
 
@@ -134,7 +135,8 @@ const search = async (): Promise<void> => {
     message.value = 'Enter a theme name to search Open VSX.'
     return
   }
-  status.value = 'loading'
+  searching.value = true
+  status.value = 'idle'
   message.value = 'Searching Open VSX…'
   results.value = []
   try {
@@ -146,12 +148,14 @@ const search = async (): Promise<void> => {
   } catch (error) {
     status.value = 'error'
     message.value = error instanceof Error ? error.message : 'Could not search Open VSX.'
+  } finally {
+    searching.value = false
   }
 }
 
 const selectOpenVsxTheme = async (theme: OpenVsxThemeSummary): Promise<void> => {
   importingId.value = theme.id
-  status.value = 'loading'
+  status.value = 'idle'
   message.value = `Importing ${theme.name}…`
   try {
     const importedTheme = await importOpenVsxTheme({

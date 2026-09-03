@@ -92,6 +92,11 @@
     box-shadow: none;
   }
 
+  .fg-button[data-variant="danger"]:hover:not(:disabled) {
+    color: var(--color-error);
+    background: color-mix(in srgb, var(--color-error) 18%, var(--color-surface));
+  }
+
   .fg-button[data-variant="text"] {
     min-height: auto;
     padding: 0;
