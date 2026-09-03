@@ -1,16 +1,24 @@
 @layer components {
+  .fg-button,
+  .fg-input,
+  .fg-select,
+  .fg-dialog__close {
+    min-height: 2.5rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    font: inherit;
+  }
+
   .fg-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border: 1px solid transparent;
-    border-radius: var(--radius-control);
-    padding: 0.65rem 0.9rem;
+    padding: 0.55rem 0.85rem;
     color: var(--color-button-text);
     background: var(--color-button-bg);
-    font: inherit;
-    font-weight: 650;
+    font-weight: 680;
+    line-height: 1.25;
     cursor: pointer;
   }
 
@@ -18,29 +26,49 @@
     background: var(--color-button-hover);
   }
 
-  .fg-button:focus-visible {
-    outline: 3px solid var(--color-focus);
-    outline-offset: 2px;
+  .fg-button:disabled,
+  .fg-input:disabled,
+  .fg-select:disabled,
+  .fg-checkbox[data-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.58;
   }
 
-  .fg-button:disabled {
+  .fg-button[aria-busy="true"] {
     cursor: wait;
-    opacity: 0.6;
   }
 
   .fg-button[data-size="compact"] {
-    padding: 0.45rem 0.65rem;
-    font-size: 0.78rem;
+    min-height: 2rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8125rem;
   }
 
   .fg-button[data-variant="secondary"] {
     border-color: var(--color-border);
     color: var(--color-text);
-    background: var(--color-surface);
+    background: var(--color-surface-raised);
+  }
+
+  .fg-button[data-variant="secondary"]:hover:not(:disabled),
+  .fg-button[data-variant="ghost"]:hover:not(:disabled) {
+    color: var(--color-text);
+    background: var(--color-row-hover);
+  }
+
+  .fg-button[data-variant="ghost"] {
+    color: var(--color-muted);
+    background: transparent;
+  }
+
+  .fg-button[data-variant="danger"] {
+    color: var(--color-error);
+    background: var(--color-error-surface);
   }
 
   .fg-button[data-variant="text"] {
-    padding-inline: 0;
+    min-height: auto;
+    padding: 0;
     color: var(--color-link);
     background: transparent;
     text-decoration: underline;
@@ -52,8 +80,248 @@
     background: transparent;
   }
 
-  :root.high-contrast .fg-button {
+  .fg-input,
+  .fg-select {
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    border-color: var(--color-input-border);
+    color: var(--color-input-text);
+    background: var(--color-input-bg);
+    line-height: 1.35;
+  }
+
+  .fg-input::placeholder {
+    color: var(--color-input-placeholder);
+    opacity: 1;
+  }
+
+  .fg-input[aria-invalid="true"],
+  .fg-select[aria-invalid="true"] {
+    border-color: var(--color-error);
+  }
+
+  .fg-field {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .fg-field__label {
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+    font-weight: 680;
+  }
+
+  .fg-field__description,
+  .fg-field__error {
+    margin: 0;
+    font-size: 0.8125rem;
+  }
+
+  .fg-field__description { color: var(--color-muted); }
+  .fg-field__error { color: var(--color-error); }
+
+  .fg-checkbox {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .fg-checkbox__control {
+    display: inline-grid;
+    flex: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.1rem;
+    place-items: center;
+    border: 1px solid var(--color-input-border);
+    border-radius: 0.3rem;
+    color: var(--color-button-text);
+    background: var(--color-input-bg);
+  }
+
+  .fg-checkbox__control[data-state="checked"] {
+    border-color: var(--color-button-bg);
+    background: var(--color-button-bg);
+  }
+
+  .fg-checkbox__indicator {
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .fg-checkbox__label { line-height: 1.4; }
+
+  .fg-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-pill);
+    padding: 0.18rem 0.48rem;
+    color: var(--color-muted);
+    background: var(--color-surface-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .fg-badge[data-tone="info"] { color: var(--color-info); background: var(--color-info-surface); }
+  .fg-badge[data-tone="success"] { color: var(--color-success); background: var(--color-success-surface); }
+  .fg-badge[data-tone="warning"] { color: var(--color-warning); background: var(--color-warning-surface); }
+  .fg-badge[data-tone="danger"] { color: var(--color-error); background: var(--color-error-surface); }
+
+  .fg-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+    background: var(--color-surface);
+  }
+
+  .fg-alert[data-tone="info"] { background: var(--color-info-surface); }
+  .fg-alert[data-tone="success"] { background: var(--color-success-surface); }
+  .fg-alert[data-tone="warning"] { background: var(--color-warning-surface); }
+  .fg-alert[data-tone="danger"],
+  .fg-alert[data-tone="error"] {
+    border-color: var(--color-error);
+    color: var(--color-error);
+    background: var(--color-error-surface);
+  }
+
+  .fg-surface {
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-raised);
+  }
+
+  .fg-surface[data-padding="compact"] { padding: 0.85rem; }
+  .fg-surface[data-padding="default"] { padding: 1.2rem; }
+
+  .fg-progress {
+    position: relative;
+    height: 0.55rem;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-muted);
+  }
+
+  .fg-progress__indicator {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-progress);
+    transition: transform var(--duration-fast) ease-out;
+  }
+
+  .fg-dialog__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--color-overlay);
+  }
+
+  .fg-dialog__content {
+    position: fixed;
+    z-index: 51;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    width: min(42rem, calc(100vw - 2rem));
+    max-height: min(42rem, calc(100vh - 2rem));
+    overflow: hidden;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-panel);
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-dialog);
+  }
+
+  .fg-dialog__header,
+  .fg-dialog__footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+  }
+
+  .fg-dialog__header { border-bottom: 1px solid var(--color-border-subtle); }
+  .fg-dialog__footer { justify-content: flex-end; border-top: 1px solid var(--color-border-subtle); }
+
+  .fg-dialog__title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 750;
+  }
+
+  .fg-dialog__description {
+    margin: 0.25rem 0 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+
+  .fg-dialog__body {
+    min-height: 0;
+    overflow: auto;
+    padding: 1.2rem;
+  }
+
+  .fg-dialog__close {
+    display: inline-grid;
+    flex: none;
+    width: 2.5rem;
+    padding: 0;
+    place-items: center;
+    color: var(--color-muted);
+    background: transparent;
+    font-size: 1.35rem;
+    cursor: pointer;
+  }
+
+  .fg-dialog__close:hover { color: var(--color-text); background: var(--color-row-hover); }
+
+  .fg-button:focus-visible,
+  .fg-input:focus-visible,
+  .fg-select:focus-visible,
+  .fg-checkbox__control:focus-visible,
+  .fg-dialog__close:focus-visible,
+  .fg-dialog__content:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  :root.high-contrast .fg-button,
+  :root.high-contrast .fg-input,
+  :root.high-contrast .fg-select,
+  :root.high-contrast .fg-checkbox__control,
+  :root.high-contrast .fg-alert,
+  :root.high-contrast .fg-surface,
+  :root.high-contrast .fg-dialog__content {
     border-width: 2px;
     border-color: var(--color-border);
+  }
+
+  @media (max-width: 640px) {
+    .fg-dialog__content {
+      top: auto;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      max-height: calc(100vh - 1rem);
+      transform: none;
+      border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fg-progress__indicator { transition: none; }
   }
 }

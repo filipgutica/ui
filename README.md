@@ -22,6 +22,18 @@ The theme exposes Tailwind utilities such as `bg-ui-bg`, `bg-ui-surface`,
 
 ## Vue components
 
+The first application-focused set includes:
+
+- `UiButton` with primary, secondary, ghost, danger, and text variants
+- `UiInput`, `UiSelect`, and `UiField` for consistent form controls
+- `UiCheckbox`, `UiBadge`, `UiAlert`, and `UiProgress` for state and feedback
+- `UiSurface` for restrained content grouping
+- `UiDialog`, built on Reka UI, for accessible modal interaction
+
+Place `UiInput` or `UiSelect` inside `UiField`. The field supplies the control ID
+and automatically connects its description or error through the corresponding
+ARIA relationship.
+
 ```vue
 <template>
   <UiButton variant="secondary" size="compact">
@@ -73,3 +85,14 @@ redistribute theme assets remain responsible for their licenses.
 pnpm install
 pnpm verify
 ```
+
+Commits follow the Conventional Commits format. Releases run from `main`:
+
+- `fix:` publishes a patch release
+- `feat:` publishes a minor release
+- a `BREAKING CHANGE:` footer publishes a major release
+
+The `release.yml` workflow publishes through npm trusted publishing with GitHub
+OIDC. Configure the npm package's trusted publisher once with user
+`filipgutica`, repository `ui`, and workflow filename `release.yml`; no npm token
+is stored in GitHub.

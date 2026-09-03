@@ -37,8 +37,10 @@
   --color-success-surface: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
   --color-info-surface: color-mix(in srgb, var(--color-info) 12%, var(--color-surface));
   --radius-control: 0.55rem;
-  --radius-panel: 0.9rem;
+  --radius-panel: 0.75rem;
+  --radius-pill: 999px;
   --duration-fast: 180ms;
+  --shadow-dialog: 0 20px 64px rgb(0 0 0 / 24%);
 }
 
 :root.dark {
