@@ -32,16 +32,19 @@
   "scripts": {
     "build": "vite build && vue-tsc -p tsconfig.build.json --emitDeclarationOnly",
     "prepublishOnly": "pnpm verify",
+    "release": "semantic-release",
+    "release:dry-run": "semantic-release --dry-run --no-ci",
     "test": "vitest run",
     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
-    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm pack --dry-run"
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm pack --dry-run && publint"
   },
   "engines": {
     "node": ">=22.12"
   },
   "packageManager": "pnpm@11.6.0",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "license": "MIT",
   "repository": {
@@ -61,10 +64,15 @@
     "vue": ">=3.4.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "@types/node": "^26.0.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/test-utils": "^2.4.6",
+    "conventional-changelog-conventionalcommits": "^10.4.0",
     "happy-dom": "^20.12.2",
+    "publint": "^0.3.24",
+    "semantic-release": "^25.0.9",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "vite": "^8.2.2",
