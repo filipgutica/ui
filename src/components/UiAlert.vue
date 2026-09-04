@@ -16,7 +16,5 @@ export interface UiAlertProps {
   tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'error'
 }
 
-withDefaults(defineProps<UiAlertProps>(), {
-  tone: 'neutral',
-})
+const { tone = 'neutral' } = defineProps<UiAlertProps>()
 </script>

@@ -91,6 +91,24 @@ const registryFetch = async ({ packageBytes }: { packageBytes: Uint8Array }) => 
 }
 
 describe('Open VSX theme service', () => {
+  it('uses the most-downloaded theme catalog for a blank popular search', async () => {
+    const packageBytes = await packageFixture()
+    const fetchImpl = await registryFetch({ packageBytes })
+    const service = createOpenVsxThemeService({ fetchImpl })
+
+    const result = await service.search('  ')
+
+    expect(result).toMatchObject({
+      status: 'success',
+      themes: [{ id: extensionId }],
+    })
+    const searchUrl = String(fetchImpl.mock.calls[0]?.[0])
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    expect(searchUrl).toContain('category=Themes')
+    expect(searchUrl).toContain('sortBy=downloadCount')
+    expect(searchUrl).not.toContain('query=')
+  })
+
   it('searches only the theme category and returns normalized summaries', async () => {
     const packageBytes = await packageFixture()
     const fetchImpl = await registryFetch({ packageBytes })
@@ -111,7 +129,7 @@ describe('Open VSX theme service', () => {
     expect(String(fetchImpl.mock.calls[0]?.[0])).toContain('category=Themes')
   })
 
-  it('filters extensions that do not contribute color themes from search results', async () => {
+  it('filters obvious non-color extensions without fetching per-result metadata', async () => {
     const packageBytes = await packageFixture()
     const baseFetch = await registryFetch({ packageBytes })
     const fetchImpl = vi.fn(async (input: string | URL | Request) => {
@@ -132,6 +150,13 @@ describe('Open VSX theme service', () => {
               displayName: 'Catppuccin Icons for VSCode',
               description: 'An icon theme',
               downloadCount: 9000,
+            },
+            {
+              namespace: 'ms-vscode',
+              name: 'powershell',
+              displayName: 'PowerShell',
+              description: 'Develop PowerShell modules and scripts',
+              downloadCount: 8000,
             },
           ],
         }))
@@ -159,8 +184,32 @@ describe('Open VSX theme service', () => {
 
     expect(result).toMatchObject({
       status: 'success',
-      themes: [{ id: extensionId }],
+      themes: [
+        { id: extensionId },
+      ],
     })
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+  })
+
+  it('validates advertised themes before downloading an imported package', async () => {
+    const packageBytes = await packageFixture()
+    const baseFetch = await registryFetch({ packageBytes })
+    const fetchImpl = vi.fn(async (input: string | URL | Request) => {
+      if (String(input).endsWith('package.json')) {
+        return response(JSON.stringify({ contributes: { iconThemes: [{ id: 'icons' }] } }))
+      }
+      return baseFetch(input)
+    })
+    const service = createOpenVsxThemeService({ fetchImpl })
+
+    const result = await service.importTheme(extensionId, 'dark')
+
+    expect(result).toMatchObject({
+      status: 'error',
+      error: { code: 'unsupported-extension' },
+    })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+    expect(fetchImpl.mock.calls.some(([url]) => String(url).endsWith('theme.vsix'))).toBe(false)
   })
 
   it('verifies and imports the package variant matching the requested appearance', async () => {

@@ -15,19 +15,21 @@
 <script setup lang="ts">
 import { Primitive } from 'reka-ui'
 
+import type { UiControlSize } from '../control.js'
+
 export interface UiButtonProps {
   disabled?: boolean
   loading?: boolean
-  size?: 'default' | 'compact'
+  size?: UiControlSize | 'compact' | 'default'
   type?: 'button' | 'submit' | 'reset'
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'text'
 }
 
-withDefaults(defineProps<UiButtonProps>(), {
-  disabled: false,
-  loading: false,
-  size: 'default',
-  type: 'button',
-  variant: 'primary',
-})
+const {
+  disabled = false,
+  loading = false,
+  size = 'md',
+  type = 'button',
+  variant = 'primary',
+} = defineProps<UiButtonProps>()
 </script>

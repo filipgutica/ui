@@ -51,16 +51,16 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Labels compact state, category, or metadata.',
     usage: 'Use badges for short, scannable labels. Do not rely on color alone; the text should communicate the state.',
     props: [
-      { name: 'tone', type: "'neutral' | 'info' | 'success' | 'warning' | 'danger'", default: "'neutral'", description: 'Sets the semantic color treatment.' },
+      { name: 'tone', type: "'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'error'", default: "'neutral'", description: 'Sets the semantic color treatment.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Short badge label.' },
     ],
     events: [],
     example: {
-      title: 'Status label',
-      description: 'Pair the tone with an explicit label.',
-      code: `<UiBadge tone="warning">Needs review</UiBadge>`,
+      title: 'Status labels',
+      description: 'Use text and tone together so status never depends on color alone.',
+      code: `<UiBadge tone="info">Queued</UiBadge>\n<UiBadge tone="success">Passed</UiBadge>\n<UiBadge tone="warning">Needs review</UiBadge>\n<UiBadge tone="error">Failed</UiBadge>`,
     },
   },
   {
@@ -73,7 +73,7 @@ export const componentDocs: ComponentDoc[] = [
     props: [
       { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents interaction.' },
       { name: 'loading', type: 'boolean', default: 'false', description: 'Disables the button and exposes aria-busy.' },
-      { name: 'size', type: "'default' | 'compact'", default: "'default'", description: 'Sets the control height and spacing.' },
+      { name: 'size', type: "UiControlSize | 'compact' | 'default'", default: "'md'", description: "Sets the shared control density. Use sm, md, or lg; compact and default are deprecated aliases retained for existing buttons." },
       { name: 'type', type: "'button' | 'submit' | 'reset'", default: "'button'", description: 'Sets the native button type.' },
       { name: 'variant', type: "'primary' | 'secondary' | 'ghost' | 'danger' | 'text'", default: "'primary'", description: 'Sets action emphasis.' },
     ],
@@ -86,7 +86,7 @@ export const componentDocs: ComponentDoc[] = [
     example: {
       title: 'Supporting action',
       description: 'Use the secondary variant when the action is useful but not dominant.',
-      code: `<UiButton variant="secondary" size="compact">\n  Inspect evidence\n</UiButton>`,
+      code: `<UiButton variant="secondary" size="sm">\n  Inspect evidence\n</UiButton>`,
     },
   },
   {
@@ -99,6 +99,7 @@ export const componentDocs: ComponentDoc[] = [
     props: [
       { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents interaction.' },
       { name: 'modelValue', type: 'boolean', default: 'false', description: 'The checked state used by v-model.' },
+      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Visible checkbox label.' },
@@ -110,6 +111,52 @@ export const componentDocs: ComponentDoc[] = [
       title: 'Preference',
       description: 'Use v-model for the controlled boolean state.',
       code: `<UiCheckbox v-model="includeArchived">\n  Include archived sessions\n</UiCheckbox>`,
+    },
+  },
+  {
+    category: 'Forms',
+    slug: 'radio-card',
+    name: 'UiRadioCard',
+    title: 'Radio card',
+    summary: 'Presents one rich option inside a radio-card group.',
+    usage: 'Use UiRadioCard inside UiRadioCardGroup when supporting content or a preview helps users compare mutually exclusive options. Use a select for simple text choices.',
+    props: [
+      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents this option from being selected.' },
+      { name: 'value', type: 'string', description: 'Value selected by the parent group.' },
+    ],
+    slots: [
+      { name: 'default', type: 'unknown', description: 'Visible option content.' },
+    ],
+    events: [],
+    example: {
+      title: 'Theme option',
+      description: 'Pair the card with a group that owns the selected value.',
+      code: `<UiRadioCardGroup v-model="scheme" aria-label="Color scheme">\n  <UiRadioCard value="dark">\n    <strong>Dark</strong>\n    <span>Use a dark interface.</span>\n  </UiRadioCard>\n</UiRadioCardGroup>`,
+    },
+  },
+  {
+    category: 'Forms',
+    slug: 'radio-card-group',
+    name: 'UiRadioCardGroup',
+    title: 'Radio card group',
+    summary: 'Owns the selected value and keyboard behavior for related radio cards.',
+    usage: 'Use this group when exactly one rich option may be selected. Give it an accessible name and place UiRadioCard children inside it.',
+    props: [
+      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents every card from being selected.' },
+      { name: 'loop', type: 'boolean', default: 'true', description: 'Loops arrow-key navigation from the last card to the first.' },
+      { name: 'modelValue', type: 'string', description: 'Selected card value used by v-model.' },
+      { name: 'orientation', type: "'horizontal' | 'vertical'", description: 'Restricts arrow-key navigation to one axis when the layout has a fixed orientation.' },
+    ],
+    slots: [
+      { name: 'default', type: 'unknown', description: 'UiRadioCard options.' },
+    ],
+    events: [
+      { name: 'update:modelValue', type: 'string', description: 'Emitted when the selected card changes.' },
+    ],
+    example: {
+      title: 'Color scheme',
+      description: 'The group provides native radio behavior across the cards.',
+      code: `<UiRadioCardGroup v-model="scheme" aria-label="Color scheme">\n  <UiRadioCard value="system">System</UiRadioCard>\n  <UiRadioCard value="light">Light</UiRadioCard>\n  <UiRadioCard value="dark">Dark</UiRadioCard>\n</UiRadioCardGroup>`,
     },
   },
   {
@@ -172,6 +219,7 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'id', type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
       { name: 'invalid', type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
       { name: 'modelValue', type: 'string', default: "''", description: 'Current value used by v-model.' },
+      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
       { name: 'type', type: "'text' | 'search' | 'email' | 'password' | 'url'", default: "'text'", description: 'Native input type.' },
     ],
     slots: [],
@@ -216,6 +264,7 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'id', type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
       { name: 'invalid', type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
       { name: 'modelValue', type: 'string', default: "''", description: 'Selected value used by v-model.' },
+      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Native option and optgroup elements.' },
@@ -230,24 +279,83 @@ export const componentDocs: ComponentDoc[] = [
     },
   },
   {
-    category: 'Layout',
-    slug: 'surface',
-    name: 'UiSurface',
-    title: 'Surface',
-    summary: 'Groups related content with restrained visual structure.',
-    usage: 'Use surfaces when a meaningful content group needs a boundary. Avoid nesting many surfaces; spacing and headings are often enough.',
+    category: 'Forms',
+    slug: 'slider',
+    name: 'UiSlider',
+    title: 'Slider',
+    summary: 'Lets users choose one numeric value from a bounded range.',
+    usage: 'Use a slider when relative position within a range matters more than entering an exact number. Always provide an accessible label and show the current value when precision matters.',
     props: [
-      { name: 'as', type: 'string', default: "'section'", description: 'Rendered HTML element or component.' },
-      { name: 'padding', type: "'none' | 'compact' | 'default'", default: "'default'", description: 'Internal spacing.' },
+      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents interaction.' },
+      { name: 'id', type: 'string', description: 'Identifier applied to the slider thumb. Inherits the surrounding UiField control ID.' },
+      { name: 'label', type: 'string', description: 'Accessible label for the slider thumb.' },
+      { name: 'max', type: 'number', default: '100', description: 'Maximum selectable value. Invalid ranges fall back to 100 above min.' },
+      { name: 'min', type: 'number', default: '0', description: 'Minimum selectable value. Non-finite values fall back to 0.' },
+      { name: 'modelValue', type: 'number', default: 'min', description: 'Current value used by v-model; display is clamped to the configured range.' },
+      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+      { name: 'step', type: 'number', default: '1', description: 'Positive amount changed by each keyboard or pointer increment; invalid values fall back to 1.' },
+    ],
+    slots: [],
+    events: [
+      { name: 'update:modelValue', type: 'number', description: 'Emitted when the selected value changes.' },
+    ],
+    example: {
+      title: 'Threshold',
+      description: 'Pair the slider with a visible value when the exact selection matters.',
+      code: `<UiSlider\n  v-model="threshold"\n  label="Confidence threshold"\n/>\n<span>{{ threshold }}%</span>`,
+    },
+  },
+  {
+    category: 'Layout',
+    slug: 'code-block',
+    name: 'UiCodeBlock',
+    title: 'Code block',
+    summary: 'Presents syntax-highlighted, copyable source code using the active theme.',
+    usage: 'Set language to match the source so the code block can highlight it. Colors follow the active theme. Use line numbers when referencing specific lines; copying always preserves the original source.',
+    props: [
+      { name: 'code', type: 'string', description: 'Source text displayed in the code block.' },
+      { name: 'language', type: 'string', default: "'text'", description: 'Language used for syntax highlighting and the header. Unknown languages render as plain text.' },
+      { name: 'title', type: 'string', default: "''", description: 'Optional title shown before the language label.' },
+      { name: 'copyable', type: 'boolean', default: 'true', description: 'Shows the clipboard action.' },
+      { name: 'lineNumbers', type: 'boolean', default: 'false', description: 'Shows line numbers beside the code.' },
+      { name: 'wrap', type: 'boolean', default: 'false', description: 'Wraps long lines instead of requiring horizontal scrolling.' },
     ],
     slots: [
-      { name: 'default', type: 'unknown', description: 'Grouped content.' },
+      { name: 'actions', type: 'unknown', description: 'Additional actions placed beside the copy button.' },
     ],
     events: [],
     example: {
-      title: 'Summary panel',
-      description: 'Use a heading to make the region easy to scan.',
-      code: `<UiSurface as="section" padding="compact">\n  <h2>Session summary</h2>\n  <p>12 tool calls across 4 turns.</p>\n</UiSurface>`,
+      title: 'Copyable snippet',
+      description: 'Keep the snippet readable and let users copy it with one action.',
+      code: `<UiCodeBlock
+  title="Example.vue"
+  language="vue"
+  :code="snippet"
+/>`,
+    },
+  },
+  {
+    category: 'Layout',
+    slug: 'card',
+    name: 'UiCard',
+    title: 'Card',
+    summary: 'Groups related content and actions in a structured container.',
+    usage: 'Use a card for one coherent subject. Put the heading in title, adjacent controls in actions, primary content in the default slot, and supporting metadata or actions in footer.',
+    props: [
+      { name: 'title', type: 'string', description: 'Simple card title; the title slot takes precedence.' },
+      { name: 'titleTag', type: "'h2' | 'h3' | 'h4' | 'h5' | 'h6'", default: "'h3'", description: 'Heading level used for the card title.' },
+    ],
+    slots: [
+      { name: 'actions', type: 'unknown', description: 'Controls aligned with the title.' },
+      { name: 'default', type: 'unknown', description: 'Primary card content.' },
+      { name: 'footer', type: 'unknown', description: 'Supporting metadata or footer actions.' },
+      { name: 'title', type: 'unknown', description: 'Custom title content.' },
+    ],
+    events: [],
+    example: {
+      title: 'Session summary',
+      description: 'Keep content and related actions in predictable regions.',
+      code: `<UiCard title="Session summary">\n  <template #actions>\n    <UiButton variant="ghost" size="sm">View</UiButton>\n  </template>\n  <p>12 tool calls across 4 turns.</p>\n  <template #footer>Updated just now</template>\n</UiCard>`,
     },
   },
 ]

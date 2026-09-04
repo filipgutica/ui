@@ -1,5 +1,9 @@
 <template>
-  <label class="fg-checkbox" :data-disabled="disabled ? 'true' : undefined">
+  <label
+    class="fg-checkbox"
+    :data-size="size"
+    :data-disabled="disabled ? 'true' : undefined"
+  >
     <CheckboxRoot
       class="fg-checkbox__control"
       :disabled="disabled"
@@ -15,15 +19,19 @@
 <script setup lang="ts">
 import { CheckboxIndicator, CheckboxRoot } from 'reka-ui'
 
+import type { UiControlSize } from '../control.js'
+
 export interface UiCheckboxProps {
   disabled?: boolean
   modelValue?: boolean
+  size?: UiControlSize
 }
 
-withDefaults(defineProps<UiCheckboxProps>(), {
-  disabled: false,
-  modelValue: false,
-})
+const {
+  disabled = false,
+  modelValue = false,
+  size = 'md',
+} = defineProps<UiCheckboxProps>()
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: boolean): void

@@ -1,20 +1,45 @@
 <template>
-  <a class="skip-link" href="#main-content">Skip to content</a>
+  <a
+    class="skip-link"
+    href="#main-content"
+  >Skip to content</a>
   <header class="topbar">
-    <a class="brand" href="#/" aria-label="UI documentation home">
+    <a
+      class="brand"
+      href="#/"
+      aria-label="UI documentation home"
+    >
       <span>@filipgutica/ui</span>
-      <span class="brand-marker" aria-hidden="true"></span>
+      <span
+        class="brand-marker"
+        aria-hidden="true"
+      />
     </a>
     <ThemePicker />
   </header>
 
   <div class="docs-shell">
-    <aside class="sidebar" aria-label="Component documentation">
+    <aside
+      class="sidebar"
+      aria-label="Component documentation"
+    >
       <nav>
-        <a class="sidebar-home" href="#/" :aria-current="route.name === 'home' ? 'page' : undefined">
-          Introduction
+        <a
+          class="sidebar-home"
+          href="#/"
+          :aria-current="route.name === 'home' ? 'page' : undefined"
+        >
+          <span>Introduction</span>
+          <span
+            class="sidebar-link-indicator"
+            aria-hidden="true"
+          >›</span>
         </a>
-        <section v-for="group in componentGroups" :key="group.category" class="nav-group">
+        <section
+          v-for="group in componentGroups"
+          :key="group.category"
+          class="nav-group"
+        >
           <h2>{{ group.category }}</h2>
           <a
             v-for="component in group.components"
@@ -22,17 +47,28 @@
             :href="`#/components/${component.slug}`"
             :aria-current="isCurrentComponent(component.slug) ? 'page' : undefined"
           >
-            {{ component.title }}
+            <span>{{ component.title }}</span>
+            <span
+              class="sidebar-link-indicator"
+              aria-hidden="true"
+            >›</span>
           </a>
         </section>
       </nav>
     </aside>
 
-    <main id="main-content" class="main-content">
+    <main
+      id="main-content"
+      class="main-content"
+    >
       <details class="mobile-nav">
         <summary>Browse components</summary>
         <nav aria-label="Mobile component documentation">
-          <a v-for="component in componentDocs" :key="component.slug" :href="`#/components/${component.slug}`">
+          <a
+            v-for="component in componentDocs"
+            :key="component.slug"
+            :href="`#/components/${component.slug}`"
+          >
             {{ component.title }}
           </a>
         </nav>
@@ -49,10 +85,18 @@
         :key="selectedComponent.slug"
         :component="selectedComponent"
       />
-      <article v-else class="content-page">
-        <h1 tabindex="-1">Page not found</h1>
+      <article
+        v-else
+        class="content-page"
+      >
+        <h1 tabindex="-1">
+          Page not found
+        </h1>
         <p>The requested component or sandbox does not exist.</p>
-        <a class="docs-button" href="#/">Return home</a>
+        <a
+          class="docs-button"
+          href="#/"
+        >Return home</a>
       </article>
     </main>
   </div>

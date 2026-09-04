@@ -6,7 +6,7 @@ import { UiButton } from '../src/index.js'
 describe('UiButton', () => {
   it('renders an accessible button with stable variant and size hooks', () => {
     const wrapper = mount(UiButton, {
-      props: { variant: 'secondary', size: 'compact' },
+      props: { variant: 'secondary', size: 'sm' },
       slots: { default: 'Inspect evidence' },
     })
 
@@ -14,7 +14,7 @@ describe('UiButton', () => {
     expect(wrapper.attributes()).toMatchObject({
       type: 'button',
       'data-variant': 'secondary',
-      'data-size': 'compact',
+      'data-size': 'sm',
     })
     expect(wrapper.text()).toBe('Inspect evidence')
   })
@@ -26,5 +26,11 @@ describe('UiButton', () => {
 
     expect(wrapper.attributes('disabled')).toBeDefined()
     expect(wrapper.emitted('click')).toBeUndefined()
+  })
+
+  it.each(['compact', 'default'] as const)('retains the legacy %s size hook', (size) => {
+    const wrapper = mount(UiButton, { props: { size } })
+
+    expect(wrapper.attributes('data-size')).toBe(size)
   })
 })

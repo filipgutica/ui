@@ -1,5 +1,9 @@
 <template>
-  <Primitive as="span" class="fg-badge" :data-tone="tone">
+  <Primitive
+    as="span"
+    class="fg-badge"
+    :data-tone="tone"
+  >
     <slot />
   </Primitive>
 </template>
@@ -8,10 +12,8 @@
 import { Primitive } from 'reka-ui'
 
 export interface UiBadgeProps {
-  tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger'
+  tone?: 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'error'
 }
 
-withDefaults(defineProps<UiBadgeProps>(), {
-  tone: 'neutral',
-})
+const { tone = 'neutral' } = defineProps<UiBadgeProps>()
 </script>
