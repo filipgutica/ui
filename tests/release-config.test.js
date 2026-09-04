@@ -16,6 +16,7 @@ describe('release configuration', () => {
   it.each([
     ['fix: repair control', 'patch'],
     ['feat: add control', 'minor'],
+    ['feat!: replace control API', 'major'],
     ['feat: replace control API\n\nBREAKING CHANGE: consumers must migrate', 'major'],
   ])('maps %s to a %s release', async (message, expectedRelease) => {
     await expect(releaseTypeFor(message)).resolves.toBe(expectedRelease)

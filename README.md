@@ -112,12 +112,19 @@ Commits follow the Conventional Commits format. Releases run from `main`:
 
 - `fix:` publishes a patch release
 - `feat:` publishes a minor release
+- `feat!:` publishes a major release
 - `BREAKING CHANGE:` or `[BREAKING CHANGE]` anywhere in a commit body publishes
   a major release
 - the same markers anywhere in an associated merged PR body publish a major
   release
 
-The `release.yml` workflow publishes through npm trusted publishing with GitHub
-OIDC. Configure the npm package's trusted publisher once with user
-`filipgutica`, repository `ui`, and workflow filename `release.yml`; no npm token
-is stored in GitHub.
+The `release.yml` workflow runs on every push to `main`. When semantic-release
+finds qualifying commits, it publishes the next version to npm, creates the
+matching `v<version>` tag, and creates a GitHub Release. Configure an `NPM_TOKEN`
+Actions secret with permission to publish `@filipgutica/ui`; contributors do not
+publish locally or add a token to the repository.
+
+Before the first token-backed release, remove the package's existing trusted
+publisher in npm. The workflow retains `id-token: write` only for the provenance
+attestations enabled in `package.json`; npm registry authentication comes from
+the `NPM_TOKEN` secret.
