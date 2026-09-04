@@ -1,4 +1,11 @@
-import { parse, printParseErrorCode, type ParseError } from 'jsonc-parser'
+import { parse, printParseErrorCode } from 'jsonc-parser'
+
+import type { ParseError } from 'jsonc-parser'
+import type { SyntaxPalette, SyntaxToken } from './syntax.js'
+
+import { syntaxRolesForScope, syntaxTokenNames } from './syntax.js'
+
+export type { SyntaxPalette, SyntaxToken } from './syntax.js'
 
 export type ThemeAppearance = 'light' | 'dark' | 'high-contrast-light' | 'high-contrast-dark'
 
@@ -37,6 +44,7 @@ export interface NormalizedTheme {
   name: string
   appearance: ThemeAppearance
   tokens: SemanticThemeTokens
+  syntax?: SyntaxPalette
 }
 
 export type ThemeImportErrorCode =
@@ -237,6 +245,35 @@ const isNormalizedColor = (value: unknown): value is string =>
 const normalizeColor = (color: string): string => color.length === 4 || color.length === 5
   ? `#${[...color.slice(1)].map(channel => channel.repeat(2)).join('')}`
   : color
+
+const parseSyntaxPalette = (rules: unknown): SyntaxPalette => {
+  const palette: SyntaxPalette = {}
+  if (rules === undefined) return palette
+  if (!Array.isArray(rules)) {
+    throw new ThemeValidationError('invalid-shape', 'Theme tokenColors must be an array.')
+  }
+  for (const rule of rules) {
+    if (!isRecord(rule) || !isRecord(rule.settings)) {
+      throw new ThemeValidationError('invalid-shape', 'Each syntax rule must contain settings.')
+    }
+    const foreground = rule.settings.foreground
+    if (foreground === undefined) continue
+    if (!isSupportedSourceColor(foreground)) {
+      throw new ThemeValidationError('invalid-color', 'Syntax colors must be hexadecimal values.')
+    }
+    const scopes = typeof rule.scope === 'string' ? [rule.scope] : rule.scope
+    if (scopes === undefined) continue
+    if (!Array.isArray(scopes) || !scopes.every(scope => typeof scope === 'string')) {
+      throw new ThemeValidationError('invalid-shape', 'Syntax scopes must be strings.')
+    }
+    for (const selector of scopes.flatMap(scope => scope.split(','))) {
+      // Context selectors share the terminal token role in the normalized palette.
+      const scope = selector.trim().split(/\s+/).at(-1) ?? ''
+      for (const role of syntaxRolesForScope(scope)) palette[role] = normalizeColor(foreground)
+    }
+  }
+  return palette
+}
 
 const colorChannels = (color: string): [red: number, green: number, blue: number, alpha: number] => {
   const expanded = color.length === 4 || color.length === 5
@@ -653,6 +690,7 @@ export const parseVsCodeTheme = ({
   return {
     name: (parsed.name?.trim().replace(/\s+/g, ' ').slice(0, 80)) || themeNameFromFile(fileName),
     appearance,
+    syntax: parseSyntaxPalette(parsed.tokenColors),
     tokens: mapSemanticTokens({
       colors,
       appearance,
@@ -680,6 +718,12 @@ export const isNormalizedTheme = (value: unknown): value is NormalizedTheme => {
   ) return false
   const tokens = value.tokens
   if (!isRecord(tokens) || Object.keys(tokens).length !== semanticTokenKeys.length) return false
+  if (value.syntax !== undefined) {
+    if (!isRecord(value.syntax)) return false
+    const syntax = value.syntax
+    if (!Object.keys(syntax).every(key => syntaxTokenNames.some(role => role === key))) return false
+    if (!Object.values(syntax).every(isNormalizedColor)) return false
+  }
   return semanticTokenKeys.every(key => isNormalizedColor(tokens[key]))
 }
 
@@ -735,6 +779,33 @@ export const applySemanticTheme = ({
     const variable = semanticCssVariables[key]
     if (theme) root.style.setProperty(variable, theme.tokens[key])
     else root.style.removeProperty(variable)
+  }
+
+  for (const role of syntaxTokenNames) {
+    const variable = `--color-syntax-${role}`
+    if (!theme) {
+      root.style.removeProperty(variable)
+      continue
+    }
+    const fallbacks: Record<SyntaxToken, string> = {
+      comment: theme.tokens.textMuted,
+      keyword: theme.tokens.accent,
+      string: theme.tokens.success,
+      number: theme.tokens.warning,
+      function: theme.tokens.link,
+      type: theme.tokens.info,
+      variable: theme.tokens.codeForeground,
+      operator: theme.syntax?.keyword ?? theme.tokens.codeForeground,
+      punctuation: theme.tokens.codeForeground,
+      tag: theme.tokens.link,
+      attribute: theme.tokens.accent,
+    }
+    root.style.setProperty(variable, theme.syntax?.[role] ?? readableSemanticColor({
+      color: fallbacks[role],
+      background: theme.tokens.codeBackground,
+      underlay: theme.tokens.pageBackground,
+      fallback: theme.tokens.codeForeground,
+    }))
   }
 
   const appearance = theme?.appearance

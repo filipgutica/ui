@@ -15,7 +15,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue', 'reka-ui', 'jsonc-parser', 'jszip', 'node:crypto'],
+      external: ['vue', '@vueuse/core', 'reka-ui', 'jsonc-parser', 'jszip', 'node:crypto', /^shiki\//],
       output: {
         entryFileNames: '[name].js',
       },
@@ -23,5 +23,6 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    include: ['tests/**/*.test.{js,ts}'],
   },
 })

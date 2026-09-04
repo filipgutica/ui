@@ -3,10 +3,42 @@ import { describe, expect, it } from 'vitest'
 import {
   ThemeValidationError,
   applySemanticTheme,
+  isNormalizedTheme,
   parseVsCodeTheme,
 } from '../src/theme/index.js'
 
 describe('VS Code theme parsing and normalization', () => {
+  it('imports syntax colors, persists a validated palette, and clears it on reset', () => {
+    const theme = parseVsCodeTheme({
+      fileName: 'syntax.json',
+      source: JSON.stringify({
+        colors: { 'editor.background': '#151515', 'editor.foreground': '#eeeeee' },
+        tokenColors: [
+          { scope: ['keyword', 'storage.type'], settings: { foreground: '#f8d' } },
+          { scope: 'string, string.quoted', settings: { foreground: '#88ddaa' } },
+        ],
+      }),
+    })
+    expect(theme).toMatchObject({ syntax: { keyword: '#ff88dd', string: '#88ddaa' } })
+    expect(isNormalizedTheme(JSON.parse(JSON.stringify(theme)))).toBe(true)
+    expect(isNormalizedTheme({ ...theme, syntax: { keyword: 'url(https://example.com)' } })).toBe(false)
+    expect(isNormalizedTheme({ ...theme, syntax: { unknown: '#ffffff' } })).toBe(false)
+    const root = document.createElement('div')
+    applySemanticTheme({ root, theme })
+    expect(root.style.getPropertyValue('--color-syntax-keyword')).toBe('#ff88dd')
+    applySemanticTheme({ root, theme: null })
+    expect(root.style.getPropertyValue('--color-syntax-keyword')).toBe('')
+  })
+
+  it('rejects unsafe syntax colors at the import boundary', () => {
+    expect(() => parseVsCodeTheme({
+      fileName: 'unsafe.json',
+      source: JSON.stringify({
+        colors: { 'editor.background': '#151515', 'editor.foreground': '#eeeeee' },
+        tokenColors: [{ scope: 'keyword', settings: { foreground: 'red; background: url(https://example.com)' } }],
+      }),
+    })).toThrow(ThemeValidationError)
+  })
   it('applies and clears every normalized color through the public CSS-variable contract', () => {
     const root = document.createElement('div')
     const theme = parseVsCodeTheme({

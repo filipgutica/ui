@@ -1,4 +1,7 @@
 dist
 docs-dist
 node_modules
+.pnpm-store
+playwright-report
+test-results
 *.tgz

@@ -1,5 +1,9 @@
 <template>
-  <Primitive :as="as" class="fg-surface" :data-padding="padding">
+  <Primitive
+    :as="as"
+    class="fg-surface"
+    :data-padding="padding"
+  >
     <slot />
   </Primitive>
 </template>
@@ -12,8 +16,5 @@ export interface UiSurfaceProps {
   padding?: 'none' | 'compact' | 'default'
 }
 
-withDefaults(defineProps<UiSurfaceProps>(), {
-  as: 'section',
-  padding: 'default',
-})
+const { as = 'section', padding = 'default' } = defineProps<UiSurfaceProps>()
 </script>

@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto'
 
 import JSZip from 'jszip'
-import { parse, type ParseError } from 'jsonc-parser'
+import { parse } from 'jsonc-parser'
+
+import type { ParseError } from 'jsonc-parser'
 
 import type {
   NormalizedTheme,
@@ -597,6 +599,15 @@ const parseContributedThemes = async ({
   return themes
 }
 
+const isLikelyColorTheme = ({
+  description,
+  name,
+}: OpenVsxThemeSummary): boolean => {
+  const summary = `${name} ${description}`
+  return /\b(?:color\s+scheme|theme)\b/i.test(summary)
+    && !/\b(?:file\s+icons?|product\s+icons?|icon\s+theme|icons?)\b/i.test(summary)
+}
+
 export const createOpenVsxThemeService = ({
   fetchImpl = fetch,
 }: OpenVsxThemeServiceDependencies = {}): OpenVsxThemeService => {
@@ -604,13 +615,12 @@ export const createOpenVsxThemeService = ({
 
   const search = async (query: string): Promise<OpenVsxThemeSearchResult> => {
     const searchText = query.trim()
-    if (!searchText) return { status: 'success', themes: [] }
     if (searchText.length > 100) {
       return { status: 'error', message: 'Search terms must be 100 characters or fewer.' }
     }
     try {
       const url = new URL(OPEN_VSX_SEARCH_URL)
-      url.searchParams.set('query', searchText)
+      if (searchText) url.searchParams.set('query', searchText)
       url.searchParams.set('category', 'Themes')
       url.searchParams.set('sortBy', 'downloadCount')
       url.searchParams.set('sortOrder', 'desc')
@@ -625,19 +635,9 @@ export const createOpenVsxThemeService = ({
       if (!isRecord(payload) || !Array.isArray(payload.extensions)) throw new Error('invalid response')
       const candidates = payload.extensions.flatMap(candidate => {
         const summary = searchSummary(candidate)
-        return summary ? [summary] : []
+        return summary && isLikelyColorTheme(summary) ? [summary] : []
       }).slice(0, 12)
-      const compatibility = await Promise.all(candidates.map(async summary => {
-        try {
-          const location = await getPackageLocation({ request, extensionId: summary.id })
-          await validateAdvertisedThemes({ request, manifestUrl: location.manifestUrl })
-          return summary
-        } catch {
-          return null
-        }
-      }))
-      const themes = compatibility.filter((theme): theme is OpenVsxThemeSummary => theme !== null)
-      return { status: 'success', themes }
+      return { status: 'success', themes: candidates }
     } catch {
       return { status: 'error', message: 'Open VSX search is unavailable right now.' }
     }

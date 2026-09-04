@@ -1,11 +1,12 @@
 <template>
   <Primitive
+    :id="field?.controlId.value ?? id"
     as="select"
     class="fg-select"
-    :id="id ?? field?.controlId.value"
     :aria-describedby="field?.descriptionId.value"
     :aria-errormessage="field?.errorId.value"
     :aria-invalid="invalid || field?.invalid.value ? 'true' : undefined"
+    :data-size="size"
     :disabled="disabled"
     :value="modelValue"
     @change="onChange"
@@ -18,6 +19,7 @@
 import { inject } from 'vue'
 import { Primitive } from 'reka-ui'
 
+import type { UiControlSize } from '../control.js'
 import { uiFieldContextKey } from './field-context.js'
 
 export interface UiSelectProps {
@@ -25,13 +27,16 @@ export interface UiSelectProps {
   id?: string
   invalid?: boolean
   modelValue?: string
+  size?: UiControlSize
 }
 
-withDefaults(defineProps<UiSelectProps>(), {
-  disabled: false,
-  invalid: false,
-  modelValue: '',
-})
+const {
+  disabled = false,
+  id = undefined,
+  invalid = false,
+  modelValue = '',
+  size = 'md',
+} = defineProps<UiSelectProps>()
 
 const field = inject(uiFieldContextKey, undefined)
 

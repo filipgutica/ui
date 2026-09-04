@@ -1,8 +1,6 @@
-import {
-  isNormalizedTheme,
-  type NormalizedTheme,
-  type OpenVsxThemeSummary,
-} from '../../src/theme/index.js'
+import { isNormalizedTheme } from '../../src/theme/index.js'
+
+import type { NormalizedTheme, OpenVsxThemeSummary } from '../../src/theme/index.js'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -20,8 +18,14 @@ const readJson = async (response: Response): Promise<unknown> => {
   return response.json()
 }
 
-export const searchOpenVsx = async (query: string): Promise<OpenVsxThemeSummary[]> => {
-  const response = await fetch(`/api/open-vsx/search?q=${encodeURIComponent(query)}`)
+export const searchOpenVsx = async (
+  query: string,
+  { signal }: { signal?: AbortSignal } = {},
+): Promise<OpenVsxThemeSummary[]> => {
+  const response = await fetch(
+    `/api/open-vsx/search?q=${encodeURIComponent(query)}`,
+    signal ? { signal } : undefined,
+  )
   const result = await readJson(response)
   if (
     !isRecord(result)
@@ -39,12 +43,17 @@ export const searchOpenVsx = async (query: string): Promise<OpenVsxThemeSummary[
 export const importOpenVsxTheme = async ({
   extensionId,
   preferredAppearance,
+  signal,
 }: {
   extensionId: string
   preferredAppearance: 'light' | 'dark'
+  signal?: AbortSignal
 }): Promise<NormalizedTheme> => {
   const parameters = new URLSearchParams({ id: extensionId, appearance: preferredAppearance })
-  const result = await readJson(await fetch(`/api/open-vsx/import?${parameters}`))
+  const result = await readJson(await fetch(
+    `/api/open-vsx/import?${parameters}`,
+    signal ? { signal } : undefined,
+  ))
   if (isRecord(result) && result.status === 'success' && isNormalizedTheme(result.theme)) {
     return result.theme
   }
