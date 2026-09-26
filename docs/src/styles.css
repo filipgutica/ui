@@ -716,3 +716,13 @@ body { font-size: var(--text-md); }
   .theme-trigger-label { max-width: 7rem; }
   .topbar-actions > .fg-button { min-height: var(--control-lg); }
 }
+
+.project-links { display: flex; align-items: center; gap: var(--space-3); }
+.project-links a { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--control-md); color: var(--color-muted); font-size: var(--text-sm); text-decoration: none; }
+.project-links a:hover { color: var(--color-text); }
+.project-links a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
+.navigation-drawer .project-links { gap: var(--space-6); margin-bottom: var(--space-6); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border-subtle); }
+.navigation-drawer .project-links a { min-height: var(--control-lg); }
+@media (max-width: 900px) {
+  .topbar-actions .project-links { display: none; }
+}

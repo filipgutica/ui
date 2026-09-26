@@ -8,6 +8,7 @@ import DocsNavigation from './components/DocsNavigation.vue'
 import ComponentPage from './components/ComponentPage.vue'
 import HomePage from './components/HomePage.vue'
 import SandboxPage from './components/SandboxPage.vue'
+import ProjectLinks from './components/ProjectLinks.vue'
 import ThemePicker from './components/ThemePicker.vue'
 import { parseDocsHash } from './router.js'
 
@@ -104,6 +105,7 @@ watch(route, async () => {
             <DialogDescription class="sr-only">
               Choose a component to view its documentation.
             </DialogDescription>
+            <ProjectLinks />
             <DocsNavigation
               :route="route"
               @click="onNavigationClick"
@@ -120,6 +122,7 @@ watch(route, async () => {
       </a>
     </div>
     <div class="topbar-actions">
+      <ProjectLinks />
       <ThemePicker />
     </div>
   </header>
