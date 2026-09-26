@@ -1,21 +1,127 @@
+<script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
+import { DialogClose, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, DialogTrigger } from 'reka-ui'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+
+import { componentDocBySlug } from './component-docs.js'
+import DocsNavigation from './components/DocsNavigation.vue'
+import ComponentPage from './components/ComponentPage.vue'
+import HomePage from './components/HomePage.vue'
+import SandboxPage from './components/SandboxPage.vue'
+import ThemePicker from './components/ThemePicker.vue'
+import { parseDocsHash } from './router.js'
+
+const hash = ref(window.location.hash)
+const updateHash = (): void => {
+  hash.value = window.location.hash
+}
+window.addEventListener('hashchange', updateHash)
+onBeforeUnmount(() => window.removeEventListener('hashchange', updateHash))
+
+const route = computed(() => parseDocsHash(hash.value))
+const selectedComponent = computed(() =>
+  route.value.name === 'component' || route.value.name === 'sandbox'
+    ? componentDocBySlug(route.value.slug)
+    : undefined)
+
+const navigationOpen = ref(false)
+const narrowViewport = useMediaQuery('(max-width: 900px)')
+let navigationSelected = false
+const focusHeading = (): void => {
+  document.querySelector<HTMLElement>('#main-content h1')?.focus()
+}
+const onNavigationClick = (event: MouseEvent): void => {
+  if (!(event.target instanceof Element) || !event.target.closest('a')) return
+  navigationSelected = true
+  navigationOpen.value = false
+}
+const onDrawerCloseAutoFocus = (event: Event): void => {
+  if (navigationSelected || !narrowViewport.value) {
+    event.preventDefault()
+    focusHeading()
+  }
+  navigationSelected = false
+}
+watch(narrowViewport, (narrow) => {
+  if (!narrow) navigationOpen.value = false
+})
+
+watch(route, async () => {
+  navigationOpen.value = false
+  await nextTick()
+  focusHeading()
+})
+</script>
+
 <template>
   <a
     class="skip-link"
     href="#main-content"
   >Skip to content</a>
   <header class="topbar">
-    <a
-      class="brand"
-      href="#/"
-      aria-label="UI documentation home"
-    >
-      <span>@filipgutica/ui</span>
-      <span
-        class="brand-marker"
-        aria-hidden="true"
-      />
-    </a>
-    <ThemePicker />
+    <div class="topbar-navigation">
+      <DialogRoot v-model:open="navigationOpen">
+        <DialogTrigger
+          class="navigation-trigger"
+          aria-label="Browse components"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path d="M2 4h12M2 8h12M2 12h12" />
+          </svg>
+        </DialogTrigger>
+        <DialogPortal>
+          <DialogOverlay class="navigation-overlay" />
+          <DialogContent
+            class="navigation-drawer"
+            @close-auto-focus="onDrawerCloseAutoFocus"
+          >
+            <div class="navigation-drawer-heading">
+              <DialogTitle>Browse components</DialogTitle>
+              <DialogClose
+                class="navigation-trigger"
+                aria-label="Close navigation"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="m4 4 8 8M12 4l-8 8" />
+                </svg>
+              </DialogClose>
+            </div>
+            <DialogDescription class="sr-only">
+              Choose a component to view its documentation.
+            </DialogDescription>
+            <DocsNavigation
+              :route="route"
+              @click="onNavigationClick"
+            />
+          </DialogContent>
+        </DialogPortal>
+      </DialogRoot>
+      <a
+        class="brand"
+        href="#/"
+        aria-label="UI documentation home"
+      >
+        <span>@filipgutica/ui</span>
+      </a>
+    </div>
+    <div class="topbar-actions">
+      <ThemePicker />
+    </div>
   </header>
 
   <div class="docs-shell">
@@ -23,57 +129,13 @@
       class="sidebar"
       aria-label="Component documentation"
     >
-      <nav>
-        <a
-          class="sidebar-home"
-          href="#/"
-          :aria-current="route.name === 'home' ? 'page' : undefined"
-        >
-          <span>Introduction</span>
-          <span
-            class="sidebar-link-indicator"
-            aria-hidden="true"
-          >›</span>
-        </a>
-        <section
-          v-for="group in componentGroups"
-          :key="group.category"
-          class="nav-group"
-        >
-          <h2>{{ group.category }}</h2>
-          <a
-            v-for="component in group.components"
-            :key="component.slug"
-            :href="`#/components/${component.slug}`"
-            :aria-current="isCurrentComponent(component.slug) ? 'page' : undefined"
-          >
-            <span>{{ component.title }}</span>
-            <span
-              class="sidebar-link-indicator"
-              aria-hidden="true"
-            >›</span>
-          </a>
-        </section>
-      </nav>
+      <DocsNavigation :route="route" />
     </aside>
 
     <main
       id="main-content"
       class="main-content"
     >
-      <details class="mobile-nav">
-        <summary>Browse components</summary>
-        <nav aria-label="Mobile component documentation">
-          <a
-            v-for="component in componentDocs"
-            :key="component.slug"
-            :href="`#/components/${component.slug}`"
-          >
-            {{ component.title }}
-          </a>
-        </nav>
-      </details>
-
       <HomePage v-if="route.name === 'home'" />
       <ComponentPage
         v-else-if="route.name === 'component' && selectedComponent"
@@ -101,42 +163,3 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-
-import { componentDocBySlug, componentDocs } from './component-docs.js'
-import ComponentPage from './components/ComponentPage.vue'
-import HomePage from './components/HomePage.vue'
-import SandboxPage from './components/SandboxPage.vue'
-import ThemePicker from './components/ThemePicker.vue'
-import { parseDocsHash } from './router.js'
-
-const hash = ref(window.location.hash)
-const updateHash = (): void => {
-  hash.value = window.location.hash
-}
-window.addEventListener('hashchange', updateHash)
-onBeforeUnmount(() => window.removeEventListener('hashchange', updateHash))
-
-const route = computed(() => parseDocsHash(hash.value))
-const selectedComponent = computed(() =>
-  route.value.name === 'component' || route.value.name === 'sandbox'
-    ? componentDocBySlug(route.value.slug)
-    : undefined)
-
-const categories = ['Actions', 'Forms', 'Feedback', 'Layout'] as const
-const componentGroups = categories.map(category => ({
-  category,
-  components: componentDocs.filter(component => component.category === category),
-}))
-
-const isCurrentComponent = (slug: string): boolean =>
-  (route.value.name === 'component' || route.value.name === 'sandbox')
-  && route.value.slug === slug
-
-watch(route, async () => {
-  await nextTick()
-  document.querySelector<HTMLElement>('#main-content h1')?.focus()
-})
-</script>

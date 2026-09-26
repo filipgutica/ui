@@ -13,7 +13,7 @@
     :title="view === 'choose' ? 'Choose a theme' : 'Add a theme'"
     :description="view === 'choose'
       ? 'Choose how the component library looks in these docs.'
-      : 'Search Open VSX or import a VS Code theme file.'"
+      : 'Import a VS Code theme file, or search community themes where available.'"
     @update:open="open = $event"
   >
     <template v-if="view === 'choose'">

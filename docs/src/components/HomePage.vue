@@ -1,12 +1,12 @@
 <template>
   <article class="content-page home-page">
-    <header class="hero">
+    <header class="intro">
       <h1 tabindex="-1">
-        A consistent interface for small, serious apps.
+        Component library
       </h1>
       <p class="lede">
-        @filipgutica/ui provides accessible application primitives, semantic design tokens,
-        and safe VS Code theme normalization without prescribing your product layout.
+        @filipgutica/ui provides Vue components, semantic design tokens, and VS Code theme support.
+        Explore examples, API references, and interactive sandboxes.
       </p>
       <div class="button-row">
         <a
@@ -48,16 +48,15 @@
       <h2 id="principles-heading">
         Design principles
       </h2>
-      <ol class="principle-list">
+      <ul class="principle-list">
         <li
-          v-for="(principle, index) in principles"
+          v-for="principle in principles"
           :key="principle.title"
         >
-          <span class="principle-index">0{{ index + 1 }}</span>
           <h3>{{ principle.title }}</h3>
           <p>{{ principle.description }}</p>
         </li>
-      </ol>
+      </ul>
     </section>
   </article>
 </template>
@@ -71,8 +70,8 @@ const stylesImport = `@import "tailwindcss";
 @import "@filipgutica/ui/components.css";`
 
 const principles = [
-  { title: 'Semantic by default', description: 'Components expose meaningful states and accessibility relationships before visual variants.' },
-  { title: 'Product-owned layout', description: 'The system standardizes controls and feedback while each app keeps its information architecture.' },
-  { title: 'Theme-safe', description: 'Remote editor colors are normalized into a finite semantic token contract.' },
+  { title: 'Quiet by default', description: 'Neutral surfaces and one accent keep attention on the content. Status colors communicate state.' },
+  { title: 'Dense but calm', description: 'Compact controls follow a 4px rhythm. Alignment, spacing, and subtle dividers establish hierarchy.' },
+  { title: 'Keyboard-aware', description: 'Visible focus and accessible labels support keyboard use. Imported themes keep the same structure and sizing.' },
 ]
 </script>

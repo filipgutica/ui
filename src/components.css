@@ -4,9 +4,9 @@
   .fg-radio-card, .fg-badge, .fg-alert, .fg-surface, .fg-card,
   .fg-dialog__content, .fg-code-block {
     font-family: var(--font-ui);
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.5;
+    font-size: var(--text-md);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading);
   }
 
   .fg-code-block {
@@ -62,12 +62,7 @@
     border: 1px solid transparent;
     border-radius: var(--radius-control);
     font-family: var(--font-ui);
-    transition:
-      background-color var(--duration-fast) ease,
-      border-color var(--duration-fast) ease,
-      color var(--duration-fast) ease,
-      box-shadow var(--duration-fast) ease,
-      transform var(--duration-fast) ease;
+    transition: transform var(--duration-fast) var(--ease-out);
   }
 
   .fg-button {
@@ -133,15 +128,15 @@
     font-size: 1rem;
   }
 
-  .fg-button[data-size="sm"] { min-height: 2rem; }
-  .fg-button[data-size="md"] { min-height: 2.25rem; }
-  .fg-button[data-size="lg"] { min-height: 2.75rem; }
+  .fg-button[data-size="sm"] { min-height: var(--control-sm); }
+  .fg-button[data-size="md"] { min-height: var(--control-md); }
+  .fg-button[data-size="lg"] { min-height: var(--control-lg); }
   .fg-input[data-size="sm"],
-  .fg-select[data-size="sm"] { height: 2rem; }
+  .fg-select[data-size="sm"] { height: var(--control-sm); }
   .fg-input[data-size="md"],
-  .fg-select[data-size="md"] { height: 2.25rem; }
+  .fg-select[data-size="md"] { height: var(--control-md); }
   .fg-input[data-size="lg"],
-  .fg-select[data-size="lg"] { height: 2.75rem; }
+  .fg-select[data-size="lg"] { height: var(--control-lg); }
 
   .fg-button[data-size="sm"] { padding: 0 0.6rem; }
   .fg-button[data-size="md"] { padding: 0 0.75rem; }
@@ -149,13 +144,13 @@
 
   /* Deprecated UiButton aliases retained for existing consumers. */
   .fg-button[data-size="compact"] {
-    min-height: 2.25rem;
+    min-height: var(--control-md);
     padding: 0 0.7rem;
     font-size: 0.8125rem;
   }
 
   .fg-button[data-size="default"] {
-    min-height: 2.75rem;
+    min-height: var(--control-lg);
     padding: 0 1rem;
     font-size: 1rem;
   }
@@ -163,7 +158,7 @@
   .fg-button[data-variant="secondary"] {
     border-color: var(--color-border);
     color: var(--color-text);
-    background: var(--color-surface-raised);
+    background: transparent;
   }
 
   .fg-button[data-variant="secondary"]:hover:not(:disabled),
@@ -188,7 +183,7 @@
     border-color: var(--color-error);
     color: var(--color-error);
     background: var(--color-error-surface);
-    box-shadow: inset 0 0 0 1px var(--color-error);
+    box-shadow: none;
   }
 
   .fg-button[data-variant="text"] {
@@ -304,21 +299,21 @@
   .fg-checkbox__label { line-height: 1.4; }
 
   .fg-checkbox[data-size="sm"] {
-    min-height: 2rem;
+    min-height: var(--control-sm);
     align-items: center;
     gap: 0.45rem;
     font-size: 0.8125rem;
   }
 
   .fg-checkbox[data-size="md"] {
-    min-height: 2.25rem;
+    min-height: var(--control-md);
     align-items: center;
     gap: 0.55rem;
     font-size: 0.875rem;
   }
 
   .fg-checkbox[data-size="lg"] {
-    min-height: 2.75rem;
+    min-height: var(--control-lg);
     align-items: center;
     gap: 0.65rem;
     font-size: 1rem;
@@ -365,10 +360,7 @@
     box-shadow: none;
     text-align: left;
     cursor: pointer;
-    transition:
-      border-color var(--duration-fast) ease,
-      box-shadow var(--duration-fast) ease,
-      transform var(--duration-fast) ease;
+    transition: transform var(--duration-fast) var(--ease-out);
   }
 
   .fg-radio-card:hover:not([data-disabled]) {
@@ -377,7 +369,8 @@
 
   .fg-radio-card[data-state="checked"] {
     border-color: var(--color-link);
-    box-shadow: 0 0 0 1px var(--color-link);
+    outline: 1px solid var(--color-link);
+    outline-offset: -2px;
   }
 
   .fg-radio-card[data-disabled] {
@@ -461,29 +454,47 @@
   .fg-surface[data-padding="default"] { padding: 1rem; }
 
   .fg-card {
+    min-width: 0;
     overflow: hidden;
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-panel);
+    color: var(--color-text);
     background: var(--color-surface-raised);
     box-shadow: none;
   }
 
-  .fg-card__header,
-  .fg-card__footer {
+  .fg-card__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    gap: var(--space-3);
+    padding: var(--space-4);
   }
 
+  .fg-card__title {
+    min-width: 0;
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--text-md);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading);
+    overflow-wrap: anywhere;
+  }
+  .fg-card__actions { display: flex; flex: none; align-items: center; gap: var(--space-2); margin-left: auto; }
+  .fg-card__body { min-width: 0; padding: var(--space-4); }
+  .fg-card__header + .fg-card__body { padding-top: 0; }
   .fg-card__footer {
-    background: var(--color-surface);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-inline: var(--space-4);
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--color-border-subtle);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
   }
-
-  .fg-card__title { margin: 0; font-size: 0.875rem; font-weight: 600; line-height: 1.4; }
-  .fg-card__actions { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; }
-  .fg-card__body { padding: 1rem; }
 
   .fg-progress {
     position: relative;
@@ -511,9 +522,9 @@
     user-select: none;
   }
 
-  .fg-slider[data-size="sm"] { min-height: 2rem; }
-  .fg-slider[data-size="md"] { min-height: 2.25rem; }
-  .fg-slider[data-size="lg"] { min-height: 2.75rem; }
+  .fg-slider[data-size="sm"] { min-height: var(--control-sm); }
+  .fg-slider[data-size="md"] { min-height: var(--control-md); }
+  .fg-slider[data-size="lg"] { min-height: var(--control-lg); }
 
   .fg-slider__track {
     position: relative;
@@ -606,7 +617,7 @@
     display: inline-grid;
     flex: none;
     width: 2.75rem;
-    min-height: 2.75rem;
+    min-height: var(--control-lg);
     padding: 0;
     place-items: center;
     color: var(--color-muted);

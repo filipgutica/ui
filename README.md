@@ -78,7 +78,7 @@ should use `UiCard`.
 
 ## Design conventions
 
-Use a compact, Geist-inspired hierarchy: 14px for UI body text, 13px for
+Use a compact system-font hierarchy: 14px for UI body text, 13px for
 secondary text, and 18px for dialog titles. Treat Open VSX/VS Code themes as
 the color authority, and use semantic tokens and package components instead of
 hard-coded provider color keys.
@@ -96,6 +96,8 @@ these once at the application root rather than restyling each component.
   status, `UiAlert` for feedback, and `UiCodeBlock` for source code.
 - Put `UiInput` and `UiSelect` in `UiField` with a visible label. Supply help
   text or an error when needed so the field exposes the matching ARIA relationship.
+- Use raised surfaces and subtle borders for standalone cards. Align title, content,
+  and footer insets; use a quiet divider for footer metadata and avoid card shadows.
 - Keep borders quiet and skip decorative grids. Preserve visible
   `:focus-visible` states, use 44px targets for touch-oriented actions, and provide
   an accessible name for every interactive control.
@@ -147,13 +149,29 @@ Build the provider-neutral static assets:
 pnpm docs:build
 ```
 
-The docs use hash routes, so the static assets do not require rewrite rules.
+The docs use hash routes and relative asset paths, so the static assets work
+under a repository path without rewrite rules.
 The local Vite server also provides the same-origin `/api/open-vsx` endpoint.
 The theme picker uses this endpoint to search and import Open VSX themes.
 
-A production host must provide the same API endpoint for live Open VSX imports.
-Netlify and Amplify can use a serverless adapter. GitHub Pages needs an external
-API or a catalog of normalized themes built in advance.
+### GitHub Pages
+
+The GitHub Pages site URL is [filipgutica.github.io/ui](https://filipgutica.github.io/ui/).
+The `docs.yml` workflow builds and deploys `docs-dist` on every push to `main`.
+It can also be started manually from the Actions tab. In the repository's
+**Settings → Pages**, select **GitHub Actions** as the build and deployment source.
+
+GitHub Pages serves static files and cannot run the Open VSX API. The workflow
+sets `VITE_STATIC_HOST=true` to disable live Open VSX search and imports;
+built-in themes and local theme-file imports remain available. To build the
+same static configuration locally:
+
+```sh
+VITE_STATIC_HOST=true pnpm docs:build
+```
+
+Other production hosts must provide `/api/open-vsx` for live Open VSX imports.
+Netlify and Amplify can use a serverless adapter.
 
 ## Development
 
