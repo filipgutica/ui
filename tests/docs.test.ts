@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 import ComponentPage from '../docs/src/components/ComponentPage.vue'
+import ApiTable from '../docs/src/components/ApiTable.vue'
 import ThemePicker from '../docs/src/components/ThemePicker.vue'
 import { openVsxApi } from '../docs/open-vsx-plugin.js'
 import { componentDocs } from '../docs/src/component-docs.js'
@@ -10,6 +11,7 @@ import { handleOpenVsxRequest } from '../docs/open-vsx-api.js'
 import { parseDocsHash } from '../docs/src/router.js'
 import { MAX_THEME_FILE_BYTES, parseThemeFile } from '../docs/src/theme-file.js'
 import { parseVsCodeTheme } from '../src/theme/index.js'
+import * as libraryComponents from '../src/index.js'
 
 const exportedComponents = [
   'UiAlert',
@@ -29,6 +31,33 @@ const exportedComponents = [
 ]
 
 describe('component documentation', () => {
+  it.each(componentDocs)('shows accurate prop requirements for $name without labeling slots or events', (doc) => {
+    const component = new Map(Object.entries(libraryComponents)).get(doc.name)
+    const runtimeProps: unknown = component && 'props' in component ? component.props : undefined
+    if (typeof runtimeProps !== 'object' || runtimeProps === null || Array.isArray(runtimeProps)) {
+      throw new Error(`Missing runtime props for ${doc.name}`)
+    }
+
+    const propsTable = mount(ApiTable, { props: { items: doc.props } })
+    expect(propsTable.findAll('thead th')).toHaveLength(4)
+    const rows = propsTable.findAll('tbody tr')
+    for (const [index, prop] of doc.props.entries()) {
+      expect(Object.hasOwn(runtimeProps, prop.name)).toBe(true)
+      const options: unknown = Reflect.get(runtimeProps, prop.name)
+      const required = typeof options === 'object' && options !== null
+        && 'required' in options && options.required === true
+      expect(rows[index]?.get('th code').text()).toBe(prop.name)
+      expect(rows[index]?.get('th small').text()).toBe(required ? 'Required' : 'Optional')
+    }
+    propsTable.unmount()
+
+    for (const items of [doc.slots, doc.events]) {
+      const table = mount(ApiTable, { props: { items } })
+      expect(table.text()).not.toMatch(/Required|Optional/)
+      table.unmount()
+    }
+  })
+
   it('documents every primary component with usage and API sections', () => {
     expect(componentDocs.map(({ name }) => name).sort()).toEqual(exportedComponents.sort())
 

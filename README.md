@@ -48,6 +48,10 @@ import { UiButton } from '@filipgutica/ui'
 </script>
 ```
 
+`UiSelect` retains native form and keyboard behavior. Browsers with
+`appearance: base-select` support show a themed menu; other browsers use their
+native menu.
+
 `UiButton`, `UiInput`, `UiSelect`, `UiCheckbox`, and `UiSlider` share
 `size="sm | md | lg"`
 and default to the tighter `md` density. Existing `UiButton` values remain
@@ -96,6 +100,9 @@ these once at the application root rather than restyling each component.
   status, `UiAlert` for feedback, and `UiCodeBlock` for source code.
 - Put `UiInput` and `UiSelect` in `UiField` with a visible label. Supply help
   text or an error when needed so the field exposes the matching ARIA relationship.
+- Select menus use the same surface, type, radius, and spacing tokens as other
+  controls. Keep option rows compact, show a checkmark for the selected value, and
+  use quiet hover fills with visible keyboard focus.
 - Use raised surfaces and subtle borders for standalone cards. Align title, content,
   and footer insets; use a quiet divider for footer metadata and avoid card shadows.
 - Keep borders quiet and skip decorative grids. Preserve visible

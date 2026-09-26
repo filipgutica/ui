@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import type { ApiItem } from '../component-docs.js'
+
+const { items } = defineProps<{
+  items: ApiItem[]
+}>()
+</script>
+
 <template>
   <div
     v-if="items.length"
@@ -27,6 +35,12 @@
         >
           <th scope="row">
             <code>{{ item.name }}</code>
+            <small
+              v-if="item.required !== undefined"
+              class="api-prop-requirement"
+            >
+              {{ item.required ? 'Required' : 'Optional' }}
+            </small>
           </th>
           <td><code>{{ item.type }}</code></td>
           <td><code>{{ item.default ?? '—' }}</code></td>
@@ -43,10 +57,12 @@
   </p>
 </template>
 
-<script setup lang="ts">
-import type { ApiItem } from '../component-docs.js'
-
-const { items } = defineProps<{
-  items: ApiItem[]
-}>()
-</script>
+<style scoped>
+.api-prop-requirement {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+}
+</style>

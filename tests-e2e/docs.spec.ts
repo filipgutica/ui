@@ -148,7 +148,7 @@ test('gives full-width controls a usable preview width', async ({ page }) => {
   }
 })
 
-test('keeps select text compact while reserving space for its chevron', async ({ page }) => {
+test('keeps selects compact and operates the themed picker with the keyboard', async ({ page }) => {
   await page.goto('/#/sandbox/select')
   const select = page.locator('.playground-stage > .fg-select')
   const styles = await select.evaluate((element) => {
@@ -160,10 +160,22 @@ test('keeps select text compact while reserving space for its chevron', async ({
     }
   })
 
-  expect(styles.appearance).toBe('none')
+  expect(styles.appearance).toBe('base-select')
   expect(styles.paddingLeft).toBeLessThanOrEqual(12)
   expect(styles.paddingRight).toBeGreaterThanOrEqual(24)
   expect(styles.paddingRight).toBeLessThanOrEqual(32)
+  await select.press('Space')
+  await expect(select.locator('option').filter({ hasText: 'Passed' })).toBeVisible()
+  const picker = await select.evaluate(element => {
+    const style = getComputedStyle(element, '::picker(select)')
+    return { background: style.backgroundColor, radius: style.borderRadius }
+  })
+  expect(picker.background).toBe(await select.evaluate(element => getComputedStyle(element).backgroundColor))
+  expect(picker.radius).toBe('8px')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(select).toHaveValue('passed')
+  await expect(select).toBeFocused()
 })
 
 test('renders usable slider tracks in documentation examples', async ({ page }) => {
