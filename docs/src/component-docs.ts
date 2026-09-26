@@ -3,6 +3,11 @@ export interface ApiItem {
   type: string
   default?: string
   description: string
+  required?: boolean
+}
+
+export interface PropItem extends ApiItem {
+  required: boolean
 }
 
 export interface ComponentDoc {
@@ -12,7 +17,7 @@ export interface ComponentDoc {
   title: string
   summary: string
   usage: string
-  props: ApiItem[]
+  props: PropItem[]
   slots: ApiItem[]
   events: ApiItem[]
   example: {
@@ -31,7 +36,7 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Communicates contextual status and important feedback.',
     usage: 'Use alerts for information that should remain visible near the work it affects. Danger and error tones announce immediately with an alert role; other tones use a polite status role.',
     props: [
-      { name: 'tone', type: "'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'error'", default: "'neutral'", description: 'Sets the semantic tone and announcement behavior.' },
+      { name: 'tone', required: false, type: "'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'error'", default: "'neutral'", description: 'Sets the semantic tone and announcement behavior.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Alert message and supporting content.' },
@@ -51,7 +56,7 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Labels compact state, category, or metadata.',
     usage: 'Use badges for short, scannable labels. Do not rely on color alone; the text should communicate the state.',
     props: [
-      { name: 'tone', type: "'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'error'", default: "'neutral'", description: 'Sets the semantic color treatment.' },
+      { name: 'tone', required: false, type: "'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'error'", default: "'neutral'", description: 'Sets the semantic color treatment.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Short badge label.' },
@@ -71,11 +76,11 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Triggers an action with clear visual priority and accessible loading and disabled states.',
     usage: 'Use one primary button for the main action in a region. Use secondary or ghost variants for supporting actions and danger only for destructive operations.',
     props: [
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents interaction.' },
-      { name: 'loading', type: 'boolean', default: 'false', description: 'Disables the button and exposes aria-busy.' },
-      { name: 'size', type: "UiControlSize | 'compact' | 'default'", default: "'md'", description: "Sets the shared control density. Use sm, md, or lg; compact and default are deprecated aliases retained for existing buttons." },
-      { name: 'type', type: "'button' | 'submit' | 'reset'", default: "'button'", description: 'Sets the native button type.' },
-      { name: 'variant', type: "'primary' | 'secondary' | 'ghost' | 'danger' | 'text'", default: "'primary'", description: 'Sets action emphasis.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents interaction.' },
+      { name: 'loading', required: false, type: 'boolean', default: 'false', description: 'Disables the button and exposes aria-busy.' },
+      { name: 'size', required: false, type: "UiControlSize | 'compact' | 'default'", default: "'md'", description: "Sets the shared control density. Use sm, md, or lg; compact and default are deprecated aliases retained for existing buttons." },
+      { name: 'type', required: false, type: "'button' | 'submit' | 'reset'", default: "'button'", description: 'Sets the native button type.' },
+      { name: 'variant', required: false, type: "'primary' | 'secondary' | 'ghost' | 'danger' | 'text'", default: "'primary'", description: 'Sets action emphasis.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Button label and optional icon.' },
@@ -97,9 +102,9 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Controls an independent boolean choice.',
     usage: 'Use a checkbox when the user can independently turn an option on or off. Keep the label beside the control and describe the result, not the implementation.',
     props: [
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents interaction.' },
-      { name: 'modelValue', type: 'boolean', default: 'false', description: 'The checked state used by v-model.' },
-      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents interaction.' },
+      { name: 'modelValue', required: false, type: 'boolean', default: 'false', description: 'The checked state used by v-model.' },
+      { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Visible checkbox label.' },
@@ -121,8 +126,8 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Presents one rich option inside a radio-card group.',
     usage: 'Use UiRadioCard inside UiRadioCardGroup when supporting content or a preview helps users compare mutually exclusive options. Use a select for simple text choices.',
     props: [
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents this option from being selected.' },
-      { name: 'value', type: 'string', description: 'Value selected by the parent group.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents this option from being selected.' },
+      { name: 'value', required: true, type: 'string', description: 'Value selected by the parent group.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Visible option content.' },
@@ -142,10 +147,10 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Owns the selected value and keyboard behavior for related radio cards.',
     usage: 'Use this group when exactly one rich option may be selected. Give it an accessible name and place UiRadioCard children inside it.',
     props: [
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents every card from being selected.' },
-      { name: 'loop', type: 'boolean', default: 'true', description: 'Loops arrow-key navigation from the last card to the first.' },
-      { name: 'modelValue', type: 'string', description: 'Selected card value used by v-model.' },
-      { name: 'orientation', type: "'horizontal' | 'vertical'", description: 'Restricts arrow-key navigation to one axis when the layout has a fixed orientation.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents every card from being selected.' },
+      { name: 'loop', required: false, type: 'boolean', default: 'true', description: 'Loops arrow-key navigation from the last card to the first.' },
+      { name: 'modelValue', required: true, type: 'string', description: 'Selected card value used by v-model.' },
+      { name: 'orientation', required: false, type: "'horizontal' | 'vertical'", description: 'Restricts arrow-key navigation to one axis when the layout has a fixed orientation.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'UiRadioCard options.' },
@@ -167,9 +172,9 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Focuses attention on a short, interruptive task.',
     usage: 'Use dialogs for tasks that must be completed or dismissed before returning to the page. Provide a concise title, optional description, and explicit footer actions.',
     props: [
-      { name: 'description', type: 'string', description: 'Optional supporting text linked to the dialog.' },
-      { name: 'open', type: 'boolean', description: 'Controls whether the dialog is visible.' },
-      { name: 'title', type: 'string', description: 'Accessible dialog title.' },
+      { name: 'description', required: false, type: 'string', description: 'Optional supporting text linked to the dialog.' },
+      { name: 'open', required: true, type: 'boolean', description: 'Controls whether the dialog is visible.' },
+      { name: 'title', required: true, type: 'string', description: 'Accessible dialog title.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Dialog body.' },
@@ -192,10 +197,10 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Groups a label, form control, help text, and validation error.',
     usage: 'Wrap UiInput or UiSelect in a field to connect its label and description automatically. Show either help text or an error so the current guidance is unambiguous.',
     props: [
-      { name: 'controlId', type: 'string', description: 'ID supplied to the nested control and label.' },
-      { name: 'description', type: 'string', description: 'Optional help text.' },
-      { name: 'error', type: 'string', description: 'Validation error that replaces the description.' },
-      { name: 'label', type: 'string', description: 'Visible control label.' },
+      { name: 'controlId', required: true, type: 'string', description: 'ID supplied to the nested control and label.' },
+      { name: 'description', required: false, type: 'string', description: 'Optional help text.' },
+      { name: 'error', required: false, type: 'string', description: 'Validation error that replaces the description.' },
+      { name: 'label', required: true, type: 'string', description: 'Visible control label.' },
     ],
     slots: [
       { name: 'default', type: '{ descriptionId?: string; errorId?: string }', description: 'Form control, with IDs available for custom controls.' },
@@ -215,12 +220,12 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Collects a single line of text.',
     usage: 'Use an input inside UiField for a visible label and help or error relationship. Choose the native input type that matches the expected value.',
     props: [
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents editing.' },
-      { name: 'id', type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
-      { name: 'invalid', type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
-      { name: 'modelValue', type: 'string', default: "''", description: 'Current value used by v-model.' },
-      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
-      { name: 'type', type: "'text' | 'search' | 'email' | 'password' | 'url'", default: "'text'", description: 'Native input type.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents editing.' },
+      { name: 'id', required: false, type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
+      { name: 'invalid', required: false, type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
+      { name: 'modelValue', required: false, type: 'string', default: "''", description: 'Current value used by v-model.' },
+      { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+      { name: 'type', required: false, type: "'text' | 'search' | 'email' | 'password' | 'url'", default: "'text'", description: 'Native input type.' },
     ],
     slots: [],
     events: [
@@ -240,9 +245,9 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Shows determinate progress toward completion.',
     usage: 'Use progress when both the current value and maximum are known. Supply a label that identifies the work for assistive technology.',
     props: [
-      { name: 'label', type: 'string', description: 'Accessible name for the progress bar.' },
-      { name: 'max', type: 'number', description: 'Maximum value.' },
-      { name: 'value', type: 'number | null', description: 'Current value; null renders at zero.' },
+      { name: 'label', required: true, type: 'string', description: 'Accessible name for the progress bar.' },
+      { name: 'max', required: true, type: 'number', description: 'Maximum value.' },
+      { name: 'value', required: true, type: 'number | null', description: 'Current value; null renders at zero.' },
     ],
     slots: [],
     events: [],
@@ -260,11 +265,11 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Chooses one value from a short, known set.',
     usage: 'Use a select when the available values are known and mutually exclusive. Put it inside UiField and keep option labels concise.',
     props: [
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents selection.' },
-      { name: 'id', type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
-      { name: 'invalid', type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
-      { name: 'modelValue', type: 'string', default: "''", description: 'Selected value used by v-model.' },
-      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents selection.' },
+      { name: 'id', required: false, type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
+      { name: 'invalid', required: false, type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
+      { name: 'modelValue', required: false, type: 'string', default: "''", description: 'Selected value used by v-model.' },
+      { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'Native option and optgroup elements.' },
@@ -286,14 +291,14 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Lets users choose one numeric value from a bounded range.',
     usage: 'Use a slider when relative position within a range matters more than entering an exact number. Always provide an accessible label and show the current value when precision matters.',
     props: [
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Prevents interaction.' },
-      { name: 'id', type: 'string', description: 'Identifier applied to the slider thumb. Inherits the surrounding UiField control ID.' },
-      { name: 'label', type: 'string', description: 'Accessible label for the slider thumb.' },
-      { name: 'max', type: 'number', default: '100', description: 'Maximum selectable value. Invalid ranges fall back to 100 above min.' },
-      { name: 'min', type: 'number', default: '0', description: 'Minimum selectable value. Non-finite values fall back to 0.' },
-      { name: 'modelValue', type: 'number', default: 'min', description: 'Current value used by v-model; display is clamped to the configured range.' },
-      { name: 'size', type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
-      { name: 'step', type: 'number', default: '1', description: 'Positive amount changed by each keyboard or pointer increment; invalid values fall back to 1.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents interaction.' },
+      { name: 'id', required: false, type: 'string', description: 'Identifier applied to the slider thumb. Inherits the surrounding UiField control ID.' },
+      { name: 'label', required: true, type: 'string', description: 'Accessible label for the slider thumb.' },
+      { name: 'max', required: false, type: 'number', default: '100', description: 'Maximum selectable value. Invalid ranges fall back to 100 above min.' },
+      { name: 'min', required: false, type: 'number', default: '0', description: 'Minimum selectable value. Non-finite values fall back to 0.' },
+      { name: 'modelValue', required: false, type: 'number', default: 'min', description: 'Current value used by v-model; display is clamped to the configured range.' },
+      { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+      { name: 'step', required: false, type: 'number', default: '1', description: 'Positive amount changed by each keyboard or pointer increment; invalid values fall back to 1.' },
     ],
     slots: [],
     events: [
@@ -313,12 +318,12 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Presents syntax-highlighted, copyable source code using the active theme.',
     usage: 'Set language to match the source so the code block can highlight it. Colors follow the active theme. Use line numbers when referencing specific lines; copying always preserves the original source.',
     props: [
-      { name: 'code', type: 'string', description: 'Source text displayed in the code block.' },
-      { name: 'language', type: 'string', default: "'text'", description: 'Language used for syntax highlighting and the header. Unknown languages render as plain text.' },
-      { name: 'title', type: 'string', default: "''", description: 'Optional title shown before the language label.' },
-      { name: 'copyable', type: 'boolean', default: 'true', description: 'Shows the clipboard action.' },
-      { name: 'lineNumbers', type: 'boolean', default: 'false', description: 'Shows line numbers beside the code.' },
-      { name: 'wrap', type: 'boolean', default: 'false', description: 'Wraps long lines instead of requiring horizontal scrolling.' },
+      { name: 'code', required: true, type: 'string', description: 'Source text displayed in the code block.' },
+      { name: 'language', required: false, type: 'string', default: "'text'", description: 'Language used for syntax highlighting and the header. Unknown languages render as plain text.' },
+      { name: 'title', required: false, type: 'string', default: "''", description: 'Optional title shown before the language label.' },
+      { name: 'copyable', required: false, type: 'boolean', default: 'true', description: 'Shows the clipboard action.' },
+      { name: 'lineNumbers', required: false, type: 'boolean', default: 'false', description: 'Shows line numbers beside the code.' },
+      { name: 'wrap', required: false, type: 'boolean', default: 'false', description: 'Wraps long lines instead of requiring horizontal scrolling.' },
     ],
     slots: [
       { name: 'actions', type: 'unknown', description: 'Additional actions placed beside the copy button.' },
@@ -342,8 +347,8 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Groups related content and actions in a structured container.',
     usage: 'Use a card for one coherent subject. Put the heading in title, adjacent controls in actions, primary content in the default slot, and supporting metadata or actions in footer.',
     props: [
-      { name: 'title', type: 'string', description: 'Simple card title; the title slot takes precedence.' },
-      { name: 'titleTag', type: "'h2' | 'h3' | 'h4' | 'h5' | 'h6'", default: "'h3'", description: 'Heading level used for the card title.' },
+      { name: 'title', required: false, type: 'string', description: 'Simple card title; the title slot takes precedence.' },
+      { name: 'titleTag', required: false, type: "'h2' | 'h3' | 'h4' | 'h5' | 'h6'", default: "'h3'", description: 'Heading level used for the card title.' },
     ],
     slots: [
       { name: 'actions', type: 'unknown', description: 'Controls aligned with the title.' },

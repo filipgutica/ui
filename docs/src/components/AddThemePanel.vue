@@ -3,108 +3,116 @@
     class="add-theme-panel"
     :aria-busy="panelBusy ? 'true' : undefined"
   >
-    <div class="add-theme-panel__intro">
-      <h3>Search community theme extensions</h3>
-      <p>Find Open VSX candidates. Install validates the selected color theme before applying it.</p>
-    </div>
-
-    <div class="theme-search-field">
-      <span
-        class="theme-search-field__icon"
-        aria-hidden="true"
-      >⌕</span>
-      <UiInput
-        id="open-vsx-query"
-        v-model="query"
-        type="search"
-        placeholder="Search themes…"
-        aria-label="Search themes"
-        autocomplete="off"
-        :disabled="panelBusy"
-      />
-    </div>
-
-    <div class="theme-search-toolbar">
-      <div
-        class="theme-search-suggestions"
-        aria-label="Suggested theme searches"
-      >
-        <UiButton
-          v-for="suggestion in suggestions"
-          :key="suggestion.label"
-          size="sm"
-          variant="ghost"
-          :aria-pressed="query === suggestion.query"
-          :disabled="panelBusy"
-          @click="query = suggestion.query"
-        >
-          {{ suggestion.label }}
-        </UiButton>
+    <p
+      v-if="!liveSearchAvailable"
+      class="static-theme-note"
+    >
+      Import a VS Code theme file. Community theme search is available in the local docs server.
+    </p>
+    <template v-else>
+      <div class="add-theme-panel__intro">
+        <h3>Search community theme extensions</h3>
+        <p>Find Open VSX candidates. Install validates the selected color theme before applying it.</p>
       </div>
-      <span
-        class="theme-searching"
+
+      <div class="theme-search-field">
+        <span
+          class="theme-search-field__icon"
+          aria-hidden="true"
+        >⌕</span>
+        <UiInput
+          id="open-vsx-query"
+          v-model="query"
+          type="search"
+          placeholder="Search themes…"
+          aria-label="Search themes"
+          autocomplete="off"
+          :disabled="panelBusy"
+        />
+      </div>
+
+      <div class="theme-search-toolbar">
+        <div
+          class="theme-search-suggestions"
+          aria-label="Suggested theme searches"
+        >
+          <UiButton
+            v-for="suggestion in suggestions"
+            :key="suggestion.label"
+            size="sm"
+            variant="ghost"
+            :aria-pressed="query === suggestion.query"
+            :disabled="panelBusy"
+            @click="query = suggestion.query"
+          >
+            {{ suggestion.label }}
+          </UiButton>
+        </div>
+        <span
+          class="theme-searching"
+          role="status"
+        >
+          {{ searchBusy ? 'Searching…' : `${data?.length ?? 0} extensions` }}
+        </span>
+      </div>
+
+      <UiAlert
+        v-if="searchError"
+        tone="error"
+      >
+        {{ searchError.message }}
+      </UiAlert>
+      <UiAlert
+        v-else-if="installError"
+        tone="error"
+      >
+        {{ installError }}
+      </UiAlert>
+      <p
+        v-else-if="!searchBusy && data?.length === 0"
+        class="theme-empty-state"
         role="status"
       >
-        {{ searchBusy ? 'Searching…' : `${data?.length ?? 0} extensions` }}
-      </span>
-    </div>
+        No theme extensions found.
+      </p>
 
-    <UiAlert
-      v-if="searchError"
-      tone="error"
-    >
-      {{ searchError.message }}
-    </UiAlert>
-    <UiAlert
-      v-else-if="installError"
-      tone="error"
-    >
-      {{ installError }}
-    </UiAlert>
-    <p
-      v-else-if="!searchBusy && data?.length === 0"
-      class="theme-empty-state"
-      role="status"
-    >
-      No theme extensions found.
-    </p>
-
-    <ul
-      v-if="data?.length"
-      class="theme-results"
-      aria-label="Open VSX theme results"
-    >
-      <li
-        v-for="themeSummary in data"
-        :key="themeSummary.id"
+      <ul
+        v-if="data?.length"
+        class="theme-results"
+        aria-label="Open VSX theme results"
       >
-        <div class="theme-result__heading">
-          <span
-            class="theme-result__mark"
-            aria-hidden="true"
-          >{{ themeSummary.name.slice(0, 1) }}</span>
-          <div>
-            <strong>{{ themeSummary.name }}</strong>
-            <span>{{ themeSummary.publisher }} · {{ formatDownloads(themeSummary.downloadCount) }} downloads</span>
-          </div>
-        </div>
-        <p>{{ themeSummary.description || 'A community theme extension for VS Code.' }}</p>
-        <UiButton
-          class="theme-result__install"
-          variant="secondary"
-          size="sm"
-          :loading="importingId === themeSummary.id"
-          :disabled="panelBusy"
-          @click="installOpenVsxTheme(themeSummary)"
+        <li
+          v-for="themeSummary in data"
+          :key="themeSummary.id"
         >
-          Install
-        </UiButton>
-      </li>
-    </ul>
+          <div class="theme-result__heading">
+            <span
+              class="theme-result__mark"
+              aria-hidden="true"
+            >{{ themeSummary.name.slice(0, 1) }}</span>
+            <div>
+              <strong>{{ themeSummary.name }}</strong>
+              <span>{{ themeSummary.publisher }} · {{ formatDownloads(themeSummary.downloadCount) }} downloads</span>
+            </div>
+          </div>
+          <p>{{ themeSummary.description || 'A community theme extension for VS Code.' }}</p>
+          <UiButton
+            class="theme-result__install"
+            variant="secondary"
+            size="sm"
+            :loading="importingId === themeSummary.id"
+            :disabled="panelBusy"
+            @click="installOpenVsxTheme(themeSummary)"
+          >
+            Install
+          </UiButton>
+        </li>
+      </ul>
 
-    <div class="theme-import-divider">
-      <span>or import a file</span>
-    </div>
+      <div class="theme-import-divider">
+        <span>or import a file</span>
+      </div>
+    </template>
 
     <div
       ref="dropZone"
@@ -159,6 +167,7 @@ const emit = defineEmits<{
   installed: [value: InstalledTheme]
 }>()
 
+const liveSearchAvailable = import.meta.env.VITE_STATIC_HOST !== 'true'
 const SEARCH_KEY_PREFIX = 'open-vsx:'
 const suggestions = [
   { label: 'Popular', query: '' },
@@ -189,7 +198,7 @@ watch(query, (value) => {
 })
 
 const { data, error: searchError, isLoading, isValidating } = useSWRV<OpenVsxThemeSummary[], Error>(
-  () => `${SEARCH_KEY_PREFIX}${debouncedQuery.value}`,
+  () => liveSearchAvailable ? `${SEARCH_KEY_PREFIX}${debouncedQuery.value}` : null,
   async (key: string) => {
     searchController?.abort()
     searchController = new AbortController()
