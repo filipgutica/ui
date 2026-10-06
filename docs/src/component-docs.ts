@@ -29,6 +29,55 @@ export interface ComponentDoc {
 
 export const componentDocs: ComponentDoc[] = [
   {
+    category: 'Layout',
+    slug: 'drawer',
+    name: 'UiDrawer',
+    title: 'Drawer',
+    summary: 'Opens a modal side panel with contained keyboard focus.',
+    usage: 'Use a drawer for temporary navigation or supporting content. The trigger slot accepts one button. The application owns responsive breakpoints and an SSR navigation fallback. Content attributes are forwarded to the panel. Prevent closeAutoFocus when navigation should focus a destination heading instead of the trigger.',
+    props: [
+      { name: 'open', required: true, type: 'boolean', description: 'Controls whether the drawer is visible.' },
+      { name: 'title', required: true, type: 'string', description: 'Visible, accessible drawer title.' },
+    ],
+    slots: [
+      { name: 'trigger', type: 'unknown', description: 'Single button that opens the drawer and receives restored focus, when supplied.' },
+      { name: 'default', type: 'unknown', description: 'Drawer content.' },
+    ],
+    events: [
+      { name: 'update:open', type: 'boolean', description: 'Emitted when the drawer opens or closes.' },
+      { name: 'closeAutoFocus', type: 'Event', description: 'Cancelable focus restoration event. Call preventDefault before focusing another destination.' },
+    ],
+    example: {
+      title: 'Page navigation',
+      description: 'Escape, the backdrop, and the close button dismiss the drawer.',
+      code: `<UiDrawer v-model:open="open" title="Navigation">\n  <template #trigger>\n    <UiButton variant="secondary" size="lg">Menu</UiButton>\n  </template>\n  <nav aria-label="On this page">\n    <a href="#overview" @click="open = false">Overview</a>\n  </nav>\n</UiDrawer>`,
+    },
+  },
+  {
+    category: 'Layout',
+    slug: 'tabs',
+    name: 'UiTabs',
+    title: 'Tabs',
+    summary: 'Switches between related panels while retaining their content state.',
+    usage: 'Supply unique item values and an accessible group label. Arrow keys, Home, and End select tabs. SSR and the first hydration render show every labelled panel; after mounting, inactive panels are hidden and the tab controls appear. Keep page section headings outside the tabs when they are anchor destinations.',
+    props: [
+      { name: 'items', required: true, type: 'readonly UiTabItem[]', description: 'Ordered items with a unique value and visible label.' },
+      { name: 'label', required: true, type: 'string', description: 'Accessible name for the tab list.' },
+      { name: 'modelValue', required: true, type: 'string', description: 'Selected item value. An absent value displays the first item.' },
+    ],
+    slots: [
+      { name: 'panel', type: '{ value: string }', description: 'Content for each item. The panel remains mounted when inactive.' },
+    ],
+    events: [
+      { name: 'update:modelValue', type: 'string', description: 'Emitted when a tab is selected by pointer or keyboard.' },
+    ],
+    example: {
+      title: 'Related captures',
+      description: 'The panel slot receives the item value.',
+      code: `<UiTabs\n  v-model="capture"\n  label="Process captures"\n  :items="[{ value: 'list', label: 'List' }, { value: 'details', label: 'Details' }]"\n>\n  <template #panel="{ value }">\n    <p v-if="value === 'list'">Process list capture</p>\n    <p v-else>Process details capture</p>\n  </template>\n</UiTabs>`,
+    },
+  },
+  {
     category: 'Feedback',
     slug: 'alert',
     name: 'UiAlert',
@@ -170,7 +219,7 @@ export const componentDocs: ComponentDoc[] = [
     name: 'UiDialog',
     title: 'Dialog',
     summary: 'Focuses attention on a short, interruptive task.',
-    usage: 'Use dialogs for tasks that must be completed or dismissed before returning to the page. Provide a concise title, optional description, and explicit footer actions.',
+    usage: 'Use dialogs for tasks that must be completed or dismissed before returning to the page. Provide a concise title, optional description, and explicit footer actions. Content attributes, including class and style, are forwarded to the dialog panel so applications can size larger content.',
     props: [
       { name: 'description', required: false, type: 'string', description: 'Optional supporting text linked to the dialog.' },
       { name: 'open', required: true, type: 'boolean', description: 'Controls whether the dialog is visible.' },

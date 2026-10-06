@@ -8,6 +8,7 @@ const componentSlugs = [
   'checkbox',
   'code-block',
   'dialog',
+  'drawer',
   'field',
   'input',
   'progress',
@@ -15,7 +16,52 @@ const componentSlugs = [
   'radio-card-group',
   'select',
   'slider',
+  'tabs',
 ]
+
+test('operates tabs with the keyboard and retains panel contents', async ({ page }) => {
+  await page.goto('/#/sandbox/tabs')
+  const stage = page.locator('.playground-stage')
+  await page.getByLabel('Group label', { exact: true }).fill('Capture views')
+  await expect(stage.getByRole('tablist', { name: 'Capture views', exact: true })).toBeVisible()
+  const list = stage.getByRole('tab', { name: 'List', exact: true })
+  const details = stage.getByRole('tab', { name: 'Details', exact: true })
+  await expect(list).toHaveAttribute('aria-selected', 'true')
+  await list.focus()
+  await list.press('ArrowRight')
+  await expect(details).toBeFocused()
+  await expect(details).toHaveAttribute('aria-selected', 'true')
+  await expect(stage.getByRole('tabpanel')).toHaveText('Process details capture', { useInnerText: true })
+  await details.press('Home')
+  await expect(list).toBeFocused()
+  await expect(stage.getByRole('tabpanel')).toHaveText('Process list capture', { useInnerText: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect((await list.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44)
+})
+
+test('contains drawer focus, dismisses it, and restores the trigger in both motion modes', async ({ page }) => {
+  for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+    await page.emulateMedia({ reducedMotion })
+    await page.goto('/#/sandbox/drawer')
+    await page.getByLabel('Title', { exact: true }).fill('Page navigation')
+    const trigger = page.locator('.playground-stage').getByRole('button', { name: 'Open drawer' })
+    await trigger.click()
+    const drawer = page.getByRole('dialog', { name: 'Page navigation', exact: true })
+    await expect(drawer).toBeVisible()
+    await expect(drawer).toHaveCSS('left', '0px')
+    const close = drawer.getByRole('button', { name: 'Close drawer' })
+    await close.focus()
+    await close.press('Shift+Tab')
+    await expect(drawer.getByRole('link')).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(drawer).not.toBeVisible()
+    await expect(trigger).toBeFocused()
+    await trigger.click()
+    await close.click()
+    await expect(drawer).not.toBeVisible()
+    await expect(trigger).toBeFocused()
+  }
+})
 
 test('owns compact component typography independently of host styles', async ({ page }) => {
   for (const slug of ['button', 'card', 'alert', 'radio-card']) {
@@ -54,6 +100,9 @@ test('copies code exactly and follows editor theme colors', async ({ page, conte
   await page.goto('/#/components/button')
   const block = page.locator('.fg-code-block').first()
   const source = await block.locator('code').textContent()
+  const copyBox = await block.getByRole('button', { name: 'Copy code' }).boundingBox()
+  expect(copyBox?.height ?? 0).toBeGreaterThanOrEqual(44)
+  expect(copyBox?.width ?? 0).toBeGreaterThanOrEqual(44)
   await block.getByRole('button', { name: 'Copy code' }).click()
   await expect(block.getByRole('status')).toHaveText('Code copied to clipboard.')
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(source)

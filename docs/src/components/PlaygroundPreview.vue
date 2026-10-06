@@ -1,3 +1,109 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+
+import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
+
+import {
+  UiAlert,
+  UiBadge,
+  UiButton,
+  UiCard,
+  UiCheckbox,
+  UiCodeBlock,
+  UiDialog,
+  UiDrawer,
+  UiField,
+  UiInput,
+  UiProgress,
+  UiRadioCard,
+  UiRadioCardGroup,
+  UiSelect,
+  UiSlider,
+  UiTabs,
+} from '../../../src/index.js'
+
+const {
+  buttonVariant,
+  compact,
+  controlSize,
+  dialogDescription,
+  dialogTitle,
+  disabled,
+  error,
+  label,
+  loading,
+  language,
+  slug,
+  tone,
+} = defineProps<{
+  buttonVariant: NonNullable<UiButtonProps['variant']>
+  compact: boolean
+  controlSize: UiControlSize
+  dialogDescription: string
+  dialogTitle: string
+  disabled: boolean
+  error: string
+  label: string
+  loading: boolean
+  language: CodeLanguage
+  slug: string
+  tone: NonNullable<UiAlertProps['tone']>
+}>()
+
+const checked = defineModel<boolean>('checked', { required: true })
+const inputValue = defineModel<string>('inputValue', { required: true })
+const progressValue = defineModel<number>('progressValue', { required: true })
+const radioCardValue = defineModel<string>('radioCardValue', { required: true })
+const selectValue = defineModel<string>('selectValue', { required: true })
+const singleRadioCardValue = computed({
+  get: () => checked.value ? 'system' : '',
+  set: value => {
+    checked.value = value === 'system'
+  },
+})
+
+const dialogOpen = ref(false)
+const drawerOpen = ref(false)
+const selectedTab = ref('list')
+
+type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
+
+const codeExamples: Record<CodeLanguage, string> = {
+  vue: `<UiCodeBlock
+  title="Example.vue"
+  language="vue"
+  :code="snippet"
+/>`,
+  typescript: `const theme = parseVsCodeTheme({
+  source,
+  fileName: 'aurora.json',
+})
+
+applySemanticTheme({ root: document.documentElement, theme })`,
+  javascript: `const theme = await importTheme('catppuccin')
+setActiveTheme(theme)`,
+  json: `{
+  "name": "Aurora",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#101218",
+    "editor.foreground": "#f4f5f8"
+  }
+}`,
+  css: `@import "tailwindcss";
+@import "@filipgutica/ui/theme.css";
+@import "@filipgutica/ui/components.css";`,
+  html: `<section aria-labelledby="summary-title">
+  <h2 id="summary-title">Session summary</h2>
+</section>`,
+  bash: `pnpm add @filipgutica/ui
+pnpm docs:dev`,
+  text: 'Copy this value into your workspace configuration.',
+}
+
+const codeExample = computed(() => codeExamples[language])
+</script>
+
 <template>
   <div
     class="playground-preview"
@@ -121,6 +227,38 @@
         </UiDialog>
       </template>
 
+      <UiDrawer
+        v-else-if="slug === 'drawer'"
+        v-model:open="drawerOpen"
+        :title="dialogTitle"
+      >
+        <template #trigger>
+          <UiButton
+            variant="secondary"
+            size="lg"
+          >
+            Open drawer
+          </UiButton>
+        </template>
+        <nav aria-label="Example navigation">
+          <a
+            href="#/components/drawer"
+            @click="drawerOpen = false"
+          >Drawer documentation</a>
+        </nav>
+      </UiDrawer>
+
+      <UiTabs
+        v-else-if="slug === 'tabs'"
+        v-model="selectedTab"
+        :label="label"
+        :items="[{ value: 'list', label: 'List' }, { value: 'details', label: 'Details' }]"
+      >
+        <template #panel="{ value }">
+          <p>{{ value === 'list' ? 'Process list capture' : 'Process details capture' }}</p>
+        </template>
+      </UiTabs>
+
       <UiField
         v-else-if="slug === 'field'"
         control-id="preview-field"
@@ -214,105 +352,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, ref } from 'vue'
-
-import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
-
-import {
-  UiAlert,
-  UiBadge,
-  UiButton,
-  UiCard,
-  UiCheckbox,
-  UiCodeBlock,
-  UiDialog,
-  UiField,
-  UiInput,
-  UiProgress,
-  UiRadioCard,
-  UiRadioCardGroup,
-  UiSelect,
-  UiSlider,
-} from '../../../src/index.js'
-
-const {
-  buttonVariant,
-  compact,
-  controlSize,
-  dialogDescription,
-  dialogTitle,
-  disabled,
-  error,
-  label,
-  loading,
-  language,
-  slug,
-  tone,
-} = defineProps<{
-  buttonVariant: NonNullable<UiButtonProps['variant']>
-  compact: boolean
-  controlSize: UiControlSize
-  dialogDescription: string
-  dialogTitle: string
-  disabled: boolean
-  error: string
-  label: string
-  loading: boolean
-  language: CodeLanguage
-  slug: string
-  tone: NonNullable<UiAlertProps['tone']>
-}>()
-
-const checked = defineModel<boolean>('checked', { required: true })
-const inputValue = defineModel<string>('inputValue', { required: true })
-const progressValue = defineModel<number>('progressValue', { required: true })
-const radioCardValue = defineModel<string>('radioCardValue', { required: true })
-const selectValue = defineModel<string>('selectValue', { required: true })
-const singleRadioCardValue = computed({
-  get: () => checked.value ? 'system' : '',
-  set: value => {
-    checked.value = value === 'system'
-  },
-})
-
-const dialogOpen = ref(false)
-
-type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
-
-const codeExamples: Record<CodeLanguage, string> = {
-  vue: `<UiCodeBlock
-  title="Example.vue"
-  language="vue"
-  :code="snippet"
-/>`,
-  typescript: `const theme = parseVsCodeTheme({
-  source,
-  fileName: 'aurora.json',
-})
-
-applySemanticTheme({ root: document.documentElement, theme })`,
-  javascript: `const theme = await importTheme('catppuccin')
-setActiveTheme(theme)`,
-  json: `{
-  "name": "Aurora",
-  "type": "dark",
-  "colors": {
-    "editor.background": "#101218",
-    "editor.foreground": "#f4f5f8"
-  }
-}`,
-  css: `@import "tailwindcss";
-@import "@filipgutica/ui/theme.css";
-@import "@filipgutica/ui/components.css";`,
-  html: `<section aria-labelledby="summary-title">
-  <h2 id="summary-title">Session summary</h2>
-</section>`,
-  bash: `pnpm add @filipgutica/ui
-pnpm docs:dev`,
-  text: 'Copy this value into your workspace configuration.',
-}
-
-const codeExample = computed(() => codeExamples[language])
-</script>

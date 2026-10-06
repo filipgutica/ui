@@ -10,6 +10,7 @@
     "dist",
     "src/theme.css",
     "src/components.css",
+    "src/components/*.css",
     "README.md",
     "LICENSE"
   ],

@@ -1,3 +1,6 @@
+@import './components/drawer.css';
+@import './components/tabs.css';
+
 @layer components {
   /* Package-owned typography keeps controls consistent across consuming apps. */
   .fg-button, .fg-input, .fg-select, .fg-checkbox, .fg-field,
@@ -34,7 +37,10 @@
   .fg-code-block__copy {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.4rem;
+    min-width: var(--control-lg);
+    min-height: var(--control-lg);
     padding: 0.25rem 0.4rem;
     border: 0;
     border-radius: 0.25rem;

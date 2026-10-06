@@ -315,12 +315,16 @@ describe('application primitives', () => {
         title: 'Evidence',
         description: 'Raw imported source record',
       },
+      attrs: { class: 'capture-viewer', style: 'width: 70rem', 'data-capture': 'full-size' },
       slots: { default: 'Payload' },
     })
     await wrapper.vm.$nextTick()
 
     const dialog = document.body.querySelector('[role="dialog"]')
     expect(dialog?.getAttribute('aria-modal')).toBe('true')
+    expect(dialog?.classList.contains('capture-viewer')).toBe(true)
+    expect(dialog?.getAttribute('style')).toContain('70rem')
+    expect(dialog?.getAttribute('data-capture')).toBe('full-size')
     expect(dialog?.textContent).toContain('Evidence')
     expect(dialog?.textContent).toContain('Payload')
 
