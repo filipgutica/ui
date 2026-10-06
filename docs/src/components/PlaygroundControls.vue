@@ -1,3 +1,85 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+
+import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
+
+import { UiCheckbox, UiField, UiInput, UiSelect, UiSlider } from '../../../src/index.js'
+
+const { slug } = defineProps<{ slug: string }>()
+
+const buttonVariant = defineModel<NonNullable<UiButtonProps['variant']>>('buttonVariant', { required: true })
+const checked = defineModel<boolean>('checked', { required: true })
+const controlSize = defineModel<UiControlSize>('controlSize', { required: true })
+const disabled = defineModel<boolean>('disabled', { required: true })
+const error = defineModel<string>('error', { required: true })
+const inputValue = defineModel<string>('inputValue', { required: true })
+const label = defineModel<string>('label', { required: true })
+const loading = defineModel<boolean>('loading', { required: true })
+const progressValue = defineModel<number>('progressValue', { required: true })
+const radioCardValue = defineModel<string>('radioCardValue', { required: true })
+const selectValue = defineModel<string>('selectValue', { required: true })
+const tone = defineModel<NonNullable<UiAlertProps['tone']>>('tone', { required: true })
+const dialogDescription = defineModel<string>('dialogDescription', { required: true })
+const dialogTitle = defineModel<string>('dialogTitle', { required: true })
+type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
+const language = defineModel<CodeLanguage>('language', { required: true })
+
+const sizeOptions = [
+  { label: 'Small', value: 'sm' },
+  { label: 'Medium', value: 'md' },
+  { label: 'Large', value: 'lg' },
+] satisfies Array<{ label: string, value: UiControlSize }>
+
+const buttonVariantOptions = [
+  { label: 'Primary', value: 'primary' },
+  { label: 'Secondary', value: 'secondary' },
+  { label: 'Ghost', value: 'ghost' },
+  { label: 'Danger', value: 'danger' },
+  { label: 'Text', value: 'text' },
+] satisfies Array<{ label: string, value: NonNullable<UiButtonProps['variant']> }>
+
+const toneOptions = [
+  { label: 'Neutral', value: 'neutral' },
+  { label: 'Info', value: 'info' },
+  { label: 'Success', value: 'success' },
+  { label: 'Warning', value: 'warning' },
+  { label: 'Danger', value: 'danger' },
+  { label: 'Error', value: 'error' },
+] satisfies Array<{ label: string, value: NonNullable<UiAlertProps['tone']> }>
+
+const statusOptions = [
+  { label: 'All statuses', value: 'all' },
+  { label: 'Passed', value: 'passed' },
+  { label: 'Failed', value: 'failed' },
+]
+
+const colorSchemeOptions = [
+  { label: 'System', value: 'system' },
+  { label: 'Light', value: 'light' },
+  { label: 'Dark', value: 'dark' },
+]
+
+const languageOptions = [
+  { label: 'Vue', value: 'vue' },
+  { label: 'TS', value: 'typescript' },
+  { label: 'JS', value: 'javascript' },
+  { label: 'JSON', value: 'json' },
+  { label: 'CSS', value: 'css' },
+  { label: 'HTML', value: 'html' },
+  { label: 'bash', value: 'bash' },
+  { label: 'plain', value: 'text' },
+] satisfies Array<{ label: string, value: CodeLanguage }>
+
+const supportsControlSize = computed(() => [
+  'button',
+  'checkbox',
+  'field',
+  'input',
+  'select',
+  'slider',
+].includes(slug))
+</script>
+
 <template>
   <div
     class="playground-controls"
@@ -169,6 +251,22 @@
       </UiCheckbox>
     </template>
 
+    <UiField
+      v-else-if="slug === 'drawer'"
+      control-id="drawer-title"
+      label="Title"
+    >
+      <UiInput v-model="dialogTitle" />
+    </UiField>
+
+    <UiField
+      v-else-if="slug === 'tabs'"
+      control-id="tabs-label"
+      label="Group label"
+    >
+      <UiInput v-model="label" />
+    </UiField>
+
     <template v-else-if="slug === 'dialog'">
       <UiField
         control-id="dialog-title"
@@ -211,85 +309,3 @@
     </template>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-
-import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
-
-import { UiCheckbox, UiField, UiInput, UiSelect, UiSlider } from '../../../src/index.js'
-
-const { slug } = defineProps<{ slug: string }>()
-
-const buttonVariant = defineModel<NonNullable<UiButtonProps['variant']>>('buttonVariant', { required: true })
-const checked = defineModel<boolean>('checked', { required: true })
-const controlSize = defineModel<UiControlSize>('controlSize', { required: true })
-const disabled = defineModel<boolean>('disabled', { required: true })
-const error = defineModel<string>('error', { required: true })
-const inputValue = defineModel<string>('inputValue', { required: true })
-const label = defineModel<string>('label', { required: true })
-const loading = defineModel<boolean>('loading', { required: true })
-const progressValue = defineModel<number>('progressValue', { required: true })
-const radioCardValue = defineModel<string>('radioCardValue', { required: true })
-const selectValue = defineModel<string>('selectValue', { required: true })
-const tone = defineModel<NonNullable<UiAlertProps['tone']>>('tone', { required: true })
-const dialogDescription = defineModel<string>('dialogDescription', { required: true })
-const dialogTitle = defineModel<string>('dialogTitle', { required: true })
-type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
-const language = defineModel<CodeLanguage>('language', { required: true })
-
-const sizeOptions = [
-  { label: 'Small', value: 'sm' },
-  { label: 'Medium', value: 'md' },
-  { label: 'Large', value: 'lg' },
-] satisfies Array<{ label: string, value: UiControlSize }>
-
-const buttonVariantOptions = [
-  { label: 'Primary', value: 'primary' },
-  { label: 'Secondary', value: 'secondary' },
-  { label: 'Ghost', value: 'ghost' },
-  { label: 'Danger', value: 'danger' },
-  { label: 'Text', value: 'text' },
-] satisfies Array<{ label: string, value: NonNullable<UiButtonProps['variant']> }>
-
-const toneOptions = [
-  { label: 'Neutral', value: 'neutral' },
-  { label: 'Info', value: 'info' },
-  { label: 'Success', value: 'success' },
-  { label: 'Warning', value: 'warning' },
-  { label: 'Danger', value: 'danger' },
-  { label: 'Error', value: 'error' },
-] satisfies Array<{ label: string, value: NonNullable<UiAlertProps['tone']> }>
-
-const statusOptions = [
-  { label: 'All statuses', value: 'all' },
-  { label: 'Passed', value: 'passed' },
-  { label: 'Failed', value: 'failed' },
-]
-
-const colorSchemeOptions = [
-  { label: 'System', value: 'system' },
-  { label: 'Light', value: 'light' },
-  { label: 'Dark', value: 'dark' },
-]
-
-const languageOptions = [
-  { label: 'Vue', value: 'vue' },
-  { label: 'TS', value: 'typescript' },
-  { label: 'JS', value: 'javascript' },
-  { label: 'JSON', value: 'json' },
-  { label: 'CSS', value: 'css' },
-  { label: 'HTML', value: 'html' },
-  { label: 'bash', value: 'bash' },
-  { label: 'plain', value: 'text' },
-] satisfies Array<{ label: string, value: CodeLanguage }>
-
-const supportsControlSize = computed(() => [
-  'button',
-  'checkbox',
-  'field',
-  'input',
-  'select',
-  'slider',
-].includes(slug))
-</script>

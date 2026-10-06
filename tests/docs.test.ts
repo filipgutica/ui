@@ -21,6 +21,7 @@ const exportedComponents = [
   'UiCheckbox',
   'UiCodeBlock',
   'UiDialog',
+  'UiDrawer',
   'UiField',
   'UiInput',
   'UiProgress',
@@ -28,6 +29,7 @@ const exportedComponents = [
   'UiRadioCardGroup',
   'UiSelect',
   'UiSlider',
+  'UiTabs',
 ]
 
 describe('component documentation', () => {

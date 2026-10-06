@@ -39,6 +39,39 @@ The [component docs](https://filipgutica.github.io/ui/#/components/button)
 cover examples, props, slots, and events. Place inputs and selects inside
 `UiField` to connect labels, descriptions, and errors automatically.
 
+## Page navigation
+
+`UiDrawer` provides modal focus containment, Escape dismissal, and trigger focus
+restoration. Keep native navigation in the server-rendered page until hydration;
+the application decides when to replace it and when to close the drawer at a
+desktop breakpoint. To focus a link destination after closing, prevent the
+cancelable `closeAutoFocus` event and focus that heading.
+
+`UiTabs` renders every labelled panel during SSR and initial hydration. After
+mounting, it adds keyboard-accessible tabs and hides inactive panels without
+unmounting them. Use unique item values and keep page anchor headings outside
+the panels. Re-align an initial hash after layout settles if enhancement changes
+the page height.
+
+Track page sections from a component's setup function:
+
+```ts
+import { useActiveSection } from '@filipgutica/ui'
+
+const activeSection = useActiveSection({
+  targetIds: ['overview', 'install', 'commands'],
+})
+```
+
+The returned readonly ref contains the last supplied heading above the root's
+CSS `scroll-padding-top` inset, or the final section at the document bottom.
+IDs must remain stable and in page order; missing elements are ignored after
+mounting. Bind matching links to `aria-current="location"`. Scrolling, resizing,
+layout changes, completed transitions, and restored pages update the value.
+The composable does not change focus, the URL, or browser history, and removes
+its listeners and observer when the component unmounts. During SSR it returns
+the first supplied ID without accessing browser globals.
+
 ## Themes
 
 Import a VS Code JSON or JSONC theme in the browser:

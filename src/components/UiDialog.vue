@@ -1,3 +1,29 @@
+<script setup lang="ts">
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
+
+export interface UiDialogProps {
+  description?: string
+  open: boolean
+  title: string
+}
+
+defineOptions({ inheritAttrs: false })
+
+const { description = undefined, open, title } = defineProps<UiDialogProps>()
+
+const emit = defineEmits<{
+  (event: 'update:open', value: boolean): void
+}>()
+</script>
+
 <template>
   <DialogRoot
     :open="open"
@@ -8,6 +34,7 @@
       <DialogContent
         class="fg-dialog__content"
         aria-modal="true"
+        v-bind="$attrs"
       >
         <div class="fg-dialog__header">
           <div>
@@ -41,27 +68,3 @@
     </DialogPortal>
   </DialogRoot>
 </template>
-
-<script setup lang="ts">
-import {
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from 'reka-ui'
-
-export interface UiDialogProps {
-  description?: string
-  open: boolean
-  title: string
-}
-
-const { description = undefined, open, title } = defineProps<UiDialogProps>()
-
-const emit = defineEmits<{
-  (event: 'update:open', value: boolean): void
-}>()
-</script>

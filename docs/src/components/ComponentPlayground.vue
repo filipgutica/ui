@@ -1,3 +1,35 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
+
+import PlaygroundControls from './PlaygroundControls.vue'
+import PlaygroundPreview from './PlaygroundPreview.vue'
+
+const { compact = false, slug } = defineProps<{
+  compact?: boolean
+  slug: string
+}>()
+
+type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
+
+const label = ref(slug === 'tabs' ? 'Process captures' : 'Inspect evidence')
+const controlSize = ref<UiControlSize>('md')
+const buttonVariant = ref<NonNullable<UiButtonProps['variant']>>('primary')
+const tone = ref<NonNullable<UiAlertProps['tone']>>('info')
+const inputValue = ref('agent workbench')
+const selectValue = ref('all')
+const error = ref('')
+const checked = ref(false)
+const radioCardValue = ref('system')
+const disabled = ref(false)
+const loading = ref(false)
+const progressValue = ref(42)
+const dialogTitle = ref(slug === 'drawer' ? 'Navigation' : 'Review evidence')
+const dialogDescription = ref('Confirm the evidence before continuing.')
+const language = ref<CodeLanguage>('vue')
+</script>
+
 <template>
   <div
     class="playground"
@@ -43,35 +75,3 @@
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-
-import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
-
-import PlaygroundControls from './PlaygroundControls.vue'
-import PlaygroundPreview from './PlaygroundPreview.vue'
-
-const { compact = false, slug } = defineProps<{
-  compact?: boolean
-  slug: string
-}>()
-
-type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
-
-const label = ref('Inspect evidence')
-const controlSize = ref<UiControlSize>('md')
-const buttonVariant = ref<NonNullable<UiButtonProps['variant']>>('primary')
-const tone = ref<NonNullable<UiAlertProps['tone']>>('info')
-const inputValue = ref('agent workbench')
-const selectValue = ref('all')
-const error = ref('')
-const checked = ref(false)
-const radioCardValue = ref('system')
-const disabled = ref(false)
-const loading = ref(false)
-const progressValue = ref(42)
-const dialogTitle = ref('Review evidence')
-const dialogDescription = ref('Confirm the evidence before continuing.')
-const language = ref<CodeLanguage>('vue')
-</script>
