@@ -9,6 +9,60 @@ afterEach(() => {
 })
 
 describe('UiCodeBlock', () => {
+  it('preserves the default header labels and accessible code label', () => {
+    const wrapper = mount(UiCodeBlock, {
+      props: { code: 'pnpm add @filipgutica/ui', language: 'sh', title: 'Install' },
+    })
+    expect(wrapper.get('.fg-code-block__title').text()).toBe('Install')
+    expect(wrapper.get('.fg-code-block__language').text()).toBe('sh')
+    expect(wrapper.get('pre').attributes('aria-label')).toBe('Install')
+    expect(wrapper.get('button').text()).toBe('Copy')
+    wrapper.unmount()
+  })
+
+  it('omits compact header labels while preserving labelled code, copying, and custom actions', async () => {
+    const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    const code = 'pnpm add @filipgutica/ui'
+    const wrapper = mount(UiCodeBlock, {
+      props: { code, language: 'sh', title: 'Install', variant: 'compact', wrap: true },
+      slots: { actions: '<button type="button">Run command</button>' },
+    })
+    expect(wrapper.find('.fg-code-block__title').exists()).toBe(false)
+    expect(wrapper.find('.fg-code-block__language').exists()).toBe(false)
+    expect(wrapper.get('pre').attributes('aria-label')).toBe('Install')
+    expect(wrapper.get('code').element.textContent).toBe(code)
+    expect(wrapper.get('.fg-code-block__actions').text()).toContain('Run command')
+    const copy = wrapper.get('.fg-code-block__copy')
+    expect(copy.attributes('aria-label')).toBe('Copy code')
+    await copy.trigger('click')
+    await flushPromises()
+    expect(write).toHaveBeenLastCalledWith(code)
+    expect(wrapper.get('[role="status"]').text()).toBe('Code copied to clipboard.')
+    expect(copy.attributes('title')).toBe('Copied')
+    expect(copy.attributes('aria-label')).toBe('Copy code')
+    await wrapper.setProps({ copyable: false })
+    expect(wrapper.find('.fg-code-block__copy').exists()).toBe(false)
+    expect(wrapper.get('.fg-code-block__actions').text()).toContain('Run command')
+    wrapper.unmount()
+  })
+
+  it('keeps compact highlighting errors visible when copying succeeds', async () => {
+    const highlighter = await import('../src/code-highlight.js')
+    vi.spyOn(highlighter, 'highlightCode').mockRejectedValueOnce(new Error('unavailable'))
+    vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    const wrapper = mount(UiCodeBlock, {
+      props: { code: 'pnpm add @filipgutica/ui', language: 'sh', variant: 'compact' },
+    })
+    await vi.waitFor(() => expect(wrapper.get('[role="status"]').text()).toContain('Syntax highlighting unavailable'))
+    await wrapper.get('button').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[role="status"]').text()).toContain('Syntax highlighting unavailable')
+    expect(wrapper.get('[role="status"]').text()).toContain('Code copied to clipboard.')
+    expect(wrapper.get('[role="status"]').attributes('data-state')).toBeUndefined()
+    expect(wrapper.get('button').attributes('title')).toBe('Copied')
+    wrapper.unmount()
+  })
+
   it('highlights nested Vue fragments without changing displayed or copied source', async () => {
     const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
     const code = '<UiRadioCardGroup v-model="scheme">\r\n  <UiRadioCard value="dark">\r\n    <strong>Dark</strong>\r\n  </UiRadioCard>\r\n</UiRadioCardGroup>\r\n'
@@ -72,13 +126,14 @@ describe('UiCodeBlock', () => {
     wrapper.unmount()
   })
 
-  it('reports clipboard failure and allows copying to be disabled', async () => {
+  it.each(['default', 'compact'] as const)('reports clipboard failure and allows copying to be disabled in %s blocks', async (variant) => {
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'))
-    const wrapper = mount(UiCodeBlock, { props: { code: 'example' } })
+    const wrapper = mount(UiCodeBlock, { props: { code: 'example', variant } })
     await wrapper.get('button').trigger('click')
     await flushPromises()
     expect(wrapper.get('[role="status"]').text()).toContain('Could not copy')
-    expect(wrapper.get('button').text()).toBe('Copy')
+    expect(wrapper.get('button').attributes('aria-label')).toBe('Copy code')
+    if (variant === 'default') expect(wrapper.get('button').text()).toBe('Copy')
     await wrapper.setProps({ copyable: false })
     expect(wrapper.find('button').exists()).toBe(false)
     wrapper.unmount()

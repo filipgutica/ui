@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
+import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize } from '../../../src/index.js'
 
 import PlaygroundControls from './PlaygroundControls.vue'
 import PlaygroundPreview from './PlaygroundPreview.vue'
@@ -28,6 +28,7 @@ const progressValue = ref(42)
 const dialogTitle = ref(slug === 'drawer' ? 'Navigation' : 'Review evidence')
 const dialogDescription = ref('Confirm the evidence before continuing.')
 const language = ref<CodeLanguage>('vue')
+const codeVariant = ref<NonNullable<UiCodeBlockProps['variant']>>('default')
 </script>
 
 <template>
@@ -52,6 +53,7 @@ const language = ref<CodeLanguage>('vue')
       v-model:dialog-description="dialogDescription"
       v-model:dialog-title="dialogTitle"
       v-model:language="language"
+      v-model:code-variant="codeVariant"
       :slug="slug"
     />
     <PlaygroundPreview
@@ -63,6 +65,7 @@ const language = ref<CodeLanguage>('vue')
       :button-variant="buttonVariant"
       :compact="compact"
       :control-size="controlSize"
+      :code-variant="codeVariant"
       :dialog-description="dialogDescription"
       :dialog-title="dialogTitle"
       :disabled="disabled"
