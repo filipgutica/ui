@@ -114,6 +114,41 @@ test('copies code exactly and follows editor theme colors', async ({ page, conte
   await expect(block).toHaveCSS('color', 'rgb(171, 205, 239)')
 })
 
+test('keeps compact commands in one row and wraps longer code beside a usable copy control', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/#/sandbox/code-block')
+  await page.getByLabel('Variant', { exact: true }).selectOption('compact')
+  await page.getByLabel('Language', { exact: true }).selectOption('bash')
+  const block = page.locator('.playground-stage .fg-code-block')
+  const copy = block.getByRole('button', { name: 'Copy code' })
+
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    const blockBox = await block.boundingBox()
+    const codeBox = await block.locator('pre').boundingBox()
+    const copyBox = await copy.boundingBox()
+    expect(blockBox?.height ?? Infinity).toBeLessThanOrEqual(60)
+    expect(copyBox?.width ?? 0).toBeGreaterThanOrEqual(44)
+    expect(copyBox?.height ?? 0).toBeGreaterThanOrEqual(44)
+    expect((codeBox?.x ?? 0) + (codeBox?.width ?? 0)).toBeLessThanOrEqual(copyBox?.x ?? 0)
+    expect(Math.abs((codeBox?.y ?? 0) + (codeBox?.height ?? 0) / 2 -
+      ((copyBox?.y ?? 0) + (copyBox?.height ?? 0) / 2))).toBeLessThan(2)
+  }
+
+  await copy.focus()
+  await copy.press('Enter')
+  await expect(block.getByRole('status')).toHaveText('Code copied to clipboard.')
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('pnpm add @filipgutica/ui')
+  expect((await block.boundingBox())?.height ?? Infinity).toBeLessThanOrEqual(60)
+
+  await page.setViewportSize({ width: 320, height: 900 })
+  await page.getByLabel('Language', { exact: true }).selectOption('text')
+  await page.getByRole('checkbox', { name: 'Wrap long lines', exact: true }).check()
+  await expect(block.locator('code')).toHaveText('Copy this value into your workspace configuration.')
+  expect(await block.locator('pre').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
 test('highlights nested Vue markup in documentation snippets', async ({ page }) => {
   await page.goto('/#/components/radio-card')
   const block = page.locator('.fg-code-block').first()

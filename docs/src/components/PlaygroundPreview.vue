@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
+import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize } from '../../../src/index.js'
 
 import {
   UiAlert,
@@ -25,6 +25,7 @@ import {
 const {
   buttonVariant,
   compact,
+  codeVariant,
   controlSize,
   dialogDescription,
   dialogTitle,
@@ -38,6 +39,7 @@ const {
 } = defineProps<{
   buttonVariant: NonNullable<UiButtonProps['variant']>
   compact: boolean
+  codeVariant: NonNullable<UiCodeBlockProps['variant']>
   controlSize: UiControlSize
   dialogDescription: string
   dialogTitle: string
@@ -101,7 +103,9 @@ pnpm docs:dev`,
   text: 'Copy this value into your workspace configuration.',
 }
 
-const codeExample = computed(() => codeExamples[language])
+const codeExample = computed(() => language === 'bash' && codeVariant === 'compact'
+  ? 'pnpm add @filipgutica/ui'
+  : codeExamples[language])
 </script>
 
 <template>
@@ -347,6 +351,7 @@ const codeExample = computed(() => codeExamples[language])
         :language="language"
         :line-numbers="checked"
         :title="compact ? 'Vue' : 'Component usage'"
+        :variant="codeVariant"
         :wrap="disabled"
       />
     </div>

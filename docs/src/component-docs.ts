@@ -365,11 +365,12 @@ export const componentDocs: ComponentDoc[] = [
     name: 'UiCodeBlock',
     title: 'Code block',
     summary: 'Presents syntax-highlighted, copyable source code using the active theme.',
-    usage: 'Set language to match the source so the code block can highlight it. Colors follow the active theme. Use line numbers when referencing specific lines; copying always preserves the original source.',
+    usage: 'Set language to match the source so the code block can highlight it. Colors follow the active theme. Use line numbers when referencing specific lines; copying always preserves the original source. For repetitive short commands, set variant="compact" to place the copy action beside the code without repeated header labels. Add wrap when long commands should break onto another line.',
     props: [
       { name: 'code', required: true, type: 'string', description: 'Source text displayed in the code block.' },
       { name: 'language', required: false, type: 'string', default: "'text'", description: 'Language used for syntax highlighting and the header. Unknown languages render as plain text.' },
-      { name: 'title', required: false, type: 'string', default: "''", description: 'Optional title shown before the language label.' },
+      { name: 'title', required: false, type: 'string', default: "''", description: 'Accessible code label. Also displayed in the default header.' },
+      { name: 'variant', required: false, type: "'default' | 'compact'", default: "'default'", description: 'Default shows a labelled header. Compact places actions beside the code and keeps the title as an accessible label.' },
       { name: 'copyable', required: false, type: 'boolean', default: 'true', description: 'Shows the clipboard action.' },
       { name: 'lineNumbers', required: false, type: 'boolean', default: 'false', description: 'Shows line numbers beside the code.' },
       { name: 'wrap', required: false, type: 'boolean', default: 'false', description: 'Wraps long lines instead of requiring horizontal scrolling.' },
@@ -380,11 +381,19 @@ export const componentDocs: ComponentDoc[] = [
     events: [],
     example: {
       title: 'Copyable snippet',
-      description: 'Keep the snippet readable and let users copy it with one action.',
+      description: 'Use the default layout for source files and the compact layout for short commands.',
       code: `<UiCodeBlock
   title="Example.vue"
   language="vue"
   :code="snippet"
+/>
+
+<UiCodeBlock
+  title="Install"
+  language="sh"
+  code="pnpm add @filipgutica/ui"
+  variant="compact"
+  wrap
 />`,
     },
   },

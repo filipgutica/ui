@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { UiAlertProps, UiButtonProps, UiControlSize } from '../../../src/index.js'
+import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize } from '../../../src/index.js'
 
 import { UiCheckbox, UiField, UiInput, UiSelect, UiSlider } from '../../../src/index.js'
 
@@ -23,6 +23,7 @@ const dialogDescription = defineModel<string>('dialogDescription', { required: t
 const dialogTitle = defineModel<string>('dialogTitle', { required: true })
 type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
 const language = defineModel<CodeLanguage>('language', { required: true })
+const codeVariant = defineModel<NonNullable<UiCodeBlockProps['variant']>>('codeVariant', { required: true })
 
 const sizeOptions = [
   { label: 'Small', value: 'sm' },
@@ -283,6 +284,19 @@ const supportsControlSize = computed(() => [
     </template>
 
     <template v-else-if="slug === 'code-block'">
+      <UiField
+        control-id="code-variant"
+        label="Variant"
+      >
+        <UiSelect v-model="codeVariant">
+          <option value="default">
+            Default
+          </option>
+          <option value="compact">
+            Compact
+          </option>
+        </UiSelect>
+      </UiField>
       <UiField
         control-id="code-language"
         label="Language"
