@@ -535,24 +535,24 @@ pre,
   border-bottom: 1px solid var(--preview-border);
   color: var(--preview-muted);
   background: var(--preview-bg);
-  --preview-bg: #f8f7f4;
-  --preview-surface: #efeeea;
+  --preview-bg: #f4f5f8;
+  --preview-surface: #ebecef;
   --preview-raised: #fff;
-  --preview-border: #ddddd5;
-  --preview-muted: #65655d;
-  --preview-accent: #30302b;
+  --preview-border: #d8dbe2;
+  --preview-muted: #5d626c;
+  --preview-accent: #222326;
 }
 
 .theme-preview[data-appearance="dark"] {
-  --preview-bg: #141413;
-  --preview-surface: #1b1b19;
-  --preview-raised: #232320;
-  --preview-border: #343430;
-  --preview-muted: #b0afa6;
-  --preview-accent: #e7e5da;
+  --preview-bg: #1b1c1f;
+  --preview-surface: #222326;
+  --preview-raised: #2a2b2f;
+  --preview-border: #3b3e45;
+  --preview-muted: #b0b5bf;
+  --preview-accent: #f4f5f8;
 }
 
-.theme-preview[data-appearance="system"] { background: linear-gradient(90deg, #f8f7f4 0 50%, #141413 50%); }
+.theme-preview[data-appearance="system"] { background: linear-gradient(90deg, #f4f5f8 0 50%, #1b1c1f 50%); }
 .theme-preview__rail,
 .theme-preview__editor,
 .theme-preview__panel { display: flex; flex-direction: column; gap: 0.55rem; padding: 1rem 0.7rem; }
