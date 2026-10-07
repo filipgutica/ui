@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "../../src/theme.css";
 @import "../../src/components.css";
+@import "./palette.css";
 
 * { box-sizing: border-box; }
 
@@ -534,24 +535,24 @@ pre,
   border-bottom: 1px solid var(--preview-border);
   color: var(--preview-muted);
   background: var(--preview-bg);
-  --preview-bg: #f5f6fa;
-  --preview-surface: #e5e7ee;
+  --preview-bg: #f8f7f4;
+  --preview-surface: #efeeea;
   --preview-raised: #fff;
-  --preview-border: #c8cbd4;
-  --preview-muted: #8b909e;
-  --preview-accent: #3b66c4;
+  --preview-border: #ddddd5;
+  --preview-muted: #65655d;
+  --preview-accent: #30302b;
 }
 
 .theme-preview[data-appearance="dark"] {
-  --preview-bg: #151720;
-  --preview-surface: #20232e;
-  --preview-raised: #191b24;
-  --preview-border: #303440;
-  --preview-muted: #686d7c;
-  --preview-accent: #5478d4;
+  --preview-bg: #141413;
+  --preview-surface: #1b1b19;
+  --preview-raised: #232320;
+  --preview-border: #343430;
+  --preview-muted: #b0afa6;
+  --preview-accent: #e7e5da;
 }
 
-.theme-preview[data-appearance="system"] { background: linear-gradient(90deg, #f5f6fa 0 50%, #151720 50%); }
+.theme-preview[data-appearance="system"] { background: linear-gradient(90deg, #f8f7f4 0 50%, #141413 50%); }
 .theme-preview__rail,
 .theme-preview__editor,
 .theme-preview__panel { display: flex; flex-direction: column; gap: 0.55rem; padding: 1rem 0.7rem; }
@@ -749,4 +750,10 @@ body { font-size: var(--text-md); }
 .navigation-drawer .project-links a { min-height: var(--control-lg); }
 @media (max-width: 900px) {
   .topbar-actions .project-links { display: none; }
+}
+
+/* Neutral prose links remain identifiable without relying on color. */
+main p a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
