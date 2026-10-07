@@ -196,17 +196,17 @@ test('highlights the selected language with imported theme colors and restores t
   await expect(block.locator('code')).toHaveText(/.+/)
 })
 
-test('renders every documented component without horizontal overflow', async ({ page }) => {
+test('renders the introduction and every documented component without horizontal overflow', async ({ page }) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
   })
   page.on('pageerror', error => runtimeErrors.push(error.message))
 
-  for (const width of [1280, 390]) {
+  for (const width of [1280, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 844 })
-    for (const slug of componentSlugs) {
-      await page.goto(`/#/sandbox/${slug}`)
+    for (const route of ['/', ...componentSlugs.map(slug => `/sandbox/${slug}`)]) {
+      await page.goto(`/#${route}`)
       await expect(page.locator('h1')).toBeVisible()
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
         await page.evaluate(() => document.documentElement.clientWidth),

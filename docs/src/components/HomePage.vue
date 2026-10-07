@@ -1,3 +1,18 @@
+<script setup lang="ts">
+import { UiCodeBlock } from '../../../src/index.js'
+
+const installCommand = 'pnpm add @filipgutica/ui'
+const stylesImport = `@import "tailwindcss";
+@import "@filipgutica/ui/theme.css";
+@import "@filipgutica/ui/components.css";`
+
+const principles = [
+  { title: 'Quiet by default', description: 'Neutral surfaces and one accent keep attention on the content. Status colors communicate state.' },
+  { title: 'Dense but calm', description: 'Compact controls follow a 4px rhythm. Alignment, spacing, and subtle dividers establish hierarchy.' },
+  { title: 'Keyboard-aware', description: 'Visible focus and accessible labels support keyboard use. Imported themes keep the same structure and sizing.' },
+]
+</script>
+
 <template>
   <article class="content-page home-page">
     <header class="intro">
@@ -14,7 +29,7 @@
           href="#/components/button"
         >Browse components</a>
         <a
-          class="docs-button docs-button--secondary"
+          class="docs-link"
           href="#/sandbox/button"
         >Open sandbox</a>
       </div>
@@ -26,19 +41,18 @@
       </h2>
       <div class="setup-grid">
         <div>
-          <h3><span>01</span> Install</h3>
+          <h3>Install</h3>
           <UiCodeBlock
             :code="installCommand"
             language="sh"
-            title="Install"
+            variant="compact"
           />
         </div>
         <div>
-          <h3><span>02</span> Add styles</h3>
+          <h3>Add styles</h3>
           <UiCodeBlock
             :code="stylesImport"
             language="css"
-            title="CSS"
           />
         </div>
       </div>
@@ -60,18 +74,3 @@
     </section>
   </article>
 </template>
-
-<script setup lang="ts">
-import { UiCodeBlock } from '../../../src/index.js'
-
-const installCommand = 'pnpm add @filipgutica/ui'
-const stylesImport = `@import "tailwindcss";
-@import "@filipgutica/ui/theme.css";
-@import "@filipgutica/ui/components.css";`
-
-const principles = [
-  { title: 'Quiet by default', description: 'Neutral surfaces and one accent keep attention on the content. Status colors communicate state.' },
-  { title: 'Dense but calm', description: 'Compact controls follow a 4px rhythm. Alignment, spacing, and subtle dividers establish hierarchy.' },
-  { title: 'Keyboard-aware', description: 'Visible focus and accessible labels support keyboard use. Imported themes keep the same structure and sizing.' },
-]
-</script>
