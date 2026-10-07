@@ -1,3 +1,18 @@
+<script setup lang="ts">
+import { UiCodeBlock } from '../../../src/index.js'
+
+const installCommand = 'pnpm add @filipgutica/ui'
+const stylesImport = `@import "tailwindcss";
+@import "@filipgutica/ui/theme.css";
+@import "@filipgutica/ui/components.css";`
+
+const principles = [
+  { title: 'Quiet by default', description: 'Neutral surfaces, one accent, and clear status colors.' },
+  { title: 'Dense but calm', description: 'Compact controls, a 4px rhythm, and subtle dividers.' },
+  { title: 'Keyboard-aware', description: 'Visible focus and accessible labels. Themes preserve structure and sizing.' },
+]
+</script>
+
 <template>
   <article class="content-page home-page">
     <header class="intro">
@@ -5,8 +20,7 @@
         Component library
       </h1>
       <p class="lede">
-        @filipgutica/ui provides Vue components, semantic design tokens, and VS Code theme support.
-        Explore examples, API references, and interactive sandboxes.
+        Vue 3.5+ components, semantic tokens, and VS Code theme support.
       </p>
       <div class="button-row">
         <a
@@ -14,7 +28,7 @@
           href="#/components/button"
         >Browse components</a>
         <a
-          class="docs-button docs-button--secondary"
+          class="docs-link"
           href="#/sandbox/button"
         >Open sandbox</a>
       </div>
@@ -22,23 +36,22 @@
 
     <section aria-labelledby="start-heading">
       <h2 id="start-heading">
-        Get started
+        Setup
       </h2>
       <div class="setup-grid">
         <div>
-          <h3><span>01</span> Install</h3>
+          <h3>Install</h3>
           <UiCodeBlock
             :code="installCommand"
             language="sh"
-            title="Install"
+            variant="compact"
           />
         </div>
         <div>
-          <h3><span>02</span> Add styles</h3>
+          <h3>Styles</h3>
           <UiCodeBlock
             :code="stylesImport"
             language="css"
-            title="CSS"
           />
         </div>
       </div>
@@ -60,18 +73,3 @@
     </section>
   </article>
 </template>
-
-<script setup lang="ts">
-import { UiCodeBlock } from '../../../src/index.js'
-
-const installCommand = 'pnpm add @filipgutica/ui'
-const stylesImport = `@import "tailwindcss";
-@import "@filipgutica/ui/theme.css";
-@import "@filipgutica/ui/components.css";`
-
-const principles = [
-  { title: 'Quiet by default', description: 'Neutral surfaces and one accent keep attention on the content. Status colors communicate state.' },
-  { title: 'Dense but calm', description: 'Compact controls follow a 4px rhythm. Alignment, spacing, and subtle dividers establish hierarchy.' },
-  { title: 'Keyboard-aware', description: 'Visible focus and accessible labels support keyboard use. Imported themes keep the same structure and sizing.' },
-]
-</script>
