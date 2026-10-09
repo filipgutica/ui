@@ -12,17 +12,12 @@ const isCurrentComponent = (slug: string): boolean =>
 </script>
 
 <template>
-  <nav class="docs-navigation">
+  <nav class="docs-navigation fg-site-nav">
     <a
-      class="sidebar-home"
       href="#/"
       :aria-current="route.name === 'home' ? 'page' : undefined"
     >
-      <span>Introduction</span>
-      <span
-        class="sidebar-link-indicator"
-        aria-hidden="true"
-      >›</span>
+      Introduction
     </a>
     <section
       v-for="group in componentGroups"
@@ -36,11 +31,7 @@ const isCurrentComponent = (slug: string): boolean =>
         :href="`#/components/${component.slug}`"
         :aria-current="isCurrentComponent(component.slug) ? 'page' : undefined"
       >
-        <span>{{ component.title }}</span>
-        <span
-          class="sidebar-link-indicator"
-          aria-hidden="true"
-        >›</span>
+        {{ component.title }}
       </a>
     </section>
   </nav>

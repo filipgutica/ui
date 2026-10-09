@@ -8,9 +8,14 @@ import DocsNavigation from './components/DocsNavigation.vue'
 import ComponentPage from './components/ComponentPage.vue'
 import HomePage from './components/HomePage.vue'
 import SandboxPage from './components/SandboxPage.vue'
-import ProjectLinks from './components/ProjectLinks.vue'
 import ThemePicker from './components/ThemePicker.vue'
 import { parseDocsHash } from './router.js'
+import { UiSiteHeader } from '../../src/site/index.js'
+
+const projectLinks = [
+  { label: 'GitHub', href: 'https://github.com/filipgutica/ui' },
+  { label: 'npm', href: 'https://www.npmjs.com/package/@filipgutica/ui' },
+] as const
 
 const hash = ref(window.location.hash)
 const updateHash = (): void => {
@@ -59,75 +64,12 @@ watch(route, async () => {
     class="skip-link"
     href="#main-content"
   >Skip to content</a>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="topbar-navigation">
-        <DialogRoot v-model:open="navigationOpen">
-          <DialogTrigger
-            class="navigation-trigger"
-            aria-label="Browse components"
-          >
-            <svg
-              viewBox="0 0 16 16"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              aria-hidden="true"
-            >
-              <path d="M2 4h12M2 8h12M2 12h12" />
-            </svg>
-          </DialogTrigger>
-          <DialogPortal>
-            <DialogOverlay class="navigation-overlay" />
-            <DialogContent
-              class="navigation-drawer"
-              @close-auto-focus="onDrawerCloseAutoFocus"
-            >
-              <div class="navigation-drawer-heading">
-                <DialogTitle>Browse components</DialogTitle>
-                <DialogClose
-                  class="navigation-trigger"
-                  aria-label="Close navigation"
-                >
-                  <svg
-                    viewBox="0 0 16 16"
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="m4 4 8 8M12 4l-8 8" />
-                  </svg>
-                </DialogClose>
-              </div>
-              <DialogDescription class="sr-only">
-                Choose a component to view its documentation.
-              </DialogDescription>
-              <ProjectLinks />
-              <DocsNavigation
-                :route="route"
-                @click="onNavigationClick"
-              />
-            </DialogContent>
-          </DialogPortal>
-        </DialogRoot>
-        <a
-          class="brand"
-          href="#/"
-          aria-label="UI documentation home"
-        >
-          <span>@filipgutica/ui</span>
-        </a>
-      </div>
-      <div class="topbar-actions">
-        <ProjectLinks />
-        <ThemePicker />
-      </div>
-    </div>
-  </header>
+  <UiSiteHeader
+    project="ui"
+    :links="projectLinks"
+  >
+    <ThemePicker />
+  </UiSiteHeader>
 
   <div class="docs-shell">
     <aside
@@ -137,9 +79,60 @@ watch(route, async () => {
       <DocsNavigation :route="route" />
     </aside>
 
+    <div class="docs-mobilebar">
+      <DialogRoot v-model:open="navigationOpen">
+        <DialogTrigger class="navigation-trigger">
+          <svg
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path d="M2 4h12M2 8h12M2 12h12" />
+          </svg>
+          Browse components
+        </DialogTrigger>
+        <DialogPortal>
+          <DialogOverlay class="navigation-overlay" />
+          <DialogContent
+            class="navigation-drawer"
+            @close-auto-focus="onDrawerCloseAutoFocus"
+          >
+            <div class="navigation-drawer-heading">
+              <DialogTitle>Browse components</DialogTitle>
+              <DialogClose
+                class="navigation-trigger"
+                aria-label="Close navigation"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="m4 4 8 8M12 4l-8 8" />
+                </svg>
+              </DialogClose>
+            </div>
+            <DialogDescription class="sr-only">
+              Choose a component to view its documentation.
+            </DialogDescription>
+            <DocsNavigation
+              :route="route"
+              @click="onNavigationClick"
+            />
+          </DialogContent>
+        </DialogPortal>
+      </DialogRoot>
+    </div>
     <main
       id="main-content"
-      class="main-content"
+      class="main-content fg-site-prose"
     >
       <HomePage v-if="route.name === 'home'" />
       <ComponentPage

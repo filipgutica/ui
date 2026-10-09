@@ -1,0 +1,272 @@
+{
+  "groups": [
+    {
+      "comment": "Cool graphite neutrals.",
+      "tokens": {
+        "bg": [
+          "#f4f5f8",
+          "#151619"
+        ],
+        "surface": [
+          "#e7e8ec",
+          "#191a1d"
+        ],
+        "surface-raised": [
+          "#ffffff",
+          "#212226"
+        ],
+        "surface-hover": [
+          "#e4e6eb",
+          "#303238"
+        ],
+        "surface-selected": [
+          "#dde0e6",
+          "#34373e"
+        ],
+        "row-hover": [
+          "#dfe1e7",
+          "#25272d"
+        ],
+        "row-selected": [
+          "#ffffff",
+          "#38334f"
+        ],
+        "border-subtle": [
+          "#d8dbe2",
+          "#3b3e45"
+        ],
+        "border": [
+          "#777d88",
+          "#818894"
+        ],
+        "text": [
+          "#222326",
+          "#f4f5f8"
+        ],
+        "text-muted": [
+          "#5d626c",
+          "#b0b5bf"
+        ],
+        "text-faint": [
+          "#626772",
+          "#a0a6b1"
+        ]
+      }
+    },
+    {
+      "comment": "Primary actions, links, and focus have separate roles.",
+      "tokens": {
+        "accent": [
+          "#6359a7",
+          "#a99ce2"
+        ],
+        "accent-text": [
+          "#ffffff",
+          "#151619"
+        ],
+        "accent-hover": [
+          "#554b94",
+          "#b7ace9"
+        ],
+        "link": [
+          "#075fc7",
+          "#58a6ff"
+        ],
+        "focus": [
+          "#075fc7",
+          "#58a6ff"
+        ]
+      }
+    },
+    {
+      "comment": "Status: only for state, never for decoration.",
+      "tokens": {
+        "success": [
+          "#1f8a5b",
+          "#4cc38a"
+        ],
+        "warning": [
+          "#86532e",
+          "#e2a54b"
+        ],
+        "danger": [
+          "#c7372d",
+          "#f0776c"
+        ],
+        "info": [
+          "#175cd3",
+          "#84adff"
+        ],
+        "success-soft": "color-mix(in srgb, {success} 11%, {bg})",
+        "warning-soft": "color-mix(in srgb, {warning} 12%, {bg})",
+        "danger-soft": "color-mix(in srgb, {danger} 10%, {bg})",
+        "info-soft": "color-mix(in srgb, {info} 10%, {bg})"
+      }
+    },
+    {
+      "comment": "Code",
+      "tokens": {
+        "code-bg": "{surface}",
+        "code-text": "{text}",
+        "code-key": [
+          "#715b42",
+          "#d8c2a5"
+        ],
+        "code-string": [
+          "#346347",
+          "#a8bd9c"
+        ],
+        "code-number": [
+          "#86532e",
+          "#d5b98c"
+        ],
+        "code-comment": "{text-faint}"
+      }
+    },
+    {
+      "comment": "Type: system faces, no font loading.",
+      "tokens": {
+        "font-sans": "-apple-system, BlinkMacSystemFont, \"SF Pro Text\", \"Segoe UI\", system-ui, sans-serif",
+        "font-mono": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, Consolas, monospace",
+        "text-xs": "12px",
+        "text-sm": "13px",
+        "text-md": "14px",
+        "text-lg": "16px",
+        "text-xl": "20px",
+        "text-2xl": "24px",
+        "text-3xl": "32px",
+        "text-reading": "16px",
+        "text-display": "56px",
+        "text-display-sm": "38px",
+        "leading-tight": "1.25",
+        "leading": "1.5",
+        "weight-regular": "400",
+        "weight-medium": "500",
+        "weight-semibold": "600",
+        "tracking-tight": "-0.01em"
+      }
+    },
+    {
+      "comment": "Space: 4px rhythm.",
+      "tokens": {
+        "space-1": "4px",
+        "space-2": "8px",
+        "space-3": "12px",
+        "space-4": "16px",
+        "space-5": "20px",
+        "space-6": "24px",
+        "space-8": "32px",
+        "space-12": "48px",
+        "space-16": "64px",
+        "space-20": "80px",
+        "space-24": "96px"
+      }
+    },
+    {
+      "comment": "Size",
+      "tokens": {
+        "control-sm": "32px",
+        "control-md": "36px",
+        "control-lg": "44px",
+        "row": "36px",
+        "measure": "68ch",
+        "page-max": "960px",
+        "page-wide": "1120px",
+        "sidebar": "224px"
+      }
+    },
+    {
+      "comment": "Shape",
+      "tokens": {
+        "radius-sm": "4px",
+        "radius-md": "6px",
+        "radius-lg": "8px",
+        "radius-xl": "12px",
+        "radius-pill": "999px"
+      }
+    },
+    {
+      "comment": "Elevation: floating layers only (menus, popovers, dialogs).",
+      "tokens": {
+        "shadow-popover": [
+          "0 8px 24px rgb(16 16 24 / 12%), 0 0 0 1px {border-subtle}",
+          "0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px {border}"
+        ]
+      }
+    },
+    {
+      "comment": "Motion",
+      "tokens": {
+        "duration-fast": "120ms",
+        "duration": "180ms",
+        "ease-out": "cubic-bezier(0.2, 0.8, 0.2, 1)"
+      }
+    },
+    {
+      "comment": "Focus",
+      "tokens": {
+        "focus-ring": "0 0 0 2px {bg}, 0 0 0 4px {focus}"
+      }
+    }
+  ],
+  "library": {
+    "roles": {
+      "--color-bg": "bg",
+      "--color-surface": "surface",
+      "--color-surface-raised": "surface-raised",
+      "--color-surface-muted": "surface-hover",
+      "--color-text": "text",
+      "--color-muted": "text-muted",
+      "--color-link": "link",
+      "--color-accent": "accent",
+      "--color-focus": "focus",
+      "--color-border": "border",
+      "--color-border-subtle": "border-subtle",
+      "--color-button-bg": "accent",
+      "--color-button-text": "accent-text",
+      "--color-button-hover": "accent-hover",
+      "--color-input-bg": "surface-raised",
+      "--color-input-text": "text",
+      "--color-input-border": "border",
+      "--color-input-placeholder": "text-muted",
+      "--color-row-hover": "row-hover",
+      "--color-row-selected": "row-selected",
+      "--color-row-selected-text": "text",
+      "--color-code": "code-bg",
+      "--color-code-text": "code-text",
+      "--color-syntax-comment": "code-comment",
+      "--color-syntax-keyword": "code-key",
+      "--color-syntax-string": "code-string",
+      "--color-syntax-number": "code-number",
+      "--color-syntax-function": "code-key",
+      "--color-syntax-type": "code-number",
+      "--color-syntax-variable": "code-text",
+      "--color-syntax-operator": "text-muted",
+      "--color-syntax-punctuation": "text-muted",
+      "--color-syntax-tag": "code-key",
+      "--color-syntax-attribute": "code-number",
+      "--color-error": "danger",
+      "--color-warning": "warning",
+      "--color-success": "success",
+      "--color-info": "info",
+      "--color-progress": "accent",
+      "--color-error-surface": "danger-soft",
+      "--color-warning-surface": "warning-soft",
+      "--color-success-surface": "success-soft",
+      "--color-info-surface": "info-soft",
+      "--shadow-dialog": "shadow-popover",
+      "--color-status-text": "text"
+    },
+    "extras": [
+      "text-3xl",
+      "text-reading",
+      "text-display",
+      "text-display-sm",
+      "tracking-tight",
+      "space-20",
+      "space-24",
+      "row",
+      "page-wide"
+    ]
+  }
+}

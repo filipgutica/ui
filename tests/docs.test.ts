@@ -130,6 +130,7 @@ describe('theme picker', () => {
     document.body.innerHTML = ''
     document.documentElement.removeAttribute('style')
     document.documentElement.classList.remove('dark', 'high-contrast')
+    delete document.documentElement.dataset.theme
   })
 
   it('separates color-scheme selection from adding themes', async () => {
@@ -336,6 +337,135 @@ describe('theme picker', () => {
     expect(JSON.parse(localStorage.getItem('filipgutica-ui-installed-themes') ?? '[]')).toEqual([])
     expect(wrapper.text()).toContain('Theme: System')
     expect(document.body.textContent).toContain('Color scheme')
+    wrapper.unmount()
+  })
+})
+
+describe('theme picker shared appearance', () => {
+  const sharedKey = 'tool-site-theme'
+  const galleryKey = 'filipgutica-ui-active-theme'
+  const root = document.documentElement
+
+  const installTheme = (): void => {
+    const theme = parseVsCodeTheme({
+      fileName: 'precedence.json',
+      source: JSON.stringify({
+        name: 'Precedence',
+        type: 'dark',
+        colors: { 'editor.background': '#12141a', 'editor.foreground': '#f7f8fb' },
+      }),
+    })
+    localStorage.setItem('filipgutica-ui-installed-themes', JSON.stringify([{ id: 'saved.theme', theme }]))
+  }
+
+  const choose = async (label: string): Promise<void> => {
+    const choice = [...document.querySelectorAll<HTMLButtonElement>('[role="radio"]')]
+      .find(button => button.textContent?.includes(label))
+    expect(choice).toBeDefined()
+    choice?.click()
+    await flushPromises()
+  }
+
+  const openPicker = async (wrapper: ReturnType<typeof mount>): Promise<void> => {
+    await wrapper.get('button').trigger('click')
+    await flushPromises()
+  }
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+    root.removeAttribute('style')
+    root.classList.remove('dark', 'high-contrast')
+    delete root.dataset.theme
+  })
+
+  it('keeps an installed theme active when the shared appearance changes elsewhere', async () => {
+    installTheme()
+    localStorage.setItem(galleryKey, 'saved.theme')
+    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    await flushPromises()
+    expect(root.style.getPropertyValue('--color-bg')).toBe('#12141a')
+
+    localStorage.setItem(sharedKey, 'light')
+    window.dispatchEvent(new StorageEvent('storage', { key: sharedKey, newValue: 'light', storageArea: localStorage }))
+    await flushPromises()
+
+    expect(root.style.getPropertyValue('--color-bg')).toBe('#12141a')
+    expect(root.classList.contains('dark')).toBe(true)
+    expect(localStorage.getItem(galleryKey)).toBe('saved.theme')
+    expect(wrapper.text()).toContain('Theme: Precedence')
+    wrapper.unmount()
+  })
+
+  it('clears an installed theme and writes the shared appearance when a built-in scheme is chosen', async () => {
+    installTheme()
+    localStorage.setItem(galleryKey, 'saved.theme')
+    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    await flushPromises()
+    await openPicker(wrapper)
+
+    await choose('Light')
+
+    expect(localStorage.getItem(sharedKey)).toBe('light')
+    expect(localStorage.getItem(galleryKey)).toBe('system')
+    expect(root.style.getPropertyValue('--color-bg')).toBe('')
+    expect(root.classList.contains('dark')).toBe(false)
+    expect(root.dataset.theme).toBe('light')
+    expect(wrapper.text()).toContain('Theme: Light')
+    wrapper.unmount()
+  })
+
+  it('leaves the shared appearance alone when an installed theme is chosen', async () => {
+    installTheme()
+    localStorage.setItem(sharedKey, 'light')
+    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    await flushPromises()
+    await openPicker(wrapper)
+
+    await choose('Precedence')
+
+    expect(localStorage.getItem(sharedKey)).toBe('light')
+    expect(localStorage.getItem(galleryKey)).toBe('saved.theme')
+    expect(root.style.getPropertyValue('--color-bg')).toBe('#12141a')
+    expect(wrapper.text()).toContain('Theme: Precedence')
+    wrapper.unmount()
+  })
+
+  it('falls back to the shared appearance when the installed theme no longer resolves', async () => {
+    localStorage.setItem(galleryKey, 'removed.theme')
+    localStorage.setItem(sharedKey, 'dark')
+    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    await flushPromises()
+
+    expect(localStorage.getItem(galleryKey)).toBe('system')
+    expect(root.classList.contains('dark')).toBe(true)
+    expect(wrapper.text()).toContain('Theme: Dark')
+    wrapper.unmount()
+  })
+
+  it('moves a legacy built-in choice to the shared key once', async () => {
+    localStorage.setItem(galleryKey, 'dark')
+    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    await flushPromises()
+
+    expect(localStorage.getItem(sharedKey)).toBe('dark')
+    expect(localStorage.getItem(galleryKey)).toBe('system')
+    expect(root.classList.contains('dark')).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('keeps an existing shared choice over a legacy gallery choice', async () => {
+    localStorage.setItem(galleryKey, 'dark')
+    localStorage.setItem(sharedKey, 'light')
+    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    await flushPromises()
+
+    expect(localStorage.getItem(sharedKey)).toBe('light')
+    expect(localStorage.getItem(galleryKey)).toBe('system')
+    expect(root.classList.contains('dark')).toBe(false)
     wrapper.unmount()
   })
 })

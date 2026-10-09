@@ -87,6 +87,48 @@ Themes supply colors; the library keeps typography, spacing, and component
 structure consistent. Open VSX search and imports are available through
 `@filipgutica/ui/open-vsx`, which must run on a Node server.
 
+The default theme is unchanged. To opt in to Graphite Indigo, import it after
+`theme.css`:
+
+```css
+@import "@filipgutica/ui/theme.css";
+@import "@filipgutica/ui/themes/graphite-indigo.css";
+```
+
+## Project sites
+
+The `site` entry gives the project sites one header, one appearance choice, and
+shared page styles. Import `@filipgutica/ui/site.css` and the Graphite Indigo
+theme above, which supplies the type and spacing roles `site.css` reads. Keep
+document-wide link styles in `@layer base` so the header owns its navigation
+appearance.
+
+```vue
+<script setup lang="ts">
+import { UiSiteHeader } from '@filipgutica/ui/site'
+</script>
+
+<template>
+  <UiSiteHeader
+    project="wtree"
+    :links="[{ label: 'User guide', href: '#guide' }]"
+  />
+</template>
+```
+
+`project` is `wtree`, `annoterm`, `devps`, `workbench`, or `ui`. The project
+menu is a native disclosure that works without JavaScript; Escape closes it and
+returns focus to its button. Without a default slot the header renders a
+System, Light, and Dark picker. A page with its own appearance control passes it
+in the default slot and uses `useSiteAppearance({ applyToRoot: false })` when it
+owns the root element.
+
+`useSiteAppearance()` returns `choice`, the resolved `appearance`, and
+`chooseAppearance(value)`. The choice is stored under `tool-site-theme`, follows
+the operating system and other tabs, and is safe during server rendering and
+when storage is blocked. To avoid a flash of the wrong appearance, inline
+`siteThemeBootScript` in the document head.
+
 ## Development
 
 ```sh
@@ -94,3 +136,8 @@ pnpm install
 pnpm docs:dev
 pnpm verify
 ```
+
+Graphite Indigo values live in `themes/graphite-indigo.json`. After editing it,
+run `pnpm themes:build` to regenerate the opt-in theme and the standalone
+`themes/graphite-indigo.tokens.css`; `pnpm themes:check` fails when either is
+stale.

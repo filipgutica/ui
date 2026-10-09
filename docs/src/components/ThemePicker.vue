@@ -18,9 +18,10 @@
   >
     <template v-if="view === 'choose'">
       <UiRadioCardGroup
-        v-model="activeChoice"
+        :model-value="selection"
         class="theme-picker"
         aria-label="Theme"
+        @update:model-value="select"
       >
         <section aria-labelledby="color-scheme-heading">
           <h3 id="color-scheme-heading">
@@ -106,22 +107,30 @@
 </template>
 
 <script setup lang="ts">
-import { useLocalStorage, usePreferredColorScheme } from '@vueuse/core'
-import { computed, ref, watch } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import type { NormalizedTheme } from '../../../src/theme/index.js'
+import type { SiteAppearanceChoice } from '../../../src/site/index.js'
 import type { InstalledTheme } from './AddThemePanel.vue'
 
 import { UiButton, UiDialog, UiRadioCard, UiRadioCardGroup } from '../../../src/index.js'
+import { applySiteAppearance, SITE_APPEARANCE_KEY, useSiteAppearance } from '../../../src/site/index.js'
 import { applySemanticTheme, isNormalizedTheme } from '../../../src/theme/index.js'
 import AddThemePanel from './AddThemePanel.vue'
 import ThemePreview from './ThemePreview.vue'
 
 type PickerView = 'choose' | 'add'
 
+const schemeLabels: Record<SiteAppearanceChoice, string> = { system: 'System', light: 'Light', dark: 'Dark' }
+
 const open = ref(false)
 const view = ref<PickerView>('choose')
-const preferredColorScheme = usePreferredColorScheme()
+
+// The built-in scheme is shared with the other project sites. The id of an installed
+// theme belongs to this gallery alone: while it resolves it wins, and `system` here
+// means no installed theme is active.
+const { choice: schemeChoice, appearance: schemeAppearance, chooseAppearance } = useSiteAppearance({ applyToRoot: false })
 const activeChoice = useLocalStorage('filipgutica-ui-active-theme', 'system')
 const storedThemes = useLocalStorage<unknown>('filipgutica-ui-installed-themes', [])
 
@@ -135,48 +144,59 @@ const installedThemes = computed<InstalledTheme[]>(() => Array.isArray(storedThe
   ? storedThemes.value.filter(isInstalledTheme).slice(0, 20)
   : [])
 
+const activeInstalledTheme = computed(() => installedThemes.value.find(({ id }) => id === activeChoice.value))
+const selection = computed(() => activeInstalledTheme.value ? activeChoice.value : schemeChoice.value)
+
 const preferredAppearance = computed<'light' | 'dark'>(() => {
-  if (activeChoice.value === 'light' || activeChoice.value === 'dark') return activeChoice.value
-  const activeTheme = installedThemes.value.find(({ id }) => id === activeChoice.value)?.theme
+  const activeTheme = activeInstalledTheme.value?.theme
   if (activeTheme) return activeTheme.appearance.includes('dark') ? 'dark' : 'light'
-  return preferredColorScheme.value === 'dark' ? 'dark' : 'light'
+  return schemeAppearance.value
 })
 
-const activeThemeName = computed(() => {
-  if (activeChoice.value === 'system') return 'System'
-  if (activeChoice.value === 'light') return 'Light'
-  if (activeChoice.value === 'dark') return 'Dark'
-  return installedThemes.value.find(({ id }) => id === activeChoice.value)?.theme.name ?? 'System'
-})
+const activeThemeName = computed(() => activeInstalledTheme.value?.theme.name ?? schemeLabels[schemeChoice.value])
 
-const applyBuiltIn = (appearance: 'light' | 'dark'): void => {
-  applySemanticTheme({ root: document.documentElement, theme: null })
-  document.documentElement.classList.toggle('dark', appearance === 'dark')
+const applyActive = (): void => {
+  const root = document.documentElement
+  const installedTheme = activeInstalledTheme.value
+  applySemanticTheme({ root, theme: installedTheme?.theme ?? null })
+  if (!installedTheme) applySiteAppearance({ root, choice: schemeChoice.value, appearance: schemeAppearance.value })
 }
 
-const applyChoice = (choice: string): void => {
-  if (choice === 'system') {
-    applyBuiltIn(preferredAppearance.value)
-    return
+const hasSharedChoice = (): boolean => {
+  try {
+    return localStorage.getItem(SITE_APPEARANCE_KEY) !== null
+  } catch {
+    // Without storage the shared choice cannot persist either way.
+    return false
   }
-  if (choice === 'light' || choice === 'dark') {
-    applyBuiltIn(choice)
-    return
-  }
-  const installedTheme = installedThemes.value.find(({ id }) => id === choice)
-  if (installedTheme) {
-    applySemanticTheme({ root: document.documentElement, theme: installedTheme.theme })
-    return
-  }
+}
+
+// Earlier versions kept the built-in scheme under the gallery key. Move it to the
+// shared key once, unless the shared key already holds a choice.
+const migrateLegacyScheme = (): void => {
+  if (activeChoice.value !== 'light' && activeChoice.value !== 'dark') return
+  if (!hasSharedChoice()) chooseAppearance(activeChoice.value)
   activeChoice.value = 'system'
-  applyBuiltIn(preferredAppearance.value)
 }
 
-watch(
-  [activeChoice, preferredAppearance, installedThemes],
-  ([choice]) => applyChoice(choice),
-  { deep: true, immediate: true },
-)
+// Everything that touches the page waits for mount, after the shared choice has loaded.
+onMounted(() => {
+  migrateLegacyScheme()
+  watch([activeChoice, installedThemes], () => {
+    if (activeChoice.value !== 'system' && !activeInstalledTheme.value) activeChoice.value = 'system'
+  }, { immediate: true })
+  watch([activeInstalledTheme, schemeChoice, schemeAppearance], applyActive, { immediate: true })
+})
+
+const select = (value: string): void => {
+  const scheme = (['system', 'light', 'dark'] as const).find(choice => choice === value)
+  if (scheme) {
+    activeChoice.value = 'system'
+    chooseAppearance(scheme)
+    return
+  }
+  activeChoice.value = value
+}
 
 const openPicker = (): void => {
   view.value = 'choose'

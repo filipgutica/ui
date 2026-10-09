@@ -225,14 +225,14 @@
   }
 
   .fg-button[data-variant="danger"] {
-    color: var(--color-error);
+    color: var(--color-status-text, var(--color-error));
     background: var(--color-error-surface);
     box-shadow: none;
   }
 
   .fg-button[data-variant="danger"]:hover:not(:disabled) {
     border-color: var(--color-error);
-    color: var(--color-error);
+    color: var(--color-status-text, var(--color-error));
     background: var(--color-error-surface);
     box-shadow: none;
   }
@@ -522,11 +522,11 @@
     line-height: 1.25;
   }
 
-  .fg-badge[data-tone="info"] { color: var(--color-info); background: var(--color-info-surface); }
-  .fg-badge[data-tone="success"] { color: var(--color-success); background: var(--color-success-surface); }
-  .fg-badge[data-tone="warning"] { color: var(--color-warning); background: var(--color-warning-surface); }
+  .fg-badge[data-tone="info"] { color: var(--color-status-text, var(--color-info)); background: var(--color-info-surface); }
+  .fg-badge[data-tone="success"] { color: var(--color-status-text, var(--color-success)); background: var(--color-success-surface); }
+  .fg-badge[data-tone="warning"] { color: var(--color-status-text, var(--color-warning)); background: var(--color-warning-surface); }
   .fg-badge[data-tone="danger"],
-  .fg-badge[data-tone="error"] { color: var(--color-error); background: var(--color-error-surface); }
+  .fg-badge[data-tone="error"] { color: var(--color-status-text, var(--color-error)); background: var(--color-error-surface); }
 
   .fg-alert {
     display: flex;
@@ -545,7 +545,7 @@
   .fg-alert[data-tone="danger"],
   .fg-alert[data-tone="error"] {
     border-color: var(--color-error);
-    color: var(--color-error);
+    color: var(--color-status-text, var(--color-error));
     background: var(--color-error-surface);
   }
 

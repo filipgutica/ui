@@ -24,12 +24,14 @@ import type { CSSProperties } from 'vue'
 
 import type { NormalizedTheme } from '../../../src/theme/index.js'
 
+import { builtInPreviewStyle } from '../graphite-preview.js'
+
 const { appearance, theme = undefined } = defineProps<{
   appearance: 'system' | 'light' | 'dark'
   theme?: NormalizedTheme
 }>()
 
-const previewStyle = computed<CSSProperties | undefined>(() => theme
+const previewStyle = computed<CSSProperties>(() => theme
   ? {
       '--preview-bg': theme.tokens.pageBackground,
       '--preview-surface': theme.tokens.surface,
@@ -38,5 +40,5 @@ const previewStyle = computed<CSSProperties | undefined>(() => theme
       '--preview-muted': theme.tokens.textMuted,
       '--preview-accent': theme.tokens.accent,
     }
-  : undefined)
+  : builtInPreviewStyle(appearance))
 </script>
