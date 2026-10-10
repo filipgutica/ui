@@ -11,6 +11,8 @@
     "src/theme.css",
     "src/components.css",
     "src/components/*.css",
+    "src/site.css",
+    "src/themes/*.css",
     "README.md",
     "LICENSE"
   ],
@@ -23,12 +25,18 @@
       "types": "./dist/theme/index.d.ts",
       "import": "./dist/theme.js"
     },
+    "./site": {
+      "types": "./dist/site/index.d.ts",
+      "import": "./dist/site.js"
+    },
     "./open-vsx": {
       "types": "./dist/open-vsx/index.d.ts",
       "import": "./dist/open-vsx.js"
     },
     "./theme.css": "./src/theme.css",
-    "./components.css": "./src/components.css"
+    "./components.css": "./src/components.css",
+    "./site.css": "./src/site.css",
+    "./themes/graphite-indigo.css": "./src/themes/graphite-indigo.css"
   },
   "scripts": {
     "build": "vite build && vue-tsc -p tsconfig.build.json --emitDeclarationOnly",
@@ -44,8 +52,10 @@
     "release:dry-run": "semantic-release --dry-run --no-ci",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "themes:build": "node scripts/graphite-indigo.mjs",
+    "themes:check": "node scripts/graphite-indigo.mjs --check",
     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
-    "verify": "pnpm lint && pnpm typecheck && pnpm docs:typecheck && pnpm test && pnpm test:e2e && pnpm build && pnpm docs:build && pnpm pack --dry-run && publint"
+    "verify": "pnpm lint && pnpm themes:check && pnpm typecheck && pnpm docs:typecheck && pnpm test && pnpm test:e2e && pnpm build && pnpm docs:build && pnpm pack --dry-run && publint"
   },
   "engines": {
     "node": ">=22.12"

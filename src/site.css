@@ -1,0 +1,169 @@
+/* Shared chrome and page helpers for the project sites. Use with
+ * @filipgutica/ui/themes/graphite-indigo.css, which supplies the type, space, and
+ * page-measure roles this file reads. Nothing here targets site-specific markup. */
+@layer components {
+  /* A centered frame. The header uses the same edges as the page below it.
+   * Set --site-frame on the header or a frame to change its width. */
+  .fg-site-frame,
+  .fg-site-header__inner {
+    width: min(100%, var(--site-frame, var(--page-max)));
+    margin-inline: auto;
+    padding-inline: var(--site-gutter, var(--space-4));
+  }
+  .fg-site-frame--wide { --site-frame: var(--page-wide); }
+
+  .fg-site-header {
+    position: relative;
+    z-index: 30;
+    border-bottom: 1px solid var(--color-border-subtle);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-ui);
+    font-size: var(--text-md);
+    line-height: var(--leading);
+  }
+  .fg-site-header__inner {
+    display: flex;
+    min-height: var(--space-16);
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    padding-block: var(--space-2);
+  }
+  .fg-site-header__end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-8);
+    margin-inline-start: auto;
+  }
+  .fg-site-header__links { display: flex; align-items: center; gap: var(--space-6); }
+  .fg-site-header__links a {
+    display: inline-flex;
+    min-height: var(--control-lg);
+    align-items: center;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+  }
+  .fg-site-header__links a:hover { color: var(--color-text); }
+
+  .fg-site-projects { position: relative; }
+  .fg-site-projects__trigger {
+    display: inline-flex;
+    min-height: var(--control-lg);
+    align-items: center;
+    gap: var(--space-1);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+    font-weight: var(--weight-semibold);
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+  }
+  .fg-site-projects__trigger::-webkit-details-marker { display: none; }
+  .fg-site-projects__trigger:hover,
+  .fg-site-projects[open] > .fg-site-projects__trigger { background: var(--color-row-hover); }
+  .fg-site-projects__chevron { transition: transform var(--duration-fast) ease; }
+  .fg-site-projects[open] .fg-site-projects__chevron { transform: rotate(180deg); }
+  .fg-site-projects__menu {
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 0;
+    min-width: 14rem;
+    margin-top: var(--space-1);
+    padding: var(--space-1);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-dialog);
+  }
+
+  /* Route rows. Hover is neutral, and the current page keeps its selected fill on
+   * hover. Only aria-current="page" is styled: an in-page section marker
+   * (aria-current="location") must look different from the current page. */
+  .fg-site-nav a {
+    display: flex;
+    min-height: var(--row);
+    align-items: center;
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-control);
+    color: var(--color-muted);
+    font-size: var(--text-md);
+    text-decoration: none;
+    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+  }
+  .fg-site-nav a:hover { background: var(--color-row-hover); color: var(--color-text); }
+  .fg-site-nav a[aria-current="page"] {
+    background: var(--color-row-selected);
+    box-shadow: inset 2px 0 0 var(--color-accent);
+    color: var(--color-text);
+    font-weight: var(--weight-medium);
+  }
+
+  .fg-site-appearance {
+    display: inline-flex;
+    flex: none;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-control);
+  }
+  .fg-site-appearance__choice {
+    display: inline-flex;
+    width: var(--control-lg);
+    min-height: var(--control-lg);
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    color: var(--color-muted);
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+  }
+  .fg-site-appearance__choice + .fg-site-appearance__choice { border-left: 1px solid var(--color-border-subtle); }
+  .fg-site-appearance__choice:first-child { border-radius: var(--radius-control) 0 0 var(--radius-control); }
+  .fg-site-appearance__choice:last-child { border-radius: 0 var(--radius-control) var(--radius-control) 0; }
+  .fg-site-appearance__choice:hover { color: var(--color-text); background: var(--color-row-hover); }
+  .fg-site-appearance__choice[aria-pressed="true"] { color: var(--color-text); background: var(--color-row-selected); }
+
+  .fg-site-header a:focus-visible,
+  .fg-site-projects__trigger:focus-visible,
+  .fg-site-appearance__choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-site-appearance__choice:focus-visible { outline-offset: -2px; }
+  .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+
+  /* Type roles for article content. Prose reads at --text-reading. Components set
+   * their own size, and controls and dense content such as tables belong at --text-md.
+   * Zero-specificity heading selectors keep component and page styles in charge. */
+  .fg-site-prose { font-size: var(--text-reading); line-height: var(--leading); }
+  .fg-site-prose :where(h1, h2, h3, h4) {
+    margin: 0;
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+  }
+  .fg-site-prose :where(h1) { font-size: var(--text-3xl); }
+  .fg-site-prose :where(h2) { font-size: var(--text-xl); }
+  .fg-site-prose :where(h3, h4) { font-size: var(--text-lg); }
+  .fg-site-prose :where(p, ul, ol) { max-width: var(--measure); margin: 0; }
+  .fg-site-prose :where(p, ul, ol) + :where(p, ul, ol) { margin-top: var(--space-4); }
+  .fg-site-prose :where(p a, li a, dd a) { text-decoration: underline; text-underline-offset: 0.18em; }
+  .fg-site-meta { color: var(--color-muted); font-size: var(--text-sm); }
+
+  @media (min-width: 681px) {
+    .fg-site-frame,
+    .fg-site-header__inner { padding-inline: var(--site-gutter, var(--space-6)); }
+  }
+  @media (max-width: 680px) {
+    .fg-site-prose :where(h1) { font-size: var(--text-2xl); }
+    .fg-site-header__end { gap: var(--space-2) var(--space-4); }
+    .fg-site-header__links { gap: var(--space-4); }
+    .fg-site-projects__menu a { min-height: var(--control-lg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fg-site-projects__chevron,
+    .fg-site-nav a { transition: none; }
+  }
+}

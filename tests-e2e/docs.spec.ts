@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { contrast } from '../tests/contrast.js'
+
 const componentSlugs = [
   'alert',
   'badge',
@@ -346,4 +348,86 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
   await page.setViewportSize({ width: 1280, height: 844 })
   await expect(drawer).not.toBeVisible()
   await expect(trigger).not.toBeVisible()
+})
+
+
+test('keeps the project menu current state distinct and restores keyboard focus', async ({ page }) => {
+  for (const width of [320, 800, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/components/button')
+    const trigger = page.locator('.fg-site-projects > summary')
+    await trigger.click()
+    const projects = page.getByRole('navigation', { name: 'Projects', exact: true })
+    const current = projects.getByRole('link', { name: 'UI', exact: true })
+    await expect(current).toHaveAttribute('aria-current', 'page')
+    for (const row of await projects.getByRole('link').all()) await row.hover()
+    if (width === 320) {
+      for (const row of await projects.getByRole('link').all())
+        expect((await row.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44)
+    }
+    const fill = await current.evaluate(element => getComputedStyle(element).backgroundColor)
+    await current.hover()
+    await expect(current).toHaveCSS('background-color', fill)
+    await current.focus()
+    await page.keyboard.press('Escape')
+    await expect(projects).toBeHidden()
+    await expect(trigger).toBeFocused()
+  }
+})
+
+test('keeps status labels readable on their colored fills in both appearances', async ({ page }) => {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme })
+    for (const slug of ['badge', 'alert', 'button']) {
+      await page.goto(`/#/sandbox/${slug}`)
+      const statuses = page.locator(`.playground-stage .fg-${slug}`)
+      await expect(statuses.first()).toBeVisible()
+      if (slug === 'button') {
+        await expect(statuses.first()).toHaveCSS('background-color', colorScheme === 'dark' ? 'rgb(169, 156, 226)' : 'rgb(99, 89, 167)')
+      }
+      const variants = slug === 'button' ? ['danger'] : ['info', 'success', 'warning', 'danger', 'error']
+      for (const variant of variants) {
+        await page.getByLabel(slug === 'button' ? 'Variant' : 'Tone', { exact: true }).selectOption(variant)
+        await expect(statuses.first()).toHaveAttribute(slug === 'button' ? 'data-variant' : 'data-tone', variant)
+        for (const hovered of [false, true]) {
+          if (hovered) await statuses.first().hover()
+          else await page.locator('h1').hover()
+          const colors = await statuses.evaluateAll(elements => {
+            const canvas = document.createElement('canvas')
+            canvas.width = canvas.height = 1
+            const context = canvas.getContext('2d')!
+            const hex = (color: string) => {
+              context.clearRect(0, 0, 1, 1)
+              context.fillStyle = color
+              context.fillRect(0, 0, 1, 1)
+              const [red, green, blue] = context.getImageData(0, 0, 1, 1).data
+              return '#' + [red, green, blue].map(channel => channel!.toString(16).padStart(2, '0')).join('')
+            }
+            return elements.map(element => {
+              const style = getComputedStyle(element)
+              return { tone: element.getAttribute('data-tone'), foreground: hex(style.color), background: hex(style.backgroundColor) }
+            })
+          })
+          for (const { tone, foreground, background } of colors)
+            expect(contrast(foreground, background), `${colorScheme} ${slug} ${tone ?? variant} hover=${hovered}`).toBeGreaterThanOrEqual(4.5)
+        }
+      }
+    }
+  }
+})
+
+test('keeps component browsing reachable after scrolling on phones and tablets', async ({ page }) => {
+  for (const width of [320, 800]) {
+    await page.setViewportSize({ width, height: 700 })
+    await page.goto('/#/components/button')
+    await page.getByRole('heading', { name: 'Props', exact: true }).scrollIntoViewIfNeeded()
+    const trigger = page.getByRole('button', { name: 'Browse components', exact: true })
+    const bounds = await trigger.boundingBox()
+    expect(bounds?.y ?? -1).toBeGreaterThanOrEqual(0)
+    expect((bounds?.y ?? 700) + (bounds?.height ?? 0)).toBeLessThanOrEqual(700)
+    await trigger.click()
+    await expect(page.getByRole('dialog', { name: 'Browse components', exact: true })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(trigger).toBeFocused()
+  }
 })

@@ -10,6 +10,7 @@ export default defineConfig({
       entry: {
         index: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
         theme: fileURLToPath(new URL('./src/theme/index.ts', import.meta.url)),
+        site: fileURLToPath(new URL('./src/site/index.ts', import.meta.url)),
         'open-vsx': fileURLToPath(new URL('./src/open-vsx/index.ts', import.meta.url)),
       },
       formats: ['es'],
