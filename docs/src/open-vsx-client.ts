@@ -18,15 +18,30 @@ const readJson = async (response: Response): Promise<unknown> => {
   return response.json()
 }
 
+// Pages has no API server. Load the same validated importer only when needed.
+const staticThemeService = async (signal?: AbortSignal) => {
+  signal?.throwIfAborted()
+  const { createOpenVsxThemeService } = await import('../../src/open-vsx/index.js')
+  signal?.throwIfAborted()
+  return createOpenVsxThemeService({
+    fetchImpl: (input, init) => fetch(input, {
+      ...init,
+      credentials: 'omit',
+      ...(signal ? { signal: init?.signal ? AbortSignal.any([signal, init.signal]) : signal } : {}),
+    }),
+  })
+}
+
 export const searchOpenVsx = async (
   query: string,
   { signal }: { signal?: AbortSignal } = {},
 ): Promise<OpenVsxThemeSummary[]> => {
-  const response = await fetch(
-    `/api/open-vsx/search?q=${encodeURIComponent(query)}`,
-    signal ? { signal } : undefined,
-  )
-  const result = await readJson(response)
+  const result: unknown = import.meta.env.VITE_STATIC_HOST === 'true'
+    ? await (await staticThemeService(signal)).search(query)
+    : await readJson(await fetch(
+      `/api/open-vsx/search?q=${encodeURIComponent(query)}`,
+      signal ? { signal } : undefined,
+    ))
   if (
     !isRecord(result)
     || result.status !== 'success'
@@ -50,10 +65,12 @@ export const importOpenVsxTheme = async ({
   signal?: AbortSignal
 }): Promise<NormalizedTheme> => {
   const parameters = new URLSearchParams({ id: extensionId, appearance: preferredAppearance })
-  const result = await readJson(await fetch(
-    `/api/open-vsx/import?${parameters}`,
-    signal ? { signal } : undefined,
-  ))
+  const result: unknown = import.meta.env.VITE_STATIC_HOST === 'true'
+    ? await (await staticThemeService(signal)).importTheme(extensionId, preferredAppearance)
+    : await readJson(await fetch(
+      `/api/open-vsx/import?${parameters}`,
+      signal ? { signal } : undefined,
+    ))
   if (isRecord(result) && result.status === 'success' && isNormalizedTheme(result.theme)) {
     return result.theme
   }

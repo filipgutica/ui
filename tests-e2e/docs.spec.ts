@@ -24,8 +24,8 @@ const componentSlugs = [
 test('operates tabs with the keyboard and retains panel contents', async ({ page }) => {
   await page.goto('/#/sandbox/tabs')
   const stage = page.locator('.playground-stage')
-  await page.getByLabel('Group label', { exact: true }).fill('Capture views')
-  await expect(stage.getByRole('tablist', { name: 'Capture views', exact: true })).toBeVisible()
+  await expect(page.getByLabel('Group label', { exact: true })).toHaveCount(0)
+  await expect(stage.getByRole('tablist', { name: 'Process captures', exact: true })).toBeVisible()
   const list = stage.getByRole('tab', { name: 'List', exact: true })
   const details = stage.getByRole('tab', { name: 'Details', exact: true })
   await expect(list).toHaveAttribute('aria-selected', 'true')

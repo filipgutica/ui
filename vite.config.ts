@@ -16,7 +16,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue', '@vueuse/core', 'reka-ui', 'jsonc-parser', 'jszip', 'node:crypto', /^shiki\//],
+      external: ['vue', '@vueuse/core', 'reka-ui', 'jsonc-parser', 'jszip', /^shiki\//],
       output: {
         entryFileNames: '[name].js',
       },
