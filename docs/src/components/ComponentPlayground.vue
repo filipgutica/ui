@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize } from '../../../src/index.js'
 
@@ -13,7 +13,8 @@ const { compact = false, slug } = defineProps<{
 
 type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
 
-const label = ref(slug === 'tabs' ? 'Process captures' : 'Inspect evidence')
+const hasControls = computed(() => !compact && slug !== 'tabs')
+const label = ref('Inspect evidence')
 const controlSize = ref<UiControlSize>('md')
 const buttonVariant = ref<NonNullable<UiButtonProps['variant']>>('primary')
 const tone = ref<NonNullable<UiAlertProps['tone']>>('info')
@@ -35,9 +36,10 @@ const codeVariant = ref<NonNullable<UiCodeBlockProps['variant']>>('default')
   <div
     class="playground"
     :data-compact="compact ? 'true' : undefined"
+    :data-controls="hasControls ? 'true' : 'false'"
   >
     <PlaygroundControls
-      v-if="!compact"
+      v-if="hasControls"
       v-model:button-variant="buttonVariant"
       v-model:checked="checked"
       v-model:control-size="controlSize"

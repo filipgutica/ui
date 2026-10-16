@@ -85,7 +85,13 @@ applySemanticTheme({ root: document.documentElement, theme })
 
 Themes supply colors; the library keeps typography, spacing, and component
 structure consistent. Open VSX search and imports are available through
-`@filipgutica/ui/open-vsx`, which must run on a Node server.
+`createOpenVsxThemeService` from `@filipgutica/ui/open-vsx`. It runs on Node
+or in a browser with HTTPS and Web Crypto. Browser requests depend on the
+registry and its resource host allowing cross-origin access.
+
+The gallery's search-and-install dialog is docs-only, not an exported component.
+Applications can build their own picker with the exported components and theme
+helpers. `UiSiteHeader` includes the built-in System, Light, and Dark control.
 
 The default theme is unchanged. To opt in to Graphite Indigo, import it after
 `theme.css`:

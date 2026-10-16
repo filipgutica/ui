@@ -260,14 +260,6 @@ const supportsControlSize = computed(() => [
       <UiInput v-model="dialogTitle" />
     </UiField>
 
-    <UiField
-      v-else-if="slug === 'tabs'"
-      control-id="tabs-label"
-      label="Group label"
-    >
-      <UiInput v-model="label" />
-    </UiField>
-
     <template v-else-if="slug === 'dialog'">
       <UiField
         control-id="dialog-title"

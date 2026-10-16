@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto'
-
 import JSZip from 'jszip'
 import { parse } from 'jsonc-parser'
 
@@ -510,7 +508,8 @@ const downloadVerifiedPackage = async ({
     }),
   ])
   const expectedChecksum = new TextDecoder().decode(checksumBytes).trim().split(/\s+/)[0]
-  const actualChecksum = createHash('sha256').update(packageBytes).digest('hex')
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new Uint8Array(packageBytes))
+  const actualChecksum = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
   if (!expectedChecksum || !/^[a-f\d]{64}$/i.test(expectedChecksum)) {
     throw new OpenVsxThemeError('integrity-failed', 'That Open VSX theme has an invalid checksum.')
   }
