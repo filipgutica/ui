@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useTimeoutFn } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
+
+import { useClipboardCopy } from '../use-clipboard-copy.js'
 
 export interface UiCodeBlockProps {
   code: string
@@ -56,10 +57,10 @@ watch(() => [code, language] as const, async ([source, requestedLanguage], _, on
     if (!cancelled) highlightingError.value = 'Syntax highlighting unavailable. Showing plain text.'
   }
 }, { immediate: true })
-const copied = ref(false)
-const { start: resetCopied } = useTimeoutFn(() => { copied.value = false }, 1500, { immediate: false })
-const pending = ref(false)
-const error = ref('')
+const { copied, pending, error, copy } = useClipboardCopy({
+  unavailableMessage: 'Clipboard unavailable. Select the code to copy it.',
+  failureMessage: 'Could not copy. Select the code to copy it.',
+})
 const copySucceeded = computed(() => copied.value && !error.value)
 const compactSuccess = computed(() => variant === 'compact' && copySucceeded.value && !highlightingError.value)
 const statusMessage = computed(() => {
@@ -70,24 +71,7 @@ const statusMessage = computed(() => {
   return copied.value ? 'Code copied to clipboard.' : highlightingError.value
 })
 
-const copyCode = async (): Promise<void> => {
-  error.value = ''
-  copied.value = false
-  if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
-    error.value = 'Clipboard unavailable. Select the code to copy it.'
-    return
-  }
-  pending.value = true
-  try {
-    await navigator.clipboard.writeText(code)
-    copied.value = true
-    resetCopied()
-  } catch {
-    error.value = 'Could not copy. Select the code to copy it.'
-  } finally {
-    pending.value = false
-  }
-}
+const copyCode = (): Promise<void> => copy(code)
 </script>
 
 <template>

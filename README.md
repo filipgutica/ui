@@ -135,6 +135,70 @@ the operating system and other tabs, and is safe during server rendering and
 when storage is blocked. To avoid a flash of the wrong appearance, inline
 `siteThemeBootScript` in the document head.
 
+### Page components
+
+The `site` entry also gives the project pages their section navigation,
+terminal captures, and command tables. They use the styles from
+`components.css` and `site.css`, and work without JavaScript.
+
+```vue
+<script setup lang="ts">
+import { UiCapture, UiCommandList, UiSiteNav } from '@filipgutica/ui/site'
+import read from './captures/read.html?raw'
+</script>
+
+<template>
+  <UiSiteNav
+    label="On this page"
+    :groups="[{ items: [{ label: 'Install', href: '#install' }, { label: 'Commands', href: '#commands' }] }]"
+  />
+  <UiCapture
+    label="Steps"
+    :items="[{ id: 'read', label: 'Read', command: 'annoterm notes.md', html: read }]"
+  >
+    <template #caption="{ item }">
+      <p>What the {{ item.label }} capture shows.</p>
+    </template>
+  </UiCapture>
+  <UiCommandList :items="[{ command: 'wtree ui', description: 'Browse worktrees.' }]" />
+</template>
+```
+
+`UiSiteNav` renders a labelled list of route rows in optional `groups`. Links to
+`#id` sections track the reader's position with `useActiveSection` and get
+`aria-current="location"`, a text-only marker. An item with `current: true` gets
+`aria-current="page"`, the selected fill and accent bar; `code: true` shows the
+label in the monospace font. The page grid places the rail, which stays in view
+on desktop. At 800px and below it is a native Menu disclosure until the page is
+interactive, then a drawer. The drawer closes on navigation and focuses the
+destination section, and focus follows the visible control across the
+breakpoint.
+
+`UiCapture` shows one panel: tabs in the header, the capture scaled to the panel
+width, and the `command` and `caption` slot below. `html` is trusted, checked-in
+terminal markup with a single root element. The expand button opens the capture
+at full size in a dialog and returns focus to the button on close. `v-model`
+holds the active ID and defaults to the first item. Each capture has the ID
+`idPrefix` + `id` (`frame-` by default), so a deep link such as `#frame-read`
+selects its tab on load and on hash change. Without JavaScript every capture is
+listed under its own heading and scrolls at full size. The site owns terminal
+colors: set `--site-capture-bg` on `:root`, because the dialog renders outside
+the panel.
+
+`UiCommandList` renders a table of monospace commands and descriptions. Use the
+`description` slot for `<kbd>` or `<code>`, and `commandHeader` and
+`descriptionHeader` to rename the columns. Each row gets a copy button named
+"Copy <command>" once the page is interactive; set `copyable` to `false` to
+remove them. A status message announces each copy and shows a fallback when
+the clipboard is unavailable. At 640px and below each command stacks above its
+description and wraps.
+
+`site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
+numbered circles, `.fg-site-facts` for an inline `dl` of short label and value
+pairs, `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks
+on phones, `.fg-site-sr-only` for visually hidden text, and `.fg-site-skip` for
+a skip link that appears on focus.
+
 ## Development
 
 ```sh
