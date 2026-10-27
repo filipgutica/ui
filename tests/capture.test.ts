@@ -186,7 +186,7 @@ describe('UiCapture', () => {
     await nextTick()
     expect(screen().style.getPropertyValue('--capture-scale')).toBe('0.5')
 
-    await wrapper.setProps({ items: [{ ...items[0], html: '<pre class="term">wide read screen</pre>' }, ...items.slice(1)] })
+    await wrapper.setProps({ items: [{ id: 'read', label: 'Read', command: 'annoterm notes.md', html: '<pre class="term">wide read screen</pre>' }, ...items.slice(1)] })
     await nextTick()
 
     expect(screen().style.getPropertyValue('--capture-scale')).toBe('0.25')
