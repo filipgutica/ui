@@ -166,4 +166,30 @@ describe('UiCapture', () => {
     expect(screen.hasAttribute('tabindex')).toBe(false)
     cleanups.push(() => wrapper.unmount())
   })
+
+  it('remeasures when a capture keeps its ID but gets new markup', async () => {
+    vi.stubGlobal('ResizeObserver', class implements ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    })
+    cleanups.push(() => vi.unstubAllGlobals())
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (this: HTMLElement) {
+      return this.textContent?.includes('wide') ? 2000 : 1000
+    })
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600)
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(500)
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)
+    cleanups.push(() => vi.restoreAllMocks())
+    const wrapper = await mountCapture()
+    const screen = () => wrapper.get<HTMLElement>('#frame-read [role="region"]').element
+    await nextTick()
+    expect(screen().style.getPropertyValue('--capture-scale')).toBe('0.5')
+
+    await wrapper.setProps({ items: [{ ...items[0], html: '<pre class="term">wide read screen</pre>' }, ...items.slice(1)] })
+    await nextTick()
+
+    expect(screen().style.getPropertyValue('--capture-scale')).toBe('0.25')
+    cleanups.push(() => wrapper.unmount())
+  })
 })

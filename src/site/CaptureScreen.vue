@@ -27,7 +27,8 @@ const measure = (): void => {
   height.value = Math.ceil(capture.offsetHeight * scale.value) + screen.offsetHeight - screen.clientHeight
 }
 
-watch(() => fit, measure, { flush: 'post' })
+// The observer watches the screen, whose height this sets, so new markup is remeasured here.
+watch(() => [fit, html], measure, { flush: 'post' })
 onMounted(() => {
   if (typeof ResizeObserver !== 'undefined') {
     observer = new ResizeObserver(measure)
