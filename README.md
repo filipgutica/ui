@@ -122,7 +122,7 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 </template>
 ```
 
-`project` is `wtree`, `annoterm`, `devps`, `workbench`, or `ui`. The project
+`project` is `wtree`, `annoterm`, `devps`, `workbench`, `filip-stack`, or `ui`. The project
 menu is a native disclosure that works without JavaScript; Escape closes it and
 returns focus to its button. Without a default slot the header renders a
 System, Light, and Dark picker. A page with its own appearance control passes it
