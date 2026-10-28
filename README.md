@@ -186,8 +186,8 @@ colors: set `--site-capture-bg` on `:root`, because the dialog renders outside
 the panel.
 
 `UiCommandList` renders a table of monospace commands and descriptions. Use the
-`description` slot for `<kbd>` or `<code>`, and `commandHeader` and
-`descriptionHeader` to rename the columns. Each row gets a copy button named
+`command` slot to show a key as `<kbd>`, the `description` slot for `<kbd>` or
+`<code>`, and `commandHeader` and `descriptionHeader` to rename the columns. Each row gets a copy button named
 "Copy <command>" once the page is interactive; set `copyable` to `false` to
 remove them. A status message announces each copy and shows a fallback when
 the clipboard is unavailable. At 640px and below each command stacks above its
