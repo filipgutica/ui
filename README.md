@@ -176,8 +176,9 @@ breakpoint.
 
 `UiCapture` shows one panel: tabs in the header, the capture scaled to the panel
 width, and the `command` and `caption` slot below. `html` is trusted, checked-in
-terminal markup with a single root element. The expand button opens the capture
-at full size in a dialog and returns focus to the button on close. `v-model`
+terminal markup with a single root element. The Full size button at the end of
+the tab row, or a click on the capture, opens it at full size in a dialog, and
+focus returns to the button on close. Phones show the button as an icon. `v-model`
 holds the active ID and defaults to the first item. Each capture has the ID
 `idPrefix` + `id` (`frame-` by default), so a deep link such as `#frame-read`
 selects its tab on load and on hash change. Without JavaScript every capture is
@@ -186,8 +187,8 @@ colors: set `--site-capture-bg` on `:root`, because the dialog renders outside
 the panel.
 
 `UiCommandList` renders a table of monospace commands and descriptions. Use the
-`description` slot for `<kbd>` or `<code>`, and `commandHeader` and
-`descriptionHeader` to rename the columns. Each row gets a copy button named
+`command` slot to show a key as `<kbd>`, the `description` slot for `<kbd>` or
+`<code>`, and `commandHeader` and `descriptionHeader` to rename the columns. Each row gets a copy button named
 "Copy <command>" once the page is interactive; set `copyable` to `false` to
 remove them. A status message announces each copy and shows a fallback when
 the clipboard is unavailable. At 640px and below each command stacks above its

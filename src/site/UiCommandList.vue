@@ -24,6 +24,8 @@ const {
 } = defineProps<UiCommandListProps>()
 
 defineSlots<{
+  /** Replaces the code-styled command, for a key shown as `<kbd>`. Copying still uses `item.command`. */
+  command?(props: { item: UiCommandItem }): unknown
   /** Replaces the plain description, for text with `<kbd>` or `<code>`. */
   description?(props: { item: UiCommandItem }): unknown
 }>()
@@ -66,7 +68,12 @@ const copyCommand = (command: string): Promise<void> => {
           :key="item.command"
         >
           <td class="fg-command-list__command">
-            <code>{{ item.command }}</code>
+            <slot
+              name="command"
+              :item="item"
+            >
+              <code>{{ item.command }}</code>
+            </slot>
           </td>
           <td class="fg-command-list__description">
             <slot

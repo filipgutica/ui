@@ -30,13 +30,18 @@ describe('UiCommandList', () => {
     expect(wrapper.findAll('button').map(button => button.attributes('aria-label'))).toEqual(['Copy wtree ui', 'Copy wtree clean --dry-run'])
   })
 
-  it('accepts custom headers, rich descriptions, and no copy column', () => {
+  it('accepts custom headers, rich commands and descriptions, and no copy column', () => {
     const wrapper = mount(UiCommandList, {
       props: { items, copyable: false, commandHeader: 'Key', descriptionHeader: 'Action' },
-      slots: { description: ({ item }: { item: UiCommandItem }) => h('span', [h('kbd', 'q'), ` ${item.command}`]) },
+      slots: {
+        command: ({ item }: { item: UiCommandItem }) => h('kbd', item.command),
+        description: ({ item }: { item: UiCommandItem }) => h('span', [h('kbd', 'q'), ` ${item.command}`]),
+      },
     })
 
     expect(wrapper.findAll('th').map(cell => cell.text())).toEqual(['Key', 'Action'])
+    expect(wrapper.findAll('tbody tr td:first-child kbd').map(key => key.text())).toEqual(['wtree ui', 'wtree clean --dry-run'])
+    expect(wrapper.find('tbody tr td:first-child code').exists()).toBe(false)
     expect(wrapper.get('tbody tr td:nth-child(2) kbd').text()).toBe('q')
     expect(wrapper.findAll('tbody tr')[0]?.findAll('td')).toHaveLength(2)
     expect(wrapper.find('button').exists()).toBe(false)
