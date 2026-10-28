@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, useTemplateRef } from 'vue'
 
 import UiButton from '../components/UiButton.vue'
 import UiDialog from '../components/UiDialog.vue'
@@ -40,20 +40,21 @@ const activeItem = computed(() => items.find(({ id }) => id === active.value))
 
 const viewerOpen = ref(false)
 const viewed = shallowRef<UiCaptureItem>()
-let viewerTrigger: HTMLElement | undefined
 let firstFrame = 0
 let secondFrame = 0
 
-const openViewer = (item: UiCaptureItem, event: MouseEvent): void => {
-  if (event.currentTarget instanceof HTMLElement) viewerTrigger = event.currentTarget
+const fullSizeButton = useTemplateRef<HTMLButtonElement>('fullSizeButton')
+
+const openViewer = (item: UiCaptureItem): void => {
   viewed.value = item
   viewerOpen.value = true
 }
 
+// Focus returns to the Full size button, even after a click on the capture, because the capture is not focusable.
 const restoreViewerFocus = (event: Event): void => {
-  if (!viewerTrigger?.isConnected) return
+  if (!fullSizeButton.value?.isConnected) return
   event.preventDefault()
-  viewerTrigger.focus({ preventScroll: true })
+  fullSizeButton.value.focus({ preventScroll: true })
 }
 
 const currentHashTarget = (): HTMLElement | null => {
@@ -111,11 +112,12 @@ onUnmounted(() => {
     <!-- The visible control. Clicking the capture itself is a pointer shortcut for the same viewer. -->
     <button
       v-if="enhanced && activeItem"
+      ref="fullSizeButton"
       type="button"
       class="fg-capture__full"
       :aria-label="`Expand ${activeItem.label} capture at full size`"
       aria-haspopup="dialog"
-      @click="openViewer(activeItem, $event)"
+      @click="openViewer(activeItem)"
     >
       <svg
         viewBox="0 0 24 24"
@@ -157,7 +159,7 @@ onUnmounted(() => {
                 tabindex="-1"
                 aria-hidden="true"
                 :title="`Open ${item.label} capture at full size`"
-                @click="openViewer(item, $event)"
+                @click="openViewer(item)"
               />
             </div>
             <figcaption
