@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { UiCodeBlock } from '../../../src/index.js'
+import { ref } from 'vue'
+
+import { UiAlert, UiBadge, UiButton, UiCodeBlock, UiField, UiInput } from '../../../src/index.js'
+
+const previewQuery = ref('')
 
 const installCommand = 'pnpm add @filipgutica/ui'
 const stylesImport = `@import "tailwindcss";
@@ -78,6 +82,66 @@ const principles = [
           href="#/sandbox/button"
         >Open sandbox</a>
       </div>
+      <div
+        class="home-preview"
+        role="group"
+        aria-label="Component preview"
+      >
+        <div>
+          <a
+            class="home-preview__caption"
+            href="#/components/button"
+          >Button</a>
+          <div class="home-preview__row">
+            <UiButton>Use Catppuccin</UiButton>
+            <UiButton variant="secondary">
+              Inspect evidence
+            </UiButton>
+          </div>
+        </div>
+        <div class="home-preview__field">
+          <a
+            class="home-preview__caption"
+            href="#/components/field"
+          >Field</a>
+          <UiField
+            control-id="preview-theme-search"
+            label="Search themes"
+            description="Search Open VSX by name."
+          >
+            <UiInput
+              v-model="previewQuery"
+              type="search"
+            />
+          </UiField>
+        </div>
+        <div>
+          <a
+            class="home-preview__caption"
+            href="#/components/badge"
+          >Badge</a>
+          <div class="home-preview__row">
+            <UiBadge tone="info">
+              Queued
+            </UiBadge>
+            <UiBadge tone="success">
+              Passed
+            </UiBadge>
+            <UiBadge tone="error">
+              Failed
+            </UiBadge>
+          </div>
+        </div>
+        <div class="home-preview__alert">
+          <a
+            class="home-preview__caption"
+            href="#/components/alert"
+          >Alert</a>
+          <UiAlert tone="success">
+            Theme imported successfully.
+          </UiAlert>
+        </div>
+      </div>
     </header>
 
     <section aria-labelledby="start-heading">
@@ -98,6 +162,7 @@ const principles = [
           <UiCodeBlock
             :code="stylesImport"
             language="css"
+            title="main.css"
           />
         </div>
       </div>
@@ -115,6 +180,7 @@ const principles = [
       <UiCodeBlock
         :code="vueExample"
         language="vue"
+        title="App.vue"
       />
     </section>
 
@@ -128,13 +194,16 @@ const principles = [
         The library exports the service and theme helpers to build your own picker.
       </p>
       <p>
-        This browser example requires HTTPS and Web Crypto, plus cross-origin access from Open VSX and its resource host.
         Use <code>themes.search(query)</code> to find extensions before calling <code>themes.importTheme(id, appearance)</code>.
-        This example applies a theme for the current page; it does not save a preference.
       </p>
+      <UiAlert tone="info">
+        This browser example requires HTTPS and Web Crypto, plus cross-origin access from Open VSX and its resource host.
+        This example applies a theme for the current page; it does not save a preference.
+      </UiAlert>
       <UiCodeBlock
         :code="themeExample"
         language="vue"
+        title="ThemeButton.vue"
       />
     </section>
 
@@ -142,15 +211,15 @@ const principles = [
       <h2 id="principles-heading">
         Design principles
       </h2>
-      <ul class="principle-list">
-        <li
+      <dl class="fg-site-definitions">
+        <template
           v-for="principle in principles"
           :key="principle.title"
         >
-          <h3>{{ principle.title }}</h3>
-          <p>{{ principle.description }}</p>
-        </li>
-      </ul>
+          <dt>{{ principle.title }}</dt>
+          <dd>{{ principle.description }}</dd>
+        </template>
+      </dl>
     </section>
   </article>
 </template>

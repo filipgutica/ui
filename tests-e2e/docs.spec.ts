@@ -198,6 +198,47 @@ test('highlights the selected language with imported theme colors and restores t
   await expect(block.locator('code')).toHaveText(/.+/)
 })
 
+test('previews themed components on the introduction and keeps setup compact and copyable', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/#/')
+  const preview = page.getByRole('group', { name: 'Component preview' })
+  const primary = preview.getByRole('button', { name: 'Use Catppuccin', exact: true })
+  await expect(primary).toBeVisible()
+  await preview.getByRole('searchbox', { name: 'Search themes', exact: true }).fill('Catppuccin')
+  await expect(preview.getByRole('searchbox')).toHaveValue('Catppuccin')
+
+  for (const choice of ['Light', 'Dark']) {
+    await page.getByRole('button', { name: /^Theme:/ }).click()
+    await page.getByRole('radio', { name: choice, exact: true }).click()
+    await page.getByRole('button', { name: 'Done', exact: true }).click()
+    await expect(primary).toHaveCSS('background-color', choice === 'Dark' ? 'rgb(169, 156, 226)' : 'rgb(99, 89, 167)')
+    await expect(preview.getByRole('searchbox')).toHaveValue('Catppuccin')
+    for (const width of [320, 390, 768, 1280]) {
+      await page.setViewportSize({ width, height: 900 })
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      if (width === 1280) {
+        const rows = await preview.locator(':scope > div').evaluateAll(elements =>
+          elements.map(element => element.getBoundingClientRect().y))
+        expect(new Set(rows).size).toBe(1)
+      }
+      if (width <= 390) {
+        expect(await preview.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true)
+        await preview.getByRole('link', { name: 'Alert', exact: true }).focus()
+        expect(await preview.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+      }
+    }
+  }
+
+  const blocks = page.locator('.home-page .fg-code-block')
+  const install = blocks.first()
+  await expect(install.locator('.fg-code-block__title')).toHaveCount(0)
+  expect((await install.boundingBox())?.height ?? Infinity).toBeLessThanOrEqual(60)
+  await install.getByRole('button', { name: 'Copy code', exact: true }).click()
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('pnpm add @filipgutica/ui')
+  await expect(blocks.locator('.fg-code-block__title')).toHaveText(['main.css', 'App.vue', 'ThemeButton.vue'])
+  await expect(page.locator('.home-page .fg-alert[data-tone="info"]')).toContainText('HTTPS and Web Crypto')
+})
+
 test('renders the introduction and every documented component without horizontal overflow', async ({ page }) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {

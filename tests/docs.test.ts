@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 import ComponentPage from '../docs/src/components/ComponentPage.vue'
+import HomePage from '../docs/src/components/HomePage.vue'
 import ApiTable from '../docs/src/components/ApiTable.vue'
 import ThemePicker from '../docs/src/components/ThemePicker.vue'
 import { openVsxApi } from '../docs/open-vsx-plugin.js'
@@ -94,6 +95,52 @@ describe('component documentation', () => {
     expect(wrapper.get('.fg-code-block')).toBeTruthy()
     expect(wrapper.get('.fg-code-block__copy').attributes('aria-label')).toBe('Copy code')
     expect(wrapper.get('.fg-code-block__pre').text()).toContain('<UiCodeBlock')
+  })
+})
+
+describe('docs introduction', () => {
+  it('previews source components with an accessible editable field and documentation links', async () => {
+    const wrapper = mount(HomePage)
+    const preview = wrapper.get('[role="group"][aria-label="Component preview"]')
+    expect(preview.findAll('.fg-button').map(button => button.attributes('data-variant'))).toEqual(['primary', 'secondary'])
+    expect(preview.findAll('.fg-badge').map(badge => badge.attributes('data-tone'))).toEqual(['info', 'success', 'error'])
+    expect(preview.get('.fg-alert').attributes('data-tone')).toBe('success')
+    expect(preview.findAll('a').map(link => link.attributes('href'))).toEqual([
+      '#/components/button', '#/components/field', '#/components/badge', '#/components/alert',
+    ])
+    const input = preview.get('input')
+    expect(preview.get('label').attributes('for')).toBe(input.attributes('id'))
+    expect(input.attributes('aria-describedby')).toBe(preview.get('[data-field-description]').attributes('id'))
+    await input.setValue('Catppuccin')
+    expect(input.element.value).toBe('Catppuccin')
+    wrapper.unmount()
+  })
+
+  it('keeps setup copyable, names sample files, and preserves caveats and principles', () => {
+    const wrapper = mount(HomePage)
+    const blocks = wrapper.findAllComponents(libraryComponents.UiCodeBlock)
+    expect(blocks.map(block => block.props('title'))).toEqual(['', 'main.css', 'App.vue', 'ThemeButton.vue'])
+    expect(blocks[0]?.props()).toMatchObject({ code: 'pnpm add @filipgutica/ui', variant: 'compact', copyable: true })
+    expect(blocks[0]?.find('.fg-code-block__title').exists()).toBe(false)
+    expect(blocks[1]?.props('code')).toBe('@import "tailwindcss";\n@import "@filipgutica/ui/theme.css";\n@import "@filipgutica/ui/components.css";')
+    expect(blocks[2]?.props('code')).toContain("import { UiSiteHeader } from '@filipgutica/ui/site'")
+    expect(blocks[3]?.props('code')).toContain("themes.importTheme('catppuccin.catppuccin-vsc', 'dark')")
+    const caveat = wrapper.get('.fg-alert[data-tone="info"]')
+    expect(caveat.text()).toContain('This browser example requires HTTPS and Web Crypto, plus cross-origin access from Open VSX and its resource host.')
+    expect(caveat.text()).toContain('This example applies a theme for the current page; it does not save a preference.')
+    expect(wrapper.text()).toContain('themes.search(query)')
+    expect(wrapper.text()).toContain('themes.importTheme(id, appearance)')
+    expect(wrapper.get('a[href="#/components/button"]').text()).toBe('Browse components')
+    expect(wrapper.get('a[href="#/sandbox/button"]').text()).toBe('Open sandbox')
+    expect(wrapper.findAll('dl.fg-site-definitions dt').map(term => term.text())).toEqual([
+      'Quiet by default', 'Dense but calm', 'Keyboard-aware',
+    ])
+    expect(wrapper.findAll('dl.fg-site-definitions dd').map(definition => definition.text())).toEqual([
+      'Neutral surfaces, one accent, and clear status colors.',
+      'Compact controls, a 4px rhythm, and subtle dividers.',
+      'Visible focus and accessible labels. Themes preserve structure and sizing.',
+    ])
+    wrapper.unmount()
   })
 })
 
