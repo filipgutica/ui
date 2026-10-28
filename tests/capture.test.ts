@@ -81,7 +81,8 @@ describe('UiCapture', () => {
     expect(warn).not.toHaveBeenCalled()
     expect(error).not.toHaveBeenCalled()
     expect(container.querySelectorAll('[role="tab"]')).toHaveLength(3)
-    expect(container.querySelectorAll('[aria-haspopup="dialog"]')).toHaveLength(3)
+    expect(container.querySelectorAll('[aria-haspopup="dialog"]')).toHaveLength(1)
+    expect(container.querySelectorAll('.fg-capture__expand')).toHaveLength(3)
     expect(visibleFigure()?.id).toBe('frame-read')
   })
 
@@ -116,8 +117,12 @@ describe('UiCapture', () => {
 
   it('opens the full-size capture and returns focus to its trigger on close', async () => {
     const wrapper = await mountCapture({ modelValue: 'mark' })
-    const expand = wrapper.get<HTMLButtonElement>('[aria-label="Expand Mark capture"]')
+    const expand = wrapper.get<HTMLButtonElement>('[aria-label="Expand Mark capture at full size"]')
     expect(expand.attributes('aria-haspopup')).toBe('dialog')
+    expect(expand.text()).toBe('Full size')
+    // The capture-wide click target duplicates the control, so it stays out of the tab order and accessibility tree.
+    const shortcut = wrapper.get('#frame-mark .fg-capture__expand')
+    expect(shortcut.attributes()).toMatchObject({ tabindex: '-1', 'aria-hidden': 'true' })
 
     expand.element.focus()
     await expand.trigger('click')

@@ -36,6 +36,7 @@ defineSlots<{
 const enhanced = ref(false)
 const tabs = computed(() => items.map(({ id, label: tabLabel }) => ({ value: id, label: tabLabel })))
 const active = computed(() => model.value ?? items[0]?.id ?? '')
+const activeItem = computed(() => items.find(({ id }) => id === active.value))
 
 const viewerOpen = ref(false)
 const viewed = shallowRef<UiCaptureItem>()
@@ -107,6 +108,26 @@ onUnmounted(() => {
     class="fg-capture"
     :data-enhanced="enhanced"
   >
+    <!-- The visible control. Clicking the capture itself is a pointer shortcut for the same viewer. -->
+    <button
+      v-if="enhanced && activeItem"
+      type="button"
+      class="fg-capture__full"
+      :aria-label="`Expand ${activeItem.label} capture at full size`"
+      aria-haspopup="dialog"
+      @click="openViewer(activeItem, $event)"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        aria-hidden="true"
+      >
+        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+      </svg>
+      <span class="fg-capture__full-label">Full size</span>
+    </button>
     <UiTabs
       :model-value="active"
       :items="tabs"
@@ -133,8 +154,8 @@ onUnmounted(() => {
                 v-if="enhanced"
                 type="button"
                 class="fg-capture__expand"
-                :aria-label="`Expand ${item.label} capture`"
-                aria-haspopup="dialog"
+                tabindex="-1"
+                aria-hidden="true"
                 :title="`Open ${item.label} capture at full size`"
                 @click="openViewer(item, $event)"
               />
