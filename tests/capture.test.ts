@@ -140,6 +140,14 @@ describe('UiCapture', () => {
 
     expect(document.querySelector('[role="dialog"]')).toBeNull()
     expect(document.activeElement).toBe(expand.element)
+
+    // A click on the capture opens the same viewer, and focus still returns to the visible control.
+    await shortcut.trigger('click')
+    await settleDialog()
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await settleDialog()
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+    expect(document.activeElement).toBe(expand.element)
     cleanups.push(() => wrapper.unmount())
   })
 
