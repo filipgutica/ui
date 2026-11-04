@@ -129,10 +129,12 @@
   .fg-site-appearance__choice:hover { color: var(--color-text); background: var(--color-row-hover); }
   .fg-site-appearance__choice[aria-pressed="true"] { color: var(--color-text); background: var(--color-row-selected); }
 
+  /* Focus is a 2px outline outside the control, which forced-colors mode keeps. An
+   * inset ring is used only where a scrolling ancestor would clip an outer one. */
   .fg-site-header a:focus-visible,
   .fg-site-projects__trigger:focus-visible,
   .fg-site-appearance__choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-  .fg-site-appearance__choice:focus-visible { outline-offset: -2px; }
+  /* Inset: the desktop rail and the phone drawer scroll. */
   .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 
   /* Section rail (UiSiteNav). The page grid places it; on desktop it stays in view
@@ -178,8 +180,9 @@
   }
   .fg-capture .fg-tabs__list { width: 100%; margin-block-end: 0; padding-inline: var(--space-2); }
   .fg-capture .fg-tabs__tab { min-height: var(--control-lg); }
-  /* The Full size control sits at the end of the tab row; the list reserves its width. */
-  .fg-capture[data-enhanced="true"] .fg-tabs__list { padding-inline-end: calc(var(--space-2) + 6.5rem); }
+  /* The Full size control sits at the end of the tab row. The list's margin, not its
+   * padding, reserves the control's width, so the scroll area and divider end before it. */
+  .fg-capture[data-enhanced="true"] .fg-tabs__list { width: auto; margin-inline-end: calc(var(--space-2) + 6.5rem); }
   .fg-capture__full {
     position: absolute;
     top: 0;
@@ -198,6 +201,7 @@
   }
   .fg-capture__full:hover { color: var(--color-text); }
   .fg-capture__full svg { width: 14px; height: 14px; flex: none; }
+  /* Inset: the capture preview below would cover an outset ring. */
   .fg-capture__full:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
   /* Without JavaScript every capture is listed under its own heading. */
   .fg-capture .fg-tabs__heading { margin: 0; padding: var(--space-3) var(--space-4); }
@@ -240,8 +244,9 @@
     line-height: var(--leading);
   }
   .fg-capture__caption > code { color: var(--color-text); font-family: var(--font-mono); font-size: var(--text-sm); overflow-wrap: anywhere; }
-  .fg-capture__screen:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-  .fg-capture__expand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -4px; }
+  /* Inset: the enhanced panel clips its content. */
+  .fg-capture__screen:focus-visible,
+  .fg-capture__expand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
   .fg-dialog__content.fg-capture-viewer {
     width: calc(100vw - var(--space-8));
     max-width: var(--page-max);
@@ -299,6 +304,7 @@
   }
   .fg-command-list__copy:hover { color: var(--color-text); background: var(--color-row-hover); }
   .fg-command-list__copy svg { width: 1rem; height: 1rem; }
+  /* Inset: the table scrolls sideways on larger screens. */
   .fg-command-list__copy:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
   .fg-command-list__status:not(:empty) { display: block; padding-top: var(--space-2); font-size: var(--text-sm); }
 
@@ -421,7 +427,7 @@
     }
     .fg-site-rail__summary::-webkit-details-marker { display: none; }
     .fg-site-rail__summary:hover { color: var(--color-text); background: var(--color-row-hover); }
-    .fg-site-rail__summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+    .fg-site-rail__summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
     .fg-site-rail__menu > .fg-site-rail__content { padding-block: var(--space-4); }
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fg-site-rail__menu .fg-site-rail__group-label { grid-column: 1 / -1; }
@@ -430,7 +436,7 @@
   @media (max-width: 640px) {
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
-    .fg-capture[data-enhanced="true"] .fg-tabs__list { padding-inline-end: calc(var(--space-2) + var(--control-lg)); }
+    .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }
     .fg-capture__full { min-width: var(--control-lg); justify-content: center; }
     .fg-capture__full-label { display: none; }
     .fg-command-list__table,

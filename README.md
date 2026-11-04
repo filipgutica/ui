@@ -18,6 +18,7 @@ Import the styles from your application stylesheet:
 ```css
 @import "tailwindcss";
 @import "@filipgutica/ui/theme.css";
+@import "@filipgutica/ui/themes/graphite-indigo.css";
 @import "@filipgutica/ui/components.css";
 ```
 
@@ -93,13 +94,10 @@ The gallery's search-and-install dialog is docs-only, not an exported component.
 Applications can build their own picker with the exported components and theme
 helpers. `UiSiteHeader` includes the built-in System, Light, and Dark control.
 
-The default theme is unchanged. To opt in to Graphite Indigo, import it after
-`theme.css`:
-
-```css
-@import "@filipgutica/ui/theme.css";
-@import "@filipgutica/ui/themes/graphite-indigo.css";
-```
+The install steps above import Graphite Indigo, the palette of the project
+sites, after `theme.css`. To keep the base theme instead, with blue actions and
+warm greys, leave out the `themes/graphite-indigo.css` import. Graphite Indigo
+stays opt-in: `theme.css` alone still gives the base theme.
 
 ## Project sites
 

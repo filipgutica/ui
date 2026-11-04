@@ -125,7 +125,7 @@ describe('docs introduction', () => {
     expect(blocks.map(block => block.props('title'))).toEqual(['', 'main.css', 'App.vue', 'ThemeButton.vue'])
     expect(blocks[0]?.props()).toMatchObject({ code: 'pnpm add @filipgutica/ui', variant: 'compact', copyable: true })
     expect(blocks[0]?.find('.fg-code-block__title').exists()).toBe(false)
-    expect(blocks[1]?.props('code')).toBe('@import "tailwindcss";\n@import "@filipgutica/ui/theme.css";\n@import "@filipgutica/ui/components.css";')
+    expect(blocks[1]?.props('code')).toBe('@import "tailwindcss";\n@import "@filipgutica/ui/theme.css";\n@import "@filipgutica/ui/themes/graphite-indigo.css";\n@import "@filipgutica/ui/components.css";')
     expect(blocks[2]?.props('code')).toContain("import { UiSiteHeader } from '@filipgutica/ui/site'")
     expect(blocks[3]?.props('code')).toContain("themes.importTheme('catppuccin.catppuccin-vsc', 'dark')")
     const caveat = wrapper.get('.fg-alert[data-tone="info"]')

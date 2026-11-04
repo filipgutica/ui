@@ -8,6 +8,7 @@ const previewQuery = ref('')
 const installCommand = 'pnpm add @filipgutica/ui'
 const stylesImport = `@import "tailwindcss";
 @import "@filipgutica/ui/theme.css";
+@import "@filipgutica/ui/themes/graphite-indigo.css";
 @import "@filipgutica/ui/components.css";`
 
 const vueExample = `<script setup lang="ts">

@@ -37,6 +37,13 @@ describe('Graphite Indigo generated files', () => {
     expect(missing).toEqual([])
   })
 
+  it('draws standalone focus with an outline, which forced-colors mode keeps', () => {
+    const focus = /:focus-visible\s*\{([^}]*)\}/.exec(renderStandaloneTokens(data))?.[1]
+
+    expect(focus).toContain('outline: 2px solid var(--focus)')
+    expect(focus).not.toMatch(/box-shadow|outline:\s*none/)
+  })
+
   it('keeps one :root.dark block that sites can copy into a no-script rule', () => {
     const css = renderLibraryTheme(data)
 
