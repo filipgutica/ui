@@ -211,7 +211,8 @@ main content, and footer. The shell then supplies:
   the footer on the frame edges. At 800px and below the rail stacks above `main`.
 - element defaults inside the shell, plus the page background and font on
   `body`: box sizing, heading sizes and margins, paragraph measure, links,
-  `kbd`, and a 2px focus outline.
+  inline `code` at `--text-sm`, `kbd`, a 2px focus outline, and a `[hidden]`
+  rule that outranks the page's own `display` rules.
 - `.fg-site-footer` for the footer and `.fg-site-legend` for a `dl` that explains
   what a capture shows.
 

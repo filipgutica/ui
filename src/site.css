@@ -27,7 +27,12 @@
   .fg-site-docs :where(h1) { max-width: 22ch; font-size: var(--text-3xl); letter-spacing: var(--tracking-tight); }
   .fg-site-docs :where(h2) { font-size: var(--text-xl); }
   .fg-site-docs :where(p) { max-width: var(--measure); }
+  /* Tab panels and other enhanced markup use the hidden attribute, so it outranks the page's own
+   * display rules. until-found keeps the browser's find-in-page behavior. */
+  .fg-site-docs :where([hidden]:not([hidden="until-found"])) { display: none !important; }
   .fg-site-docs :where(code, kbd, pre) { font-family: var(--font-mono); }
+  /* Monospace looks larger than the UI face, so inline code steps down: --text-sm in --text-md text. */
+  .fg-site-docs :where(code) { font-size: var(--text-sm); }
   .fg-site-docs :where(a) { color: var(--color-link); text-underline-offset: 0.18em; }
   .fg-site-docs :where(kbd) {
     display: inline-block;
