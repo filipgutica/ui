@@ -24,13 +24,16 @@ const exportedComponents = [
   'UiDialog',
   'UiDrawer',
   'UiField',
+  'UiFigure',
   'UiInput',
   'UiProgress',
   'UiRadioCard',
   'UiRadioCardGroup',
+  'UiScore',
   'UiSelect',
   'UiSlider',
   'UiTabs',
+  'UiToggleButton',
 ]
 
 describe('component documentation', () => {

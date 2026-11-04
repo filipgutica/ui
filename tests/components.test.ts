@@ -9,13 +9,16 @@ import {
   UiCheckbox,
   UiDialog,
   UiField,
+  UiFigure,
   UiInput,
   UiProgress,
   UiRadioCard,
   UiRadioCardGroup,
+  UiScore,
   UiSelect,
   UiSlider,
   UiSurface,
+  UiToggleButton,
 } from '../src/index.js'
 
 describe('application primitives', () => {
@@ -26,6 +29,7 @@ describe('application primitives', () => {
       mount(UiSelect),
       mount(UiCheckbox),
       mount(UiSlider, { props: { label: 'Value' } }),
+      mount(UiToggleButton).get('button'),
     ]
 
     for (const control of controls) {
@@ -40,6 +44,7 @@ describe('application primitives', () => {
       mount(UiSelect, { props: { size } }),
       mount(UiCheckbox, { props: { size } }),
       mount(UiSlider, { props: { label: 'Value', size } }),
+      mount(UiToggleButton, { props: { size } }).get('button'),
     ]
 
     for (const control of controls) {
@@ -143,6 +148,74 @@ describe('application primitives', () => {
 
     expect(wrapper.emitted('update:modelValue')).toEqual([[true]])
     expect(wrapper.text()).toContain('Count as a correction')
+  })
+
+  it('exposes toggle-button pressed state and blocks a disabled toggle', async () => {
+    const wrapper = mount(UiToggleButton, {
+      slots: { default: 'Tests with signal' },
+    })
+    const button = wrapper.get('button')
+    expect(button.attributes()).toMatchObject({ type: 'button', 'aria-pressed': 'false' })
+    expect(wrapper.find('.fg-toggle-button__description').exists()).toBe(false)
+
+    await button.trigger('click')
+    expect(wrapper.emitted('update:pressed')).toEqual([[true]])
+
+    await wrapper.setProps({ pressed: true })
+    expect(button.attributes('aria-pressed')).toBe('true')
+    await button.trigger('click')
+    expect(wrapper.emitted('update:pressed')).toEqual([[true], [false]])
+
+    await wrapper.setProps({ disabled: true })
+    await button.trigger('click')
+    expect(button.attributes('disabled')).toBe('')
+    expect(wrapper.emitted('update:pressed')).toHaveLength(2)
+  })
+
+  it('renders toggle-button description text inside the button', () => {
+    const wrapper = mount(UiToggleButton, {
+      slots: { default: 'Tests with signal', description: 'Pillar 3' },
+    })
+
+    expect(wrapper.get('.fg-toggle-button__label').text()).toBe('Tests with signal')
+    expect(wrapper.get('button .fg-toggle-button__description').text()).toBe('Pillar 3')
+  })
+
+  it('renders score pips beside visible score text', () => {
+    const wrapper = mount(UiScore, { props: { score: 2 } })
+
+    expect(wrapper.get('.fg-score__pips').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.findAll('.fg-score__pip').map(pip => pip.attributes('data-filled'))).toEqual(['true', 'true', undefined])
+    expect(wrapper.get('.fg-score__value').text()).toBe('2/3')
+    expect(wrapper.get('.fg-score__max').text()).toBe('/3')
+  })
+
+  it.each([
+    { name: 'above the maximum', score: 7, max: 4, expectedText: '4/4', expectedFilled: 4 },
+    { name: 'below zero', score: -1, max: 3, expectedText: '0/3', expectedFilled: 0 },
+    { name: 'that is not a number', score: Number.NaN, max: 3, expectedText: '0/3', expectedFilled: 0 },
+    { name: 'with an invalid maximum', score: 2, max: 0, expectedText: '2/3', expectedFilled: 2 },
+  ])('clamps a score $name for display', ({ score, max, expectedText, expectedFilled }) => {
+    const wrapper = mount(UiScore, { props: { score, max } })
+
+    expect(wrapper.get('.fg-score__value').text()).toBe(expectedText)
+    expect(wrapper.findAll('.fg-score__pip[data-filled="true"]')).toHaveLength(expectedFilled)
+  })
+
+  it('numbers a figure caption only when a number is supplied', () => {
+    const numbered = mount(UiFigure, {
+      props: { number: 2 },
+      slots: { default: '<table><tr><td>Plate</td></tr></table>', caption: 'Four problems hide in one change.' },
+    })
+    expect(numbered.element.tagName).toBe('FIGURE')
+    expect(numbered.get('.fg-figure__plate table').text()).toBe('Plate')
+    expect(numbered.get('figcaption').text()).toBe('Figure 2. Four problems hide in one change.')
+
+    const unnumbered = mount(UiFigure, {
+      slots: { default: 'Plate', caption: 'Four problems hide in one change.' },
+    })
+    expect(unnumbered.find('.fg-figure__number').exists()).toBe(false)
+    expect(unnumbered.get('figcaption').text()).toBe('Four problems hide in one change.')
   })
 
   it('exposes an accessible radio-card model', async () => {
