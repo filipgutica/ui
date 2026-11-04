@@ -22,7 +22,8 @@ test('keeps every capture tab clear of the Full size button', async ({ page }) =
     const last = capture.getByRole('tab', { name: 'Dry run', exact: true })
     await expect(last).toHaveAttribute('aria-selected', 'true')
     const tab = await last.boundingBox()
-    expect((tab?.x ?? 0) + (tab?.width ?? Infinity), `last tab end at ${width}px`).toBeLessThanOrEqual(button?.x ?? 0)
+    // Scroll positions are whole pixels, so a tab with a fractional width can end within 1px of the button.
+    expect((tab?.x ?? 0) + (tab?.width ?? Infinity), `last tab end at ${width}px`).toBeLessThanOrEqual((button?.x ?? 0) + 1)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
 })
