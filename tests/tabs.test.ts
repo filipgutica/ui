@@ -134,4 +134,18 @@ describe('UiTabs', () => {
     expect(wrapper.find('[role="tab"]').attributes('aria-selected')).toBe('true')
     wrapper.unmount()
   })
+
+  it('fades the strip when added tabs overflow it without a resize', async () => {
+    const wrapper = mount(UiTabs, { props: { items, label: 'Captures', modelValue: 'overview' }, attachTo: document.body })
+    await nextTick()
+    // jsdom has no layout: give the strip a fixed width and each tab 120px.
+    const strip = wrapper.get<HTMLDivElement>('[role="tablist"]').element
+    Object.defineProperty(strip, 'clientWidth', { value: 400 })
+    Object.defineProperty(strip, 'scrollWidth', { get: () => strip.querySelectorAll('[role="tab"]').length * 120 })
+    expect(strip.dataset.clipped).toBeUndefined()
+    await wrapper.setProps({ items: [...items, { value: 'events', label: 'Events' }] })
+    await nextTick()
+    expect(strip.dataset.clipped).toBe('right')
+    wrapper.unmount()
+  })
 })

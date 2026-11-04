@@ -63,13 +63,15 @@ const measureClipping = (): void => {
   clipped.value = left && right ? 'both' : left ? 'left' : right ? 'right' : undefined
 }
 
-watch([enhanced, activeValue], revealActive, { flush: 'post' })
+const fit = (): void => {
+  revealActive()
+  measureClipping()
+}
+// New or renamed tabs change what the strip clips without resizing a strip already at full width.
+watch([enhanced, activeValue, () => items], fit, { flush: 'post', deep: true })
 watch(list, (strip, _, onCleanup) => {
   if (!strip || typeof ResizeObserver === 'undefined') return
-  const observer = new ResizeObserver(() => {
-    revealActive()
-    measureClipping()
-  })
+  const observer = new ResizeObserver(fit)
   observer.observe(strip)
   onCleanup(() => observer.disconnect())
 })

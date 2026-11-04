@@ -31,8 +31,9 @@
    * display rules. until-found keeps the browser's find-in-page behavior. */
   .fg-site-docs :where([hidden]:not([hidden="until-found"])) { display: none !important; }
   .fg-site-docs :where(code, kbd, pre) { font-family: var(--font-mono); }
-  /* Monospace looks larger than the UI face, so inline code steps down: --text-sm in --text-md text. */
-  .fg-site-docs :where(code) { font-size: var(--text-sm); }
+  /* Monospace looks larger than the UI face, so inline code steps down: --text-sm in --text-md text.
+   * Code inside pre keeps the block's own size. */
+  .fg-site-docs :where(:not(pre) > code) { font-size: var(--text-sm); }
   .fg-site-docs :where(a) { color: var(--color-link); text-underline-offset: 0.18em; }
   .fg-site-docs :where(kbd) {
     display: inline-block;
@@ -615,7 +616,9 @@
     /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
     .fg-site-docs .fg-site-header__links { display: none; }
     /* Fact links, such as a Source link that stands in for the hidden header link, get a
-     * touch-sized hit area. The negative margin keeps each fact row one line tall. */
+     * touch-sized hit area. The negative margin keeps each fact row one line tall, and the
+     * row gap of a list with links makes room for the part of the hit area past the line. */
+    .fg-site-facts:has(a) { row-gap: calc(var(--control-lg) - 1lh); }
     .fg-site-facts a {
       display: inline-flex;
       min-height: var(--control-lg);

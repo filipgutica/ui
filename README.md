@@ -52,8 +52,8 @@ cancelable `closeAutoFocus` event and focus that heading.
 mounting, it adds keyboard-accessible tabs and hides inactive panels without
 unmounting them. A tab strip narrower than its tabs scrolls, fades each clipped
 edge, and keeps the selected tab in view when it resizes. Use unique item values
-and keep page anchor headings outside the panels. Re-align an initial hash after layout settles if enhancement changes
-the page height.
+and keep page anchor headings outside the panels. Re-align an initial hash after
+layout settles if enhancement changes the page height.
 
 Track page sections from a component's setup function:
 
@@ -204,8 +204,8 @@ description and wraps.
 numbered circles, `.fg-site-facts` for an inline `dl` of short label and value
 pairs whose links get a `--control-lg` hit area at 640px and below,
 `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks on
-phones and keeps `code` such as `--all` on one line, `.fg-site-sr-only` for visually hidden text, and `.fg-site-skip` for
-a skip link that appears on focus.
+phones and keeps `code` such as `--all` on one line, `.fg-site-sr-only` for
+visually hidden text, and `.fg-site-skip` for a skip link that appears on focus.
 
 ### Docs shell
 

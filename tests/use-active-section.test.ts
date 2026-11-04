@@ -172,6 +172,23 @@ describe('useActiveSection', () => {
       await wrapper.vm.$nextTick()
       expect(current(wrapper)).toBe('overview')
     })
+
+    it('releases a held jump when the hash returns to the page itself', async () => {
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(800)
+      offsets.commands = 300
+      offsets.details = 600
+      const wrapper = mountAttached()
+      wrapper.get('a[href="#details"]').element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      flushFrame()
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('details')
+      // Going back to the page's own URL empties the hash, and this short page does not scroll.
+      history.replaceState(null, '', location.pathname)
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+      flushFrame()
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('overview')
+    })
   })
 
   it('selects the final section at the document bottom and cleans up queued work', async () => {

@@ -55,11 +55,15 @@ export const useActiveSection = ({ targetIds }: ActiveSectionOptions): Readonly<
     }
     const jumpTo = (id: string): void => {
       const target = targets.find(candidate => candidate.id === id)
-      if (!target) return
-      const range = Math.max(0, root.scrollHeight - window.innerHeight)
-      const offset = window.scrollY + target.element.getBoundingClientRect().top - insetOf()
-      const landing = Math.min(Math.max(offset, 0), range)
-      jump = { id, landing, closest: Math.abs(window.scrollY - landing) }
+      // A jump to an empty or untracked hash, such as going back to the page's own URL, ends a
+      // held jump, so the scroll position decides again.
+      jump = undefined
+      if (target) {
+        const range = Math.max(0, root.scrollHeight - window.innerHeight)
+        const offset = window.scrollY + target.element.getBoundingClientRect().top - insetOf()
+        const landing = Math.min(Math.max(offset, 0), range)
+        jump = { id, landing, closest: Math.abs(window.scrollY - landing) }
+      }
       schedule()
     }
     const followHash = (): void => jumpTo(location.hash.slice(1))

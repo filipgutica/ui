@@ -127,6 +127,9 @@ test('hides [hidden] elements over page display rules and sizes inline code one 
   await expect(intro).toBeHidden()
   await intro.evaluate(element => { element.hidden = false })
   await expect(intro.locator('code')).toHaveCSS('font-size', '13px')
+  // Code in a block keeps the block's size.
+  await intro.evaluate(element => element.insertAdjacentHTML('afterend', '<pre style="font-size: 15px"><code>demo ui</code></pre>'))
+  await expect(page.locator('#install > pre > code')).toHaveCSS('font-size', '15px')
 })
 
 test('keeps definition flags such as --all on one line on phones', async ({ page }) => {
@@ -152,6 +155,22 @@ test('gives fact links a touch-sized hit area on phones without taller fact rows
     const labelHeight = (await row.locator('dt').boundingBox())?.height ?? 0
     expect(rowHeight, `Source row at ${width}px`).toBeLessThanOrEqual(labelHeight + 1)
   }
+})
+
+test('keeps phone fact-link hit areas in adjacent rows apart', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 })
+  await page.goto(fixture)
+  await page.locator('.fg-site-facts').evaluate(facts => facts.insertAdjacentHTML('beforeend',
+    '<div><dt>Docs</dt><dd><a href="#guide">filipgutica.github.io/demo</a></dd></div>'))
+  const source = await page.locator('.fg-site-facts a', { hasText: 'filipgutica/demo' }).boundingBox()
+  const docs = await page.locator('.fg-site-facts a', { hasText: 'github.io' }).boundingBox()
+  expect(docs?.y ?? 0, 'Docs wraps below Source').toBeGreaterThan(source?.y ?? Infinity)
+  expect(source?.height ?? 0).toBeGreaterThanOrEqual(44)
+  expect((source?.y ?? 0) + (source?.height ?? Infinity)).toBeLessThanOrEqual((docs?.y ?? 0) + 0.5)
+  // A fact list without links keeps its compact rows.
+  await page.locator('.fg-site-facts').evaluate(facts => facts.insertAdjacentHTML('afterend',
+    '<dl class="fg-site-facts" id="plain-facts"><div><dt>Runs on</dt><dd>macOS</dd></div></dl>'))
+  await expect(page.locator('#plain-facts')).toHaveCSS('row-gap', '8px')
 })
 
 test('lets a page set the legend column minimum', async ({ page }) => {
