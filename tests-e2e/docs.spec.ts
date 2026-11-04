@@ -12,13 +12,16 @@ const componentSlugs = [
   'dialog',
   'drawer',
   'field',
+  'figure',
   'input',
   'progress',
   'radio-card',
   'radio-card-group',
+  'score',
   'select',
   'slider',
   'tabs',
+  'toggle-button',
 ]
 
 test('operates tabs with the keyboard and retains panel contents', async ({ page }) => {
@@ -39,6 +42,24 @@ test('operates tabs with the keyboard and retains panel contents', async ({ page
   await expect(stage.getByRole('tabpanel')).toHaveText('Process list capture', { useInnerText: true })
   await page.setViewportSize({ width: 390, height: 844 })
   expect((await list.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44)
+})
+
+test('toggles a toggle button with the keyboard and stills its switch for reduced motion', async ({ page }) => {
+  await page.goto('/#/sandbox/toggle-button')
+  const toggle = page.locator('.playground-stage').getByRole('button', { name: 'Tests with signal Pillar 3', exact: true })
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await toggle.focus()
+  await toggle.press('Space')
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  const pressedBorder = await toggle.evaluate(element => getComputedStyle(element).borderColor)
+  await toggle.hover()
+  await expect(toggle).toHaveCSS('border-color', pressedBorder)
+  await toggle.press('Enter')
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await expect(toggle).toHaveCSS('outline-style', 'solid')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const thumbTransition = await toggle.locator('.fg-toggle-button__switch').evaluate(element => getComputedStyle(element, '::after').transitionDuration)
+  expect(thumbTransition).toBe('0s')
 })
 
 test('contains drawer focus, dismisses it, and restores the trigger in both motion modes', async ({ page }) => {

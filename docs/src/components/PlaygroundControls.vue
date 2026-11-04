@@ -15,8 +15,10 @@ const error = defineModel<string>('error', { required: true })
 const inputValue = defineModel<string>('inputValue', { required: true })
 const label = defineModel<string>('label', { required: true })
 const loading = defineModel<boolean>('loading', { required: true })
+const numbered = defineModel<boolean>('numbered', { required: true })
 const progressValue = defineModel<number>('progressValue', { required: true })
 const radioCardValue = defineModel<string>('radioCardValue', { required: true })
+const score = defineModel<number>('score', { required: true })
 const selectValue = defineModel<string>('selectValue', { required: true })
 const tone = defineModel<NonNullable<UiAlertProps['tone']>>('tone', { required: true })
 const dialogDescription = defineModel<string>('dialogDescription', { required: true })
@@ -54,6 +56,12 @@ const statusOptions = [
   { label: 'Failed', value: 'failed' },
 ]
 
+const scoreOptions = ['0', '1', '2', '3']
+const scoreText = computed({
+  get: () => String(score.value),
+  set: (value: string) => { score.value = Number(value) },
+})
+
 const colorSchemeOptions = [
   { label: 'System', value: 'system' },
   { label: 'Light', value: 'light' },
@@ -78,6 +86,7 @@ const supportsControlSize = computed(() => [
   'input',
   'select',
   'slider',
+  'toggle-button',
 ].includes(slug))
 </script>
 
@@ -203,6 +212,38 @@ const supportsControlSize = computed(() => [
         Disabled
       </UiCheckbox>
     </template>
+
+    <template v-else-if="slug === 'toggle-button'">
+      <UiCheckbox v-model="checked">
+        Pressed
+      </UiCheckbox>
+      <UiCheckbox v-model="disabled">
+        Disabled
+      </UiCheckbox>
+    </template>
+
+    <UiField
+      v-else-if="slug === 'score'"
+      control-id="score-value"
+      label="Score"
+    >
+      <UiSelect v-model="scoreText">
+        <option
+          v-for="option in scoreOptions"
+          :key="option"
+          :value="option"
+        >
+          {{ option }}
+        </option>
+      </UiSelect>
+    </UiField>
+
+    <UiCheckbox
+      v-else-if="slug === 'figure'"
+      v-model="numbered"
+    >
+      Numbered
+    </UiCheckbox>
 
     <template v-else-if="slug === 'radio-card'">
       <UiCheckbox v-model="checked">

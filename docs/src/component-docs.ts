@@ -421,6 +421,71 @@ export const componentDocs: ComponentDoc[] = [
       code: `<UiCard title="Session summary">\n  <template #actions>\n    <UiButton variant="ghost" size="sm">View</UiButton>\n  </template>\n  <p>12 tool calls across 4 turns.</p>\n  <template #footer>Updated just now</template>\n</UiCard>`,
     },
   },
+  {
+    category: 'Layout',
+    slug: 'figure',
+    name: 'UiFigure',
+    title: 'Figure',
+    summary: 'Frames a visual on a quiet plate with a caption below.',
+    usage: 'Use a figure for a diagram, table, or interactive example that the surrounding prose refers to. Set number when the text cites the figure. Wide content scrolls inside the plate instead of the page. The consumer owns the spacing around the figure.',
+    props: [
+      { name: 'number', required: false, type: 'number', description: 'Prefixes the caption with "Figure N." when set.' },
+    ],
+    slots: [
+      { name: 'default', type: 'unknown', description: 'Plate content.' },
+      { name: 'caption', type: 'unknown', description: 'Caption text shown below the plate.' },
+    ],
+    events: [],
+    example: {
+      title: 'Numbered figure',
+      description: 'Cite the figure by number in the surrounding text.',
+      code: `<UiFigure :number="1">\n  <SafeguardTable />\n  <template #caption>\n    Each safeguard stops one problem before review.\n  </template>\n</UiFigure>`,
+    },
+  },
+  {
+    category: 'Feedback',
+    slug: 'score',
+    name: 'UiScore',
+    title: 'Score',
+    summary: 'Shows a small score as filled pips beside its value.',
+    usage: 'Use a score for a short rating, such as 2 of 3. The pips are decorative; the visible text, such as 2/3, is the accessible value. Out-of-range scores are clamped to 0 through max.',
+    props: [
+      { name: 'max', required: false, type: 'number', default: '3', description: 'Number of pips. Values that are not positive integers use 3.' },
+      { name: 'score', required: true, type: 'number', description: 'Score shown by the filled pips and the text.' },
+    ],
+    slots: [],
+    events: [],
+    example: {
+      title: 'Rating',
+      description: 'Place the score next to the item it rates.',
+      code: `<UiScore :score="2" />`,
+    },
+  },
+  {
+    category: 'Forms',
+    slug: 'toggle-button',
+    name: 'UiToggleButton',
+    title: 'Toggle button',
+    summary: 'Turns an option on or off with a pressed button and a switch indicator.',
+    usage: 'Use a toggle button when a choice changes what the surrounding content shows. Put a group of toggle buttons in an element with role="group" and an accessible name. Space and Enter toggle the button. The label and the description both form its accessible name.',
+    props: [
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents interaction.' },
+      { name: 'pressed', required: false, type: 'boolean', default: 'false', description: 'The pressed state used by v-model:pressed.' },
+      { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+    ],
+    slots: [
+      { name: 'default', type: 'unknown', description: 'Visible label.' },
+      { name: 'description', type: 'unknown', description: 'Short secondary text below the label, when supplied.' },
+    ],
+    events: [
+      { name: 'update:pressed', type: 'boolean', description: 'Emitted when the pressed state changes.' },
+    ],
+    example: {
+      title: 'Safeguard',
+      description: 'Use v-model:pressed for the controlled state.',
+      code: `<UiToggleButton v-model:pressed="testsEnabled">\n  Tests with signal\n  <template #description>Pillar 3</template>\n</UiToggleButton>`,
+    },
+  },
 ]
 
 export const componentDocBySlug = (slug: string): ComponentDoc | undefined =>

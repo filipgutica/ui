@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize } from '../../../src/index.js'
+import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize, UiFigureProps } from '../../../src/index.js'
 
 import {
   UiAlert,
@@ -13,13 +13,16 @@ import {
   UiDialog,
   UiDrawer,
   UiField,
+  UiFigure,
   UiInput,
   UiProgress,
   UiRadioCard,
   UiRadioCardGroup,
+  UiScore,
   UiSelect,
   UiSlider,
   UiTabs,
+  UiToggleButton,
 } from '../../../src/index.js'
 
 const {
@@ -34,6 +37,8 @@ const {
   label,
   loading,
   language,
+  numbered,
+  score,
   slug,
   tone,
 } = defineProps<{
@@ -48,6 +53,8 @@ const {
   label: string
   loading: boolean
   language: CodeLanguage
+  numbered: boolean
+  score: number
   slug: string
   tone: NonNullable<UiAlertProps['tone']>
 }>()
@@ -64,6 +71,7 @@ const singleRadioCardValue = computed({
   },
 })
 
+const figureProps = computed((): UiFigureProps => compact || numbered ? { number: 1 } : {})
 const dialogOpen = ref(false)
 const drawerOpen = ref(false)
 const selectedTab = ref('list')
@@ -170,6 +178,53 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
       >
         Include archived sessions
       </UiCheckbox>
+
+      <UiToggleButton
+        v-else-if="slug === 'toggle-button'"
+        v-model:pressed="checked"
+        :disabled="disabled"
+        :size="controlSize"
+      >
+        Tests with signal
+        <template #description>
+          Pillar 3
+        </template>
+      </UiToggleButton>
+
+      <UiScore
+        v-else-if="slug === 'score'"
+        :score="compact ? 2 : score"
+      />
+
+      <UiFigure
+        v-else-if="slug === 'figure'"
+        v-bind="figureProps"
+      >
+        <table class="figure-example">
+          <thead>
+            <tr>
+              <th>Safeguard</th>
+              <th>Problem it stops</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>One check command</td>
+              <td>Due date stored as text</td>
+              <td><UiScore :score="3" /></td>
+            </tr>
+            <tr>
+              <td>Tests with signal</td>
+              <td>Due-today tasks marked overdue</td>
+              <td><UiScore :score="2" /></td>
+            </tr>
+          </tbody>
+        </table>
+        <template #caption>
+          Each safeguard stops one problem before review. The table scrolls inside the plate on narrow screens.
+        </template>
+      </UiFigure>
 
       <UiRadioCardGroup
         v-else-if="slug === 'radio-card'"

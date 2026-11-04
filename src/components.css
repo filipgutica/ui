@@ -5,7 +5,7 @@
   /* Package-owned typography keeps controls consistent across consuming apps. */
   .fg-button, .fg-input, .fg-select, .fg-checkbox, .fg-field,
   .fg-radio-card, .fg-badge, .fg-alert, .fg-surface, .fg-card,
-  .fg-dialog__content, .fg-code-block {
+  .fg-dialog__content, .fg-code-block, .fg-toggle-button {
     font-family: var(--font-ui);
     font-size: var(--text-md);
     font-weight: var(--weight-regular);
@@ -51,7 +51,7 @@
   }
   .fg-code-block__copy:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
   .fg-code-block__copy svg { width: 1rem; height: 1rem; }
-  .fg-code-block__copy:focus-visible, .fg-code-block__pre:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-code-block__copy:focus-visible, .fg-code-block__pre:focus-visible, .fg-figure__plate:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
   .fg-code-block__pre { margin: 0; padding: 1rem; overflow: auto; max-height: 32rem; tab-size: 2; }
   .fg-code-block__pre, .fg-code-block__pre code { font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.65; }
   .fg-code-block__pre code { display: block; color: inherit; }
@@ -141,7 +141,8 @@
   .fg-button:disabled,
   .fg-input:disabled,
   .fg-select:disabled,
-  .fg-checkbox[data-disabled="true"] {
+  .fg-checkbox[data-disabled="true"],
+  .fg-toggle-button:disabled {
     cursor: not-allowed;
     opacity: 0.58;
   }
@@ -602,6 +603,128 @@
     font-size: var(--text-sm);
   }
 
+  .fg-figure {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* Wide content scrolls inside the plate so the page never overflows. */
+  .fg-figure__plate {
+    min-width: 0;
+    overflow-x: auto;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+  }
+
+  .fg-figure__caption {
+    max-width: var(--measure);
+    color: var(--color-muted);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    line-height: var(--leading);
+  }
+
+  .fg-figure__number {
+    color: var(--color-text);
+    font-weight: var(--weight-medium);
+  }
+
+  @media (max-width: 680px) {
+    .fg-figure__plate { padding: var(--space-4); }
+  }
+
+  .fg-score {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .fg-score__pips { display: inline-flex; gap: 0.1875rem; }
+
+  .fg-score__pip {
+    width: 0.5rem;
+    height: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+  }
+
+  .fg-score__pip[data-filled="true"] {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+  }
+
+  .fg-score__value { font-weight: var(--weight-medium); }
+  .fg-score__max { color: var(--color-muted); font-weight: var(--weight-regular); }
+
+  .fg-toggle-button {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+    line-height: var(--leading-tight);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .fg-toggle-button[data-size="sm"] { min-height: var(--control-sm); font-size: var(--text-sm); }
+  .fg-toggle-button[data-size="md"] { min-height: var(--control-md); font-size: var(--text-md); }
+  .fg-toggle-button[data-size="lg"] { min-height: var(--control-lg); font-size: var(--text-lg); }
+
+  .fg-toggle-button:hover:not(:disabled, [aria-pressed="true"]) { border-color: var(--color-border); }
+  .fg-toggle-button[aria-pressed="true"] { border-color: var(--color-accent); }
+
+  /* The thumb's position, not only its color, shows the state. */
+  .fg-toggle-button__switch {
+    position: relative;
+    flex: none;
+    width: 1.75rem;
+    height: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-muted);
+    transition: background-color var(--duration) var(--ease-out), border-color var(--duration) var(--ease-out);
+  }
+
+  .fg-toggle-button__switch::after {
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-border);
+    content: "";
+    transition: transform var(--duration) var(--ease-out), background-color var(--duration) var(--ease-out);
+  }
+
+  .fg-toggle-button[aria-pressed="true"] .fg-toggle-button__switch {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+  }
+
+  .fg-toggle-button[aria-pressed="true"] .fg-toggle-button__switch::after {
+    background: var(--color-button-text);
+    transform: translateX(0.75rem);
+  }
+
+  .fg-toggle-button__text { display: grid; min-width: 0; }
+
+  .fg-toggle-button__description {
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+  }
+
   .fg-progress {
     position: relative;
     height: 0.55rem;
@@ -745,7 +868,8 @@
   .fg-radio-card:focus-visible,
   .fg-slider__thumb:focus-visible,
   .fg-dialog__close:focus-visible,
-  .fg-dialog__content:focus-visible {
+  .fg-dialog__content:focus-visible,
+  .fg-toggle-button:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
@@ -759,7 +883,8 @@
   :root.high-contrast .fg-surface,
   :root.high-contrast .fg-card,
   :root.high-contrast .fg-code-block,
-  :root.high-contrast .fg-dialog__content {
+  :root.high-contrast .fg-dialog__content,
+  :root.high-contrast .fg-toggle-button {
     border-width: 2px;
     border-color: var(--color-border);
   }
@@ -783,7 +908,9 @@
     .fg-radio-card,
     .fg-slider__range,
     .fg-dialog__close,
-    .fg-progress__indicator { transition: none; }
+    .fg-progress__indicator,
+    .fg-toggle-button__switch,
+    .fg-toggle-button__switch::after { transition: none; }
 
     .fg-button[aria-busy="true"]::before { animation-duration: 1.4s; }
   }
