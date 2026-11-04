@@ -129,10 +129,12 @@
   .fg-site-appearance__choice:hover { color: var(--color-text); background: var(--color-row-hover); }
   .fg-site-appearance__choice[aria-pressed="true"] { color: var(--color-text); background: var(--color-row-selected); }
 
+  /* Focus is a 2px outline outside the control, which forced-colors mode keeps. An
+   * inset ring is used only where a scrolling ancestor would clip an outer one. */
   .fg-site-header a:focus-visible,
   .fg-site-projects__trigger:focus-visible,
   .fg-site-appearance__choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-  .fg-site-appearance__choice:focus-visible { outline-offset: -2px; }
+  /* Inset: the desktop rail and the phone drawer scroll. */
   .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 
   /* Section rail (UiSiteNav). The page grid places it; on desktop it stays in view
@@ -199,7 +201,7 @@
   }
   .fg-capture__full:hover { color: var(--color-text); }
   .fg-capture__full svg { width: 14px; height: 14px; flex: none; }
-  .fg-capture__full:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-capture__full:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
   /* Without JavaScript every capture is listed under its own heading. */
   .fg-capture .fg-tabs__heading { margin: 0; padding: var(--space-3) var(--space-4); }
   .fg-capture:not([data-enhanced="true"]) .fg-tabs__panel + .fg-tabs__panel { border-top: 1px solid var(--color-border-subtle); }
@@ -241,8 +243,9 @@
     line-height: var(--leading);
   }
   .fg-capture__caption > code { color: var(--color-text); font-family: var(--font-mono); font-size: var(--text-sm); overflow-wrap: anywhere; }
-  .fg-capture__screen:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-  .fg-capture__expand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -4px; }
+  /* Inset: the enhanced panel clips its content. */
+  .fg-capture__screen:focus-visible,
+  .fg-capture__expand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
   .fg-dialog__content.fg-capture-viewer {
     width: calc(100vw - var(--space-8));
     max-width: var(--page-max);
@@ -300,6 +303,7 @@
   }
   .fg-command-list__copy:hover { color: var(--color-text); background: var(--color-row-hover); }
   .fg-command-list__copy svg { width: 1rem; height: 1rem; }
+  /* Inset: the table scrolls sideways on larger screens. */
   .fg-command-list__copy:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
   .fg-command-list__status:not(:empty) { display: block; padding-top: var(--space-2); font-size: var(--text-sm); }
 
@@ -422,7 +426,7 @@
     }
     .fg-site-rail__summary::-webkit-details-marker { display: none; }
     .fg-site-rail__summary:hover { color: var(--color-text); background: var(--color-row-hover); }
-    .fg-site-rail__summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+    .fg-site-rail__summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
     .fg-site-rail__menu > .fg-site-rail__content { padding-block: var(--space-4); }
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fg-site-rail__menu .fg-site-rail__group-label { grid-column: 1 / -1; }

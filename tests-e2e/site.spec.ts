@@ -26,3 +26,20 @@ test('keeps every capture tab clear of the Full size button', async ({ page }) =
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
 })
+
+test('draws a focus outline that forced-colors mode keeps on every tab stop', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  for (const url of [fixture, '/#/', '/#/sandbox/select', '/#/sandbox/radio-card-group']) {
+    await page.goto(url)
+    await expect(page.locator('h1')).toBeVisible()
+    for (let stop = 0; stop < 16; stop += 1) {
+      await page.keyboard.press('Tab')
+      const focus = await page.evaluate(() => {
+        const element = document.activeElement
+        if (!element || element === document.body) return undefined
+        return { name: `${element.tagName} ${element.className}`.trim(), outline: getComputedStyle(element).outlineStyle }
+      })
+      if (focus) expect(focus.outline, `${url} ${focus.name}`).not.toBe('none')
+    }
+  }
+})

@@ -324,6 +324,25 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   await page.keyboard.press('Enter')
   await expect(select).toHaveValue('passed')
   await expect(select).toBeFocused()
+
+  // Pointer hover fills a row; only the keyboard position draws the focus ring.
+  await select.press('Space')
+  const hovered = select.locator('option').first()
+  await hovered.hover()
+  await expect(hovered).toHaveCSS('outline-style', 'none')
+  await page.keyboard.press('ArrowDown')
+  await expect(select.locator('option:focus-visible')).toHaveCSS('outline-style', 'solid')
+  await page.keyboard.press('Escape')
+})
+
+test('marks checked radio cards and checkboxes with the accent', async ({ page }) => {
+  const accent = 'rgb(99, 89, 167)'
+  await page.goto('/#/sandbox/radio-card-group')
+  await expect(page.locator('.playground-stage .fg-radio-card[data-state="checked"]')).toHaveCSS('border-color', accent)
+  await page.goto('/#/sandbox/checkbox')
+  const checkbox = page.locator('.playground-stage .fg-checkbox__control')
+  if (await checkbox.getAttribute('data-state') !== 'checked') await checkbox.click()
+  await expect(checkbox).toHaveCSS('background-color', accent)
 })
 
 test('renders usable slider tracks in documentation examples', async ({ page }) => {

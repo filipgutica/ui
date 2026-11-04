@@ -44,9 +44,14 @@
     font-weight: var(--weight-medium);
   }
 
-  .fg-tabs__tab:focus-visible, .fg-tabs__panel:focus-visible {
+  /* Inset: the tab list scrolls sideways, which would clip an outer ring. */
+  .fg-tabs__tab:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: -2px;
+  }
+  .fg-tabs__panel:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
   }
 
   @media (max-width: 640px) {
