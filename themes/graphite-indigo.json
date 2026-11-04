@@ -201,12 +201,6 @@
         "duration": "180ms",
         "ease-out": "cubic-bezier(0.2, 0.8, 0.2, 1)"
       }
-    },
-    {
-      "comment": "Focus",
-      "tokens": {
-        "focus-ring": "0 0 0 2px {bg}, 0 0 0 4px {focus}"
-      }
     }
   ],
   "library": {
@@ -256,6 +250,12 @@
       "--color-info-surface": "info-soft",
       "--shadow-dialog": "shadow-popover",
       "--color-status-text": "text"
+    },
+    "aliases": {
+      "font-sans": "--font-ui",
+      "radius-sm": "--radius-inline",
+      "radius-md": "--radius-control",
+      "radius-lg": "--radius-panel"
     },
     "extras": [
       "text-3xl",

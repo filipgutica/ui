@@ -23,7 +23,7 @@ const variablesIn = (css) => new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(([
 describe('Graphite Indigo generated files', () => {
   it('match the shared token data', () => {
     expect(read('src/themes/graphite-indigo.css')).toBe(renderLibraryTheme(data))
-    expect(read('themes/graphite-indigo.tokens.css')).toBe(renderStandaloneTokens(data))
+    expect(read('themes/graphite-indigo.tokens.css')).toBe(renderStandaloneTokens({ data, libraryCss: read('src/theme.css') }))
   })
 
   it('give the library theme every role the theme importer controls', () => {
@@ -38,10 +38,26 @@ describe('Graphite Indigo generated files', () => {
   })
 
   it('draws standalone focus with an outline, which forced-colors mode keeps', () => {
-    const focus = /:focus-visible\s*\{([^}]*)\}/.exec(renderStandaloneTokens(data))?.[1]
+    const focus = /:focus-visible\s*\{([^}]*)\}/.exec(renderStandaloneTokens({ data, libraryCss: read('src/theme.css') }))?.[1]
 
     expect(focus).toContain('outline: 2px solid var(--focus)')
     expect(focus).not.toMatch(/box-shadow|outline:\s*none/)
+  })
+
+  it('names the library variable beside each standalone token', () => {
+    const css = renderStandaloneTokens({ data, libraryCss: read('src/theme.css') })
+
+    expect(css).toContain('--bg: #f4f5f8; /* ui: --color-bg */')
+    expect(css).toMatch(/--font-sans: [^;]+; \/\* ui: --font-ui \*\//)
+    expect(css).toContain('--radius-sm: 4px; /* ui: --radius-inline */')
+    expect(css).toContain('--radius-xl: 12px; /* ui: none */')
+    expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
+  })
+
+  it('fails when a token alias names a variable the library does not define', () => {
+    const renamed = { ...data, library: { ...data.library, aliases: { ...data.library.aliases, 'radius-md': '--radius-missing' } } }
+
+    expect(() => renderStandaloneTokens({ data: renamed, libraryCss: read('src/theme.css') })).toThrow('--radius-missing')
   })
 
   it('keeps one :root.dark block that sites can copy into a no-script rule', () => {

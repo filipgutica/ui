@@ -6,7 +6,9 @@
 //
 // Library theme: --color-* roles for @filipgutica/ui, opt-in through
 // @filipgutica/ui/themes/graphite-indigo.css. Standalone tokens: the design-language
-// vocabulary (--bg, --text, ...) for pages that do not use the library.
+// vocabulary (--bg, --text, ...) for pages that do not use the library. Each standalone
+// token line names the library variables for the same value, so --check also fails when
+// that map is stale or names a variable the library does not define.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -23,6 +25,8 @@ const valueFor = (tokens, name, mode) => {
 }
 
 const block = (indent, declarations) => declarations.map(([name, value]) => `${indent}${name}: ${value};`)
+
+const variablesIn = (css) => new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(([, name]) => name))
 
 // Dark blocks list only what differs from light, compared after references resolve.
 const darkOverrides = (names, resolve) => names
@@ -83,6 +87,8 @@ const standaloneHeader = `/*
  * Standalone HTML: import or inline this file.
  * Inline visuals: inherit the host font and theme variables; see DESIGN.md.
  * Repos: map these names onto the repository's own token system.
+ * Sites on @filipgutica/ui: use the variable named in each line's "ui:" comment.
+ * "ui: none" means the library has no variable for that token.
  *
  * Theme states: bare :root is light. prefers-color-scheme picks dark unless
  * data-theme="light" is set. data-theme="dark" forces dark.
@@ -112,16 +118,34 @@ p a, dd a { text-decoration: underline; text-underline-offset: 0.18em; }
 }
 `
 
-export const renderStandaloneTokens = (data) => {
+// The library variables that carry each token: its roles, a fixed alias for a renamed
+// token, or a variable of the same name. libraryCss is theme.css, the library's base theme.
+const libraryNamesFor = (data, libraryCss) => {
+  const defined = new Set([...variablesIn(libraryCss), ...variablesIn(renderLibraryTheme(data))])
+  const { roles, aliases } = data.library
+  return (name) => {
+    const names = Object.entries(roles).filter(([, token]) => token === name).map(([role]) => role)
+    const alias = aliases[name]
+    if (alias !== undefined) {
+      if (!defined.has(alias)) throw new Error(`Alias for "${name}" names ${alias}, which the library does not define`)
+      names.push(alias)
+    }
+    if (names.length === 0 && defined.has(`--${name}`)) names.push(`--${name}`)
+    return names.length > 0 ? names.join(', ') : 'none'
+  }
+}
+
+export const renderStandaloneTokens = ({ data, libraryCss }) => {
   const tokens = flatTokens(data)
   const resolve = (name, mode) => valueFor(tokens, name, mode).replace(reference, (_, target) => `var(--${target})`)
   const names = Object.keys(tokens)
   const dark = darkOverrides(names, resolve).map(([name, value]) => [`--${name}`, value])
+  const libraryNames = libraryNamesFor(data, libraryCss)
 
   const groups = data.groups.map(({ comment, tokens: group }) => [
     '',
     `  /* ${comment} */`,
-    ...block('  ', Object.keys(group).map((name) => [`--${name}`, resolve(name, LIGHT)])),
+    ...Object.keys(group).map((name) => `  --${name}: ${resolve(name, LIGHT)}; /* ui: ${libraryNames(name)} */`),
   ])
   const darkLines = (indent) => block(indent, dark)
 
@@ -159,9 +183,10 @@ const run = () => {
   if (!tokensOut) throw new Error('--tokens-out needs a path')
 
   const data = JSON.parse(readFileSync(`${root}themes/graphite-indigo.json`, 'utf8'))
+  const libraryCss = readFileSync(`${root}src/theme.css`, 'utf8')
   const outputs = [
     [libraryPath, renderLibraryTheme(data)],
-    [tokensOut, renderStandaloneTokens(data)],
+    [tokensOut, renderStandaloneTokens({ data, libraryCss })],
   ]
 
   const stale = []
