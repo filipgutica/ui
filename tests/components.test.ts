@@ -229,6 +229,16 @@ describe('application primitives', () => {
     expect(bare.get('.fg-figure__plate').attributes('aria-label')).toBe('Figure')
   })
 
+  it('adds the caption and region name when a number arrives after mount', async () => {
+    const wrapper = mount(UiFigure, { slots: { default: 'Plate' } })
+    expect(wrapper.find('figcaption').exists()).toBe(false)
+
+    await wrapper.setProps({ number: 3 })
+    expect(wrapper.get('figcaption').text()).toBe('Figure 3.')
+    expect(wrapper.get('.fg-figure__plate').attributes('aria-labelledby')).toBe(wrapper.get('figcaption').attributes('id'))
+
+  })
+
   it('exposes an accessible radio-card model', async () => {
     const wrapper = mount({
       components: { UiRadioCard, UiRadioCardGroup },

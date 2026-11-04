@@ -5,13 +5,13 @@
       class="fg-figure__plate"
       role="region"
       tabindex="0"
-      :aria-labelledby="hasCaption ? captionId : undefined"
-      :aria-label="hasCaption ? undefined : 'Figure'"
+      :aria-labelledby="hasCaption() ? captionId : undefined"
+      :aria-label="hasCaption() ? undefined : 'Figure'"
     >
       <slot />
     </div>
     <figcaption
-      v-if="hasCaption"
+      v-if="hasCaption()"
       :id="captionId"
       class="fg-figure__caption"
     >
@@ -38,5 +38,6 @@ const slots = defineSlots<{
 }>()
 
 const captionId = useId()
-const hasCaption = number !== undefined || Boolean(slots.caption)
+// A function, not a constant: the render must re-read the number and slots.
+const hasCaption = (): boolean => number !== undefined || Boolean(slots.caption)
 </script>
