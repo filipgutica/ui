@@ -518,6 +518,8 @@
   }
   .fg-site-definitions dt { font-weight: var(--weight-medium); }
   .fg-site-definitions dd { margin: 0; color: var(--color-muted); }
+  /* Keep flags such as --all whole instead of breaking after a hyphen. */
+  .fg-site-definitions code { white-space: nowrap; }
 
   .fg-site-sr-only {
     position: absolute;
@@ -611,6 +613,14 @@
     .fg-site-docs { padding-inline: var(--space-4); }
     /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
     .fg-site-docs .fg-site-header__links { display: none; }
+    /* Fact links, such as a Source link that stands in for the hidden header link, get a
+     * touch-sized hit area. The negative margin keeps each fact row one line tall. */
+    .fg-site-facts a {
+      display: inline-flex;
+      min-height: var(--control-lg);
+      align-items: center;
+      margin-block: calc((1lh - var(--control-lg)) / 2);
+    }
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
     .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }

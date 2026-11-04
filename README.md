@@ -198,8 +198,9 @@ description and wraps.
 
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
 numbered circles, `.fg-site-facts` for an inline `dl` of short label and value
-pairs, `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks
-on phones, `.fg-site-sr-only` for visually hidden text, and `.fg-site-skip` for
+pairs whose links get a `--control-lg` hit area at 640px and below,
+`.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks on
+phones and keeps `code` such as `--all` on one line, `.fg-site-sr-only` for visually hidden text, and `.fg-site-skip` for
 a skip link that appears on focus.
 
 ### Docs shell
