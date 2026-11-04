@@ -95,10 +95,11 @@
   }
   .fg-site-footer a:hover { color: var(--color-text); text-decoration: underline; }
 
-  /* Legend: a dl of what a capture shows, with one div per dt and dd pair. */
+  /* Legend: a dl of what a capture shows, with one div per dt and dd pair. Columns are at
+   * least --site-legend-column wide (default --sidebar); a page can lower it to fit more. */
   .fg-site-legend {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(var(--sidebar), 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--site-legend-column, var(--sidebar)), 100%), 1fr));
     gap: 0 var(--space-6);
     margin: 0;
     font-size: var(--text-sm);

@@ -215,7 +215,8 @@ main content, and footer. The shell then supplies:
   inline `code` at `--text-sm`, `kbd`, a 2px focus outline, and a `[hidden]`
   rule that outranks the page's own `display` rules.
 - `.fg-site-footer` for the footer and `.fg-site-legend` for a `dl` that explains
-  what a capture shows.
+  what a capture shows. Legend columns are at least `--site-legend-column` wide,
+  `--sidebar` by default; set it on the legend to fit more entries in a row.
 
 ```vue
 <template>
