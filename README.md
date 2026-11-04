@@ -122,8 +122,8 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 
 `project` is `wtree`, `annoterm`, `devps`, `workbench`, `filip-stack`, or `ui`. The project
 menu is a native disclosure that works without JavaScript; Escape closes it and
-returns focus to its button. At 640px and below the header hides `links` so it
-fits one row, so repeat those destinations in the page or footer. Without a
+returns focus to its button. Inside `.fg-site-docs`, at 640px and below, the
+header hides `links` so it fits one row, so repeat those destinations in the footer. Without a
 default slot the header renders a System, Light, and Dark picker. A page with its own appearance control passes it
 in the default slot and uses `useSiteAppearance({ applyToRoot: false })` when it
 owns the root element.
@@ -242,7 +242,12 @@ site's own rules win. That holds only when the site declares the layer order
 before importing `site.css`: `@import "tailwindcss"` does this, or start the
 stylesheet with `@layer base, components, utilities;`. To adopt the shell, delete
 the site's own frame, element base, `kbd`, footer, legend, and ANSI palette
-rules. Pages without `fg-site-docs` are unchanged.
+rules. Without `fg-site-docs`, the frame, element defaults, and phone header
+rules do not apply. These apply on every page: the `fg-site-footer` and
+`fg-site-legend` classes wherever a page uses them; the capture terminal palette
+for every `UiCapture`, in the `components` layer, so a site's own unlayered
+`.term` and ANSI rules and its `--t*` values still win; and `UiSiteNav`, whose
+phone toggle and drawer title now show its `label`.
 
 ## Development
 

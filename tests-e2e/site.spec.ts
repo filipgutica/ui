@@ -83,13 +83,30 @@ test('colors captures with the default terminal palette unless the site sets its
   await expect(page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()).toHaveCSS('background-color', 'rgb(19, 19, 22)')
   await page.addStyleTag({ content: ':root { --t6: #ff0000; }' })
   await expect(accent).toHaveCSS('color', 'rgb(255, 0, 0)')
+  // A plain <pre> capture keeps the code background, so its inherited text stays readable.
+  const screen = page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()
+  await screen.evaluate(element => { element.innerHTML = '<pre>plain output</pre>' })
+  await expect(screen).not.toHaveCSS('background-color', 'rgb(19, 19, 22)')
+})
+
+test('keeps header links on phones for pages outside the docs shell', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 })
+  await page.goto('/#/')
+  await expect(page.getByRole('navigation', { name: 'Site links', exact: true })).toBeVisible()
 })
 
 test('keeps the phone header on one row and names the section menu after its label', async ({ page }) => {
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(fixture)
-    await expect(page.getByRole('navigation', { name: 'Site links', exact: true })).toBeHidden()
+    // Role queries skip hidden elements, so find the header links by class.
+    const headerLinks = page.locator('.fg-site-header__links a')
+    await expect(headerLinks).toHaveCount(3)
+    await expect(headerLinks.first()).toBeHidden()
+    // Every hidden header destination is still reachable from a visible link.
+    for (const href of await headerLinks.evaluateAll(links => links.map(link => link.getAttribute('href')))) {
+      await expect(page.locator(`a[href="${href}"]:visible`), `${href} at ${width}px`).not.toHaveCount(0)
+    }
     // One row: the header keeps its 64px minimum height plus its 1px border.
     expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
     const toggle = page.getByRole('button', { name: 'On this page', exact: true })

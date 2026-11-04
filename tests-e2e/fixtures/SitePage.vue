@@ -64,6 +64,8 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
     <footer class="fg-site-footer">
       <a href="#author">Built by Filip Gutica</a>
       <nav aria-label="Project links">
+        <a href="#guide">Guide</a>
+        <a href="#github">GitHub</a>
         <a href="#issues">Report an issue</a>
         <a href="#releases">Releases</a>
       </nav>

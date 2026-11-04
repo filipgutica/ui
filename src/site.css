@@ -324,8 +324,10 @@
     min-width: 0;
     max-width: 100%;
     overflow-x: auto;
-    background: var(--site-capture-bg, var(--t-bg, #131316));
+    background: var(--site-capture-bg, var(--color-code));
   }
+  /* Terminal markup gets the dark default; a plain <pre> keeps the code background its text expects. */
+  .fg-capture__screen:has(> .term) { background: var(--site-capture-bg, var(--t-bg, #131316)); }
   .fg-capture__screen > * { width: max-content; margin: 0; }
   /* Terminal colors for checked-in capture markup: .term and the ANSI classes the capture
    * converter emits. Each color reads the site's --t* value first, so a site palette on
@@ -602,8 +604,8 @@
   }
   @media (max-width: 640px) {
     .fg-site-docs { padding-inline: var(--space-4); }
-    /* One header row on phones. Pages should repeat these links in the page or footer. */
-    .fg-site-header__links { display: none; }
+    /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
+    .fg-site-docs .fg-site-header__links { display: none; }
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
     .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }
