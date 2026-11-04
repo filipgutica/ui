@@ -69,7 +69,10 @@ The returned readonly ref contains the last supplied heading above the root's
 CSS `scroll-padding-top` inset, or the final section at the document bottom.
 IDs must remain stable and in page order; missing elements are ignored after
 mounting. Bind matching links to `aria-current="location"`. Scrolling, resizing,
-layout changes, completed transitions, and restored pages update the value.
+layout changes, completed transitions, and restored pages update the value. After
+a jump to a section, through a `#id` link, a hash change, or a deep link, that
+section stays current until the reader scrolls away from where the jump lands, so
+a page too short to bring it to the top still marks it.
 The composable does not change focus, the URL, or browser history, and removes
 its listeners and observer when the component unmounts. During SSR it returns
 the first supplied ID without accessing browser globals.
