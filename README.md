@@ -180,9 +180,11 @@ focus returns to the button on close. Phones show the button as an icon. `v-mode
 holds the active ID and defaults to the first item. Each capture has the ID
 `idPrefix` + `id` (`frame-` by default), so a deep link such as `#frame-read`
 selects its tab on load and on hash change. Without JavaScript every capture is
-listed under its own heading and scrolls at full size. The site owns terminal
-colors: set `--site-capture-bg` on `:root`, because the dialog renders outside
-the panel.
+listed under its own heading and scrolls at full size. Captures use a dark
+terminal palette for the `.term` root and the converter's ANSI classes (`.tf0`
+to `.tf15`, `.tb0` to `.tb15`, `.tf-dim`, `.tbold`, and the others). To change
+it, set `--site-capture-bg`, `--t-bg`, `--t-fg`, `--t-dim`, or `--t0` to `--t15`
+on `:root`, because the dialog renders outside the panel.
 
 `UiCommandList` renders a table of monospace commands and descriptions. Use the
 `command` slot to show a key as `<kbd>`, the `description` slot for `<kbd>` or
@@ -197,6 +199,48 @@ numbered circles, `.fg-site-facts` for an inline `dl` of short label and value
 pairs, `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks
 on phones, `.fg-site-sr-only` for visually hidden text, and `.fg-site-skip` for
 a skip link that appears on focus.
+
+### Docs shell
+
+Add `fg-site-docs` to the element that wraps a project page's header, rail,
+main content, and footer. The shell then supplies:
+
+- the frame: the header across the top, the `--sidebar` rail beside `main`, and
+  the footer on the frame edges. At 800px and below the rail stacks above `main`.
+- element defaults inside the shell, plus the page background and font on
+  `body`: box sizing, heading sizes and margins, paragraph measure, links,
+  `kbd`, and a 2px focus outline.
+- `.fg-site-footer` for the footer and `.fg-site-legend` for a `dl` that explains
+  what a capture shows.
+
+```vue
+<template>
+  <div class="fg-site-docs">
+    <UiSiteHeader project="devps" />
+    <UiSiteNav label="On this page" :groups="navigation" />
+    <main id="main">
+      <section aria-labelledby="title">…</section>
+      <dl class="fg-site-legend">
+        <div><dt>PORTS</dt><dd>The ports the server listens on.</dd></div>
+      </dl>
+    </main>
+    <footer class="fg-site-footer">
+      <a href="https://github.com/filipgutica">Built by Filip Gutica</a>
+      <nav aria-label="Project links">
+        <a href="https://github.com/filipgutica/devps/releases">Releases</a>
+      </nav>
+    </footer>
+  </div>
+</template>
+```
+
+The header, rail, `main`, and footer must be direct children of the shell. The
+element defaults sit in the `base` cascade layer, so library components and the
+site's own rules win. That holds only when the site declares the layer order
+before importing `site.css`: `@import "tailwindcss"` does this, or start the
+stylesheet with `@layer base, components, utilities;`. To adopt the shell, delete
+the site's own frame, element base, `kbd`, footer, legend, and ANSI palette
+rules. Pages without `fg-site-docs` are unchanged.
 
 ## Development
 

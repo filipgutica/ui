@@ -58,3 +58,29 @@ test('draws a focus outline that forced-colors mode keeps on every tab stop', as
     }
   }
 })
+
+test('places the docs shell frame, rail, main, and footer on shared edges', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto(fixture)
+  const box = async (selector: string) => {
+    const bounds = await page.locator(selector).first().boundingBox()
+    return { left: Math.round(bounds?.x ?? -1), right: Math.round((bounds?.x ?? 0) + (bounds?.width ?? 0)) }
+  }
+  expect(await box('.fg-site-header__inner')).toEqual({ left: 32, right: 1248 })
+  expect(await box('.fg-site-rail')).toEqual({ left: 32, right: 256 })
+  expect((await box('main')).left).toBe(288)
+  expect(await box('.fg-site-footer')).toEqual({ left: 32, right: 1248 })
+  for (const link of await page.locator('.fg-site-footer a').all())
+    expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44)
+  expect(await page.evaluate(() => document.querySelector('.fg-site-rail')!.getBoundingClientRect().top))
+    .toBe(await page.evaluate(() => document.querySelector('main')!.getBoundingClientRect().top))
+})
+
+test('colors captures with the default terminal palette unless the site sets its own', async ({ page }) => {
+  await page.goto(fixture)
+  const accent = page.locator('.fg-capture[data-enhanced="true"] .tf6').first()
+  await expect(accent).toHaveCSS('color', 'rgb(95, 211, 217)')
+  await expect(page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()).toHaveCSS('background-color', 'rgb(19, 19, 22)')
+  await page.addStyleTag({ content: ':root { --t6: #ff0000; }' })
+  await expect(accent).toHaveCSS('color', 'rgb(255, 0, 0)')
+})

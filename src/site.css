@@ -1,7 +1,113 @@
 /* Shared chrome and page helpers for the project sites. Use with
  * @filipgutica/ui/themes/graphite-indigo.css, which supplies the type, space, and
  * page-measure roles this file reads. Nothing here targets site-specific markup. */
+/* Element defaults for a docs page inside .fg-site-docs. They sit in the base layer, so
+ * library components and the site's own rules win, as long as the site declares the layer
+ * order first (Tailwind's import does, or write @layer base, components, utilities;).
+ * Pages without .fg-site-docs get none of them. */
+@layer base {
+  html:has(.fg-site-docs) { scroll-padding-top: var(--space-6); }
+  body:has(.fg-site-docs) {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: var(--text-md) / var(--leading) var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+  .fg-site-docs,
+  .fg-site-docs *,
+  .fg-site-docs *::before,
+  .fg-site-docs *::after { box-sizing: border-box; }
+  .fg-site-docs :where(h1, h2, h3, p, dl, dd, figure) { margin: 0; }
+  .fg-site-docs :where(h1, h2, h3) {
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+  .fg-site-docs :where(h1) { max-width: 22ch; font-size: var(--text-3xl); letter-spacing: var(--tracking-tight); }
+  .fg-site-docs :where(h2) { font-size: var(--text-xl); }
+  .fg-site-docs :where(p) { max-width: var(--measure); }
+  .fg-site-docs :where(code, kbd, pre) { font-family: var(--font-mono); }
+  .fg-site-docs :where(a) { color: var(--color-link); text-underline-offset: 0.18em; }
+  .fg-site-docs :where(kbd) {
+    display: inline-block;
+    padding: 0 var(--space-1);
+    border: 1px solid var(--color-border);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-inline);
+    background: var(--color-surface);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+  .fg-site-docs :where(:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+}
+
 @layer components {
+  /* Docs shell: header across the top, the --sidebar rail beside main, and the footer
+   * on the frame edges. Header, rail, main, and footer are direct children. */
+  .fg-site-docs {
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    column-gap: var(--space-8);
+    max-width: calc(var(--page-max) + var(--sidebar) + var(--space-8) + var(--space-12));
+    margin-inline: auto;
+    padding-inline: var(--space-6);
+  }
+  .fg-site-docs > .fg-site-header {
+    --site-frame: 100%;
+    --site-gutter: 0px;
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+  .fg-site-docs > main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-12);
+    min-width: 0;
+    padding-block: var(--space-8) var(--space-16);
+  }
+  .fg-site-docs > .fg-site-footer { grid-column: 1 / -1; }
+
+  /* Footer: an attribution link at the start, project links in a nav at the end. */
+  .fg-site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 var(--space-5);
+    padding-block: var(--space-6) var(--space-8);
+    border-top: 1px solid var(--color-border-subtle);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+  .fg-site-footer nav { display: flex; flex-wrap: wrap; gap: 0 var(--space-5); }
+  .fg-site-footer a {
+    display: inline-flex;
+    min-height: var(--control-lg);
+    align-items: center;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .fg-site-footer a:hover { color: var(--color-text); text-decoration: underline; }
+
+  /* Legend: a dl of what a capture shows, with one div per dt and dd pair. */
+  .fg-site-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--sidebar), 100%), 1fr));
+    gap: 0 var(--space-6);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+  .fg-site-legend > div {
+    display: grid;
+    align-content: start;
+    gap: var(--space-1);
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+  .fg-site-legend dt { font-family: var(--font-mono); font-weight: var(--weight-medium); }
+  .fg-site-legend dd { margin: 0; color: var(--color-muted); }
+
   /* A centered frame. The header uses the same edges as the page below it.
    * Set --site-frame on the header or a frame to change its width. */
   .fg-site-frame,
@@ -168,9 +274,9 @@
   .fg-site-rail__group-label { margin-block-end: var(--space-1); }
 
   /* Capture panel (UiCapture): tabs in the header, the capture as the body, and the
-   * command and caption as the footer. The site owns terminal colors and sets the
-   * screen background with --site-capture-bg on :root, which also reaches the
-   * full-size viewer. Nothing clips the panel, so focus rings inside it stay whole. */
+   * command and caption as the footer. The screen uses a dark terminal palette by
+   * default. A site can set --site-capture-bg and --t* values on :root, which also
+   * reach the full-size viewer. Nothing clips the panel, so focus rings inside it stay whole. */
   .fg-capture {
     position: relative;
     min-width: 0;
@@ -218,9 +324,59 @@
     min-width: 0;
     max-width: 100%;
     overflow-x: auto;
-    background: var(--site-capture-bg, var(--color-code));
+    background: var(--site-capture-bg, var(--t-bg, #131316));
   }
   .fg-capture__screen > * { width: max-content; margin: 0; }
+  /* Terminal colors for checked-in capture markup: .term and the ANSI classes the capture
+   * converter emits. Each color reads the site's --t* value first, so a site palette on
+   * :root still wins, and these defaults apply only where a site sets none. */
+  .fg-capture__screen .term {
+    padding: var(--space-4);
+    color: var(--t-fg, #e6e6ea);
+    font: var(--weight-regular) var(--text-sm) / 1 var(--font-mono);
+    font-variant-ligatures: none;
+    tab-size: 8;
+  }
+  .fg-capture__screen .term i { display: inline-block; width: 1ch; overflow: visible; font-style: normal; }
+  .fg-capture__screen .tf0 { color: var(--t0, #2b2b31); }
+  .fg-capture__screen .tf1 { color: var(--t1, #f0776c); }
+  .fg-capture__screen .tf2 { color: var(--t2, #4cc38a); }
+  .fg-capture__screen .tf3 { color: var(--t3, #e2a54b); }
+  .fg-capture__screen .tf4 { color: var(--t4, #7d97ff); }
+  .fg-capture__screen .tf5 { color: var(--t5, #c792ea); }
+  .fg-capture__screen .tf6 { color: var(--t6, #5fd3d9); }
+  .fg-capture__screen .tf7 { color: var(--t7, #c8c8d0); }
+  .fg-capture__screen .tf8 { color: var(--t8, #a0a0ab); }
+  .fg-capture__screen .tf9 { color: var(--t9, #ff8f85); }
+  .fg-capture__screen .tf10 { color: var(--t10, #6fd3a0); }
+  .fg-capture__screen .tf11 { color: var(--t11, #e8b56a); }
+  .fg-capture__screen .tf12 { color: var(--t12, #7d97ff); }
+  .fg-capture__screen .tf13 { color: var(--t13, #d9a8f0); }
+  .fg-capture__screen .tf14 { color: var(--t14, #8ee3e8); }
+  .fg-capture__screen .tf15 { color: var(--t15, #ffffff); }
+  .fg-capture__screen .tb0 { background: var(--t0, #2b2b31); }
+  .fg-capture__screen .tb1 { background: var(--t1, #f0776c); }
+  .fg-capture__screen .tb2 { background: var(--t2, #4cc38a); }
+  .fg-capture__screen .tb3 { background: var(--t3, #e2a54b); }
+  .fg-capture__screen .tb4 { background: var(--t4, #7d97ff); }
+  .fg-capture__screen .tb5 { background: var(--t5, #c792ea); }
+  .fg-capture__screen .tb6 { background: var(--t6, #5fd3d9); }
+  .fg-capture__screen .tb7 { background: var(--t7, #c8c8d0); }
+  .fg-capture__screen .tb8 { background: var(--t8, #a0a0ab); }
+  .fg-capture__screen .tb9 { background: var(--t9, #ff8f85); }
+  .fg-capture__screen .tb10 { background: var(--t10, #6fd3a0); }
+  .fg-capture__screen .tb11 { background: var(--t11, #e8b56a); }
+  .fg-capture__screen .tb12 { background: var(--t12, #7d97ff); }
+  .fg-capture__screen .tb13 { background: var(--t13, #d9a8f0); }
+  .fg-capture__screen .tb14 { background: var(--t14, #8ee3e8); }
+  .fg-capture__screen .tb15 { background: var(--t15, #ffffff); }
+  .fg-capture__screen .tf-dim { color: var(--t-dim, #a0a0ab); }
+  .fg-capture__screen .tf-bg { color: var(--t-bg, #131316); }
+  .fg-capture__screen .tb-fg { background: var(--t-fg, #e6e6ea); }
+  .fg-capture__screen .tbold { font-weight: var(--weight-semibold); }
+  .fg-capture__screen .tital { font-style: italic; }
+  .fg-capture__screen .tul { text-decoration: underline; text-underline-offset: 0.18em; }
+
   .fg-capture__screen[data-fit] { overflow: hidden; }
   .fg-capture__screen[data-fit] > * { transform: scale(var(--capture-scale, 1)); transform-origin: top left; }
   .fg-capture__expand {
@@ -407,6 +563,8 @@
   }
   /* Keep in sync with MOBILE_QUERY in UiSiteNav.vue. */
   @media (max-width: 800px) {
+    .fg-site-docs { grid-template-columns: minmax(0, 1fr); }
+    .fg-site-docs > main { gap: var(--space-8); padding-top: var(--space-6); }
     .fg-site-rail {
       position: static;
       max-height: none;
@@ -434,6 +592,7 @@
     .fg-site-rail__nav a { min-height: var(--control-lg); }
   }
   @media (max-width: 640px) {
+    .fg-site-docs { padding-inline: var(--space-4); }
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
     .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }
