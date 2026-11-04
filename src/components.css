@@ -329,7 +329,7 @@
     .fg-select:not([multiple]):not([size]) option:hover:not(:disabled) { background: var(--color-row-hover); }
     .fg-select:not([multiple]):not([size]) option:focus-visible { background: var(--color-row-hover); outline: 2px solid var(--color-focus); outline-offset: -2px; }
     .fg-select:not([multiple]):not([size]) option:disabled { color: var(--color-muted); opacity: 0.58; cursor: not-allowed; }
-    .fg-select:not([multiple]):not([size]) option::checkmark { order: 1; margin-left: auto; color: var(--color-link); }
+    .fg-select:not([multiple]):not([size]) option::checkmark { order: 1; margin-left: auto; color: var(--color-accent); }
     @media (pointer: coarse) {
       .fg-select:not([multiple]):not([size]) option { min-height: var(--control-lg); }
     }

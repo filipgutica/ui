@@ -28,6 +28,20 @@ test('keeps every capture tab clear of the Full size button', async ({ page }) =
   }
 })
 
+test('shows a deep-linked capture tab in full on phones', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(`${fixture}#frame-dry-run`)
+    const capture = page.locator('.fg-capture[data-enhanced="true"]')
+    const last = capture.getByRole('tab', { name: 'Dry run', exact: true })
+    await expect(last).toHaveAttribute('aria-selected', 'true')
+    const list = await capture.getByRole('tablist', { name: 'Steps', exact: true }).boundingBox()
+    const tab = await last.boundingBox()
+    // The same 1px allowance as above: scroll positions are whole pixels.
+    expect((tab?.x ?? 0) + (tab?.width ?? Infinity), `Dry run end at ${width}px`).toBeLessThanOrEqual((list?.x ?? 0) + (list?.width ?? 0) + 1)
+  }
+})
+
 test('draws a focus outline that forced-colors mode keeps on every tab stop', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' })
   for (const url of [fixture, '/#/', '/#/sandbox/select', '/#/sandbox/radio-card-group']) {

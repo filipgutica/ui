@@ -32,7 +32,7 @@
 
   .fg-tabs__tab:hover { color: var(--color-text); }
   .fg-tabs__tab[aria-selected="true"] {
-    border-bottom-color: var(--color-link);
+    border-bottom-color: var(--color-accent);
     color: var(--color-text);
   }
 

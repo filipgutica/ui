@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useId } from 'vue'
+import { computed, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 
 export interface UiTabItem {
   value: string
@@ -32,6 +32,20 @@ const panelId = (value: string): string => `${id}-panel-${encodeURIComponent(val
 const headingId = (value: string): string => `${id}-heading-${encodeURIComponent(value)}`
 
 onMounted(() => { enhanced.value = true })
+
+// A narrow strip clips later tabs. Keep the selected one in view, on load and after a change,
+// by scrolling only the strip; scrollIntoView could also scroll the page.
+const list = useTemplateRef<HTMLElement>('list')
+const revealActive = (): void => {
+  const strip = list.value
+  const tab = strip?.querySelector<HTMLElement>('[aria-selected="true"]')
+  if (!strip || !tab) return
+  const bounds = strip.getBoundingClientRect()
+  const { left, right } = tab.getBoundingClientRect()
+  if (left < bounds.left) strip.scrollLeft -= bounds.left - left
+  else if (right > bounds.right) strip.scrollLeft += right - bounds.right
+}
+watch([enhanced, activeValue], revealActive, { flush: 'post' })
 
 const select = (value: string): void => {
   if (value !== activeValue.value) emit('update:modelValue', value)
@@ -68,6 +82,7 @@ const moveFocus = (event: KeyboardEvent): void => {
   <div class="fg-tabs">
     <div
       v-if="enhanced"
+      ref="list"
       class="fg-tabs__list"
       role="tablist"
       :aria-label="label"
