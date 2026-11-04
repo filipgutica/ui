@@ -106,6 +106,6 @@
   --color-warning-surface: color-mix(in srgb, var(--color-warning) 12%, var(--color-bg));
   --color-success-surface: color-mix(in srgb, var(--color-success) 11%, var(--color-bg));
   --color-info-surface: color-mix(in srgb, var(--color-info) 10%, var(--color-bg));
-  --shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border);
+  --shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-subtle);
   --color-status-text: var(--color-text);
 }

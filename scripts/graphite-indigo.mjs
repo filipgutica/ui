@@ -90,7 +90,6 @@ const standaloneHeader = `/*
  * Repos: map these names onto the repository's own token system.
  * Sites on @filipgutica/ui: use the variable named in each line's "ui:" comment.
  * When a line names several, use the first; the others are component roles with the same value.
- * "ui: none" means the library has no variable for that token.
  *
  * Theme states: bare :root is light. prefers-color-scheme picks dark unless
  * data-theme="light" is set. data-theme="dark" forces dark.
@@ -152,7 +151,11 @@ const libraryNamesFor = (data, libraryCss) => {
       assertSameValue(name, `--${name}`)
       names.push(`--${name}`)
     }
-    return names.length > 0 ? names.join(', ') : 'none'
+    // A token sites cannot reach through the library does not belong in the shared vocabulary.
+    if (names.length === 0) {
+      throw new Error(`Token "${name}" has no library variable; add a role, an alias, or an extra`)
+    }
+    return names.join(', ')
   }
 }
 

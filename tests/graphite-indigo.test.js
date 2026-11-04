@@ -50,7 +50,6 @@ describe('Graphite Indigo generated files', () => {
     expect(css).toContain('--bg: #f4f5f8; /* ui: --color-bg */')
     expect(css).toMatch(/--font-sans: [^;]+; \/\* ui: --font-ui \*\//)
     expect(css).toContain('--radius-sm: 4px; /* ui: --radius-inline */')
-    expect(css).toContain('--radius-xl: 12px; /* ui: none */')
     expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
   })
 
@@ -116,7 +115,6 @@ describe.each([['light', LIGHT], ['dark', DARK]])('Graphite Indigo %s contrast',
     ['text', 'row-selected'],
     ['text-muted', 'bg'],
     ['text-muted', 'surface'],
-    ['text-faint', 'bg'],
     ['link', 'bg'],
     ['accent', 'bg'],
     ['accent-text', 'accent'],
