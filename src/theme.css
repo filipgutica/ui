@@ -75,6 +75,7 @@
   --color-warning-surface: color-mix(in srgb, var(--color-warning) 13%, var(--color-surface));
   --color-success-surface: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
   --color-info-surface: color-mix(in srgb, var(--color-info) 12%, var(--color-surface));
+  --radius-inline: 0.25rem;
   --radius-control: 0.375rem;
   --radius-panel: 0.5rem;
   --radius-pill: 999px;
@@ -147,6 +148,7 @@
   --color-ui-warning: var(--color-warning);
   --color-ui-success: var(--color-success);
   --color-ui-info: var(--color-info);
+  --radius-ui-inline: var(--radius-inline);
   --radius-ui-control: var(--radius-control);
   --radius-ui-panel: var(--radius-panel);
 }
