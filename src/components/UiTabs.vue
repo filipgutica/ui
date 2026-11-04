@@ -33,19 +33,46 @@ const headingId = (value: string): string => `${id}-heading-${encodeURIComponent
 
 onMounted(() => { enhanced.value = true })
 
-// A narrow strip clips later tabs. Keep the selected one in view, on load and after a change,
-// by scrolling only the strip; scrollIntoView could also scroll the page.
+// A narrow strip clips later tabs. Keep the selected one in view, on load, after a change, and
+// when the strip resizes, by scrolling only the strip; scrollIntoView could also scroll the page.
+// The strip's scroll padding keeps the tab clear of a faded edge.
 const list = useTemplateRef<HTMLElement>('list')
 const revealActive = (): void => {
   const strip = list.value
   const tab = strip?.querySelector<HTMLElement>('[aria-selected="true"]')
   if (!strip || !tab) return
   const bounds = strip.getBoundingClientRect()
+  const style = getComputedStyle(strip)
+  const start = bounds.left + (Number.parseFloat(style.scrollPaddingLeft) || 0)
+  const end = bounds.right - (Number.parseFloat(style.scrollPaddingRight) || 0)
   const { left, right } = tab.getBoundingClientRect()
-  if (left < bounds.left) strip.scrollLeft -= bounds.left - left
-  else if (right > bounds.right) strip.scrollLeft += right - bounds.right
+  if (left < start) strip.scrollLeft -= start - left
+  else if (right > end) strip.scrollLeft += right - end
 }
+
+// The physical edges that hide tabs. CSS fades them so readers can tell the strip scrolls.
+const clipped = ref<'left' | 'right' | 'both'>()
+const measureClipping = (): void => {
+  const strip = list.value
+  if (!strip) return
+  const hidden = strip.scrollWidth - strip.clientWidth
+  // A right-to-left strip scrolls from 0 toward negative values.
+  const fromLeft = getComputedStyle(strip).direction === 'rtl' ? strip.scrollLeft + hidden : strip.scrollLeft
+  const left = fromLeft > 1
+  const right = fromLeft < hidden - 1
+  clipped.value = left && right ? 'both' : left ? 'left' : right ? 'right' : undefined
+}
+
 watch([enhanced, activeValue], revealActive, { flush: 'post' })
+watch(list, (strip, _, onCleanup) => {
+  if (!strip || typeof ResizeObserver === 'undefined') return
+  const observer = new ResizeObserver(() => {
+    revealActive()
+    measureClipping()
+  })
+  observer.observe(strip)
+  onCleanup(() => observer.disconnect())
+})
 
 const select = (value: string): void => {
   if (value !== activeValue.value) emit('update:modelValue', value)
@@ -86,7 +113,9 @@ const moveFocus = (event: KeyboardEvent): void => {
       class="fg-tabs__list"
       role="tablist"
       :aria-label="label"
+      :data-clipped="clipped"
       @keydown="moveFocus"
+      @scroll.passive="measureClipping"
     >
       <button
         v-for="item in items"

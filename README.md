@@ -50,8 +50,9 @@ cancelable `closeAutoFocus` event and focus that heading.
 
 `UiTabs` renders every labelled panel during SSR and initial hydration. After
 mounting, it adds keyboard-accessible tabs and hides inactive panels without
-unmounting them. Use unique item values and keep page anchor headings outside
-the panels. Re-align an initial hash after layout settles if enhancement changes
+unmounting them. A tab strip narrower than its tabs scrolls, fades each clipped
+edge, and keeps the selected tab in view when it resizes. Use unique item values
+and keep page anchor headings outside the panels. Re-align an initial hash after layout settles if enhancement changes
 the page height.
 
 Track page sections from a component's setup function:
