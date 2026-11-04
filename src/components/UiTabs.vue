@@ -59,6 +59,8 @@ const moveFocus = (event: KeyboardEvent): void => {
   if (!next) return
   event.preventDefault()
   next.focus()
+  // Focus leaves a partly visible tab where it is; reveal all of it inside the scrolling list.
+  next.scrollIntoView({ block: 'nearest', inline: 'nearest' })
 }
 </script>
 

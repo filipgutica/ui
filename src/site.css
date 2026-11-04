@@ -178,8 +178,9 @@
   }
   .fg-capture .fg-tabs__list { width: 100%; margin-block-end: 0; padding-inline: var(--space-2); }
   .fg-capture .fg-tabs__tab { min-height: var(--control-lg); }
-  /* The Full size control sits at the end of the tab row; the list reserves its width. */
-  .fg-capture[data-enhanced="true"] .fg-tabs__list { padding-inline-end: calc(var(--space-2) + 6.5rem); }
+  /* The Full size control sits at the end of the tab row. The list's margin, not its
+   * padding, reserves the control's width, so the scroll area and divider end before it. */
+  .fg-capture[data-enhanced="true"] .fg-tabs__list { width: auto; margin-inline-end: calc(var(--space-2) + 6.5rem); }
   .fg-capture__full {
     position: absolute;
     top: 0;
@@ -430,7 +431,7 @@
   @media (max-width: 640px) {
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
-    .fg-capture[data-enhanced="true"] .fg-tabs__list { padding-inline-end: calc(var(--space-2) + var(--control-lg)); }
+    .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }
     .fg-capture__full { min-width: var(--control-lg); justify-content: center; }
     .fg-capture__full-label { display: none; }
     .fg-command-list__table,
