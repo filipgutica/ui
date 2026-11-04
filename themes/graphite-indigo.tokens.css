@@ -7,6 +7,7 @@
  * Inline visuals: inherit the host font and theme variables; see DESIGN.md.
  * Repos: map these names onto the repository's own token system.
  * Sites on @filipgutica/ui: use the variable named in each line's "ui:" comment.
+ * When a line names several, use the first; the others are component roles with the same value.
  * "ui: none" means the library has no variable for that token.
  *
  * Theme states: bare :root is light. prefers-color-scheme picks dark unless

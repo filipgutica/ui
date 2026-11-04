@@ -54,6 +54,19 @@ describe('Graphite Indigo generated files', () => {
     expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
   })
 
+  it('puts the general variable first when several share a token', () => {
+    const roles = Object.fromEntries(Object.entries(data.library.roles).reverse())
+    const css = renderStandaloneTokens({ data: { ...data, library: { ...data.library, roles } }, libraryCss: read('src/theme.css') })
+
+    expect(css).toMatch(/--text: [^;]+; \/\* ui: --color-text, /)
+  })
+
+  it('fails when a hand-written library value drifts from its token', () => {
+    const drifted = read('src/theme.css').replace('--space-4: 1rem;', '--space-4: 2rem;')
+
+    expect(() => renderStandaloneTokens({ data, libraryCss: drifted })).toThrow('--space-4 in theme.css is 2rem')
+  })
+
   it('fails when a token alias names a variable the library does not define', () => {
     const renamed = { ...data, library: { ...data.library, aliases: { ...data.library.aliases, 'radius-md': '--radius-missing' } } }
 

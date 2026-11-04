@@ -8,7 +8,8 @@
 // @filipgutica/ui/themes/graphite-indigo.css. Standalone tokens: the design-language
 // vocabulary (--bg, --text, ...) for pages that do not use the library. Each standalone
 // token line names the library variables for the same value, so --check also fails when
-// that map is stale or names a variable the library does not define.
+// that map is stale, names a variable the library does not define, or names a
+// hand-written theme.css variable whose value differs from the token.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -88,6 +89,7 @@ const standaloneHeader = `/*
  * Inline visuals: inherit the host font and theme variables; see DESIGN.md.
  * Repos: map these names onto the repository's own token system.
  * Sites on @filipgutica/ui: use the variable named in each line's "ui:" comment.
+ * When a line names several, use the first; the others are component roles with the same value.
  * "ui: none" means the library has no variable for that token.
  *
  * Theme states: bare :root is light. prefers-color-scheme picks dark unless
@@ -123,14 +125,33 @@ p a, dd a { text-decoration: underline; text-underline-offset: 0.18em; }
 const libraryNamesFor = (data, libraryCss) => {
   const defined = new Set([...variablesIn(libraryCss), ...variablesIn(renderLibraryTheme(data))])
   const { roles, aliases } = data.library
+  const tokens = flatTokens(data)
+  // Aliases and same-name variables take their values from the hand-written theme.css, not
+  // from this file, so compare them: 1rem is 16px, and quote style does not matter.
+  const handWritten = {}
+  for (const [, variable, value] of libraryCss.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) handWritten[variable] ??= value.trim()
+  const normalize = (value) => value.replace(/'/g, '"').replace(/([\d.]+)rem\b/g, (_, rem) => `${Number(rem) * 16}px`)
+  const assertSameValue = (name, variable) => {
+    const value = handWritten[variable]
+    const token = valueFor(tokens, name, LIGHT)
+    if (value !== undefined && normalize(value) !== normalize(token)) {
+      throw new Error(`Token "${name}" is ${token}, but ${variable} in theme.css is ${value}`)
+    }
+  }
   return (name) => {
+    // The general variable leads; the rest are component roles that share its value.
     const names = Object.entries(roles).filter(([, token]) => token === name).map(([role]) => role)
+      .sort((a, b) => Number(b === `--color-${name}`) - Number(a === `--color-${name}`))
     const alias = aliases[name]
     if (alias !== undefined) {
       if (!defined.has(alias)) throw new Error(`Alias for "${name}" names ${alias}, which the library does not define`)
+      assertSameValue(name, alias)
       names.push(alias)
     }
-    if (names.length === 0 && defined.has(`--${name}`)) names.push(`--${name}`)
+    if (names.length === 0 && defined.has(`--${name}`)) {
+      assertSameValue(name, `--${name}`)
+      names.push(`--${name}`)
+    }
     return names.length > 0 ? names.join(', ') : 'none'
   }
 }
