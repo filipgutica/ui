@@ -38,7 +38,7 @@
   --focus: #075fc7; /* ui: --color-focus */
 
   /* Status: only for state, never for decoration. */
-  --success: #1f8a5b; /* ui: --color-success */
+  --success: #157249; /* ui: --color-success */
   --warning: #86532e; /* ui: --color-warning */
   --danger: #c7372d; /* ui: --color-error */
   --info: #175cd3; /* ui: --color-info */
@@ -118,7 +118,7 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #151619;
-    --surface: #191a1d;
+    --surface: #0e0f12;
     --surface-raised: #212226;
     --surface-hover: #303238;
     --surface-selected: #34373e;
@@ -148,7 +148,7 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #151619;
-  --surface: #191a1d;
+  --surface: #0e0f12;
   --surface-raised: #212226;
   --surface-hover: #303238;
   --surface-selected: #34373e;

@@ -97,11 +97,19 @@ describe.each([['light', LIGHT], ['dark', DARK]])('Graphite Indigo %s contrast',
     ['code-string', 'surface'],
     ['code-number', 'surface'],
     ['code-comment', 'surface'],
+    ['success', 'bg'],
+    ['success', 'surface'],
+    ['success', 'surface-raised'],
     ['danger', 'bg'],
     ['warning', 'bg'],
     ['info', 'bg'],
   ])('keeps %s readable on %s', (foreground, background) => {
     expect(contrast(color(foreground, mode), color(background, mode))).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('recesses the surface below the page in both modes', () => {
+    const luminance = hex => contrast(hex, '#000000')
+    expect(luminance(color('surface', mode))).toBeLessThan(luminance(color('bg', mode)))
   })
 
   it.each([['success', 0.11], ['warning', 0.12], ['danger', 0.10], ['info', 0.10]])(
