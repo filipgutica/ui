@@ -51,7 +51,7 @@
   }
   .fg-code-block__copy:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
   .fg-code-block__copy svg { width: 1rem; height: 1rem; }
-  .fg-code-block__copy:focus-visible, .fg-code-block__pre:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-code-block__copy:focus-visible, .fg-code-block__pre:focus-visible, .fg-figure__plate:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
   .fg-code-block__pre { margin: 0; padding: 1rem; overflow: auto; max-height: 32rem; tab-size: 2; }
   .fg-code-block__pre, .fg-code-block__pre code { font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.65; }
   .fg-code-block__pre code { display: block; color: inherit; }

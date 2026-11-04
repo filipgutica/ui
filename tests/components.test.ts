@@ -218,6 +218,17 @@ describe('application primitives', () => {
     expect(unnumbered.get('figcaption').text()).toBe('Four problems hide in one change.')
   })
 
+  it('lets keyboard users reach a figure plate, named by its caption', () => {
+    const captioned = mount(UiFigure, { props: { number: 1 }, slots: { default: 'Plate', caption: 'Wide table.' } })
+    const plate = captioned.get('.fg-figure__plate')
+    expect(plate.attributes('tabindex')).toBe('0')
+    expect(plate.attributes('role')).toBe('region')
+    expect(plate.attributes('aria-labelledby')).toBe(captioned.get('figcaption').attributes('id'))
+
+    const bare = mount(UiFigure, { slots: { default: 'Plate' } })
+    expect(bare.get('.fg-figure__plate').attributes('aria-label')).toBe('Figure')
+  })
+
   it('exposes an accessible radio-card model', async () => {
     const wrapper = mount({
       components: { UiRadioCard, UiRadioCardGroup },
