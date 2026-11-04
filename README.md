@@ -167,8 +167,9 @@ import read from './captures/read.html?raw'
 `aria-current="location"`, a text-only marker. An item with `current: true` gets
 `aria-current="page"`, the selected fill and accent bar; `code: true` shows the
 label in the monospace font. The page grid places the rail, which stays in view
-on desktop. At 800px and below it is a native Menu disclosure until the page is
-interactive, then a drawer. The drawer closes on navigation and focuses the
+on desktop. At 800px and below it is a native disclosure until the page is
+interactive, then a drawer. The disclosure, the drawer button, and the drawer
+title all show `label`. The drawer closes on navigation and focuses the
 destination section, and focus follows the visible control across the
 breakpoint.
 

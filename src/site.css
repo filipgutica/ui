@@ -244,8 +244,8 @@
   .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 
   /* Section rail (UiSiteNav). The page grid places it; on desktop it stays in view
-   * beside the article. At 800px and below it becomes a Menu disclosure, replaced
-   * by a drawer once the page is interactive. */
+   * beside the article. At 800px and below it becomes a disclosure named by the
+   * label prop, replaced by a drawer once the page is interactive. */
   .fg-site-rail {
     position: sticky;
     top: var(--space-6);
@@ -590,9 +590,20 @@
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fg-site-rail__menu .fg-site-rail__group-label { grid-column: 1 / -1; }
     .fg-site-rail__nav a { min-height: var(--control-lg); }
+    /* The drawer title already shows the label; the heading still names the nav. */
+    .fg-drawer__content .fg-site-rail__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
   @media (max-width: 640px) {
     .fg-site-docs { padding-inline: var(--space-4); }
+    /* One header row on phones. Pages repeat these links in the page or footer. */
+    .fg-site-header__links { display: none; }
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
     .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }

@@ -106,7 +106,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
         class="fg-site-rail__summary"
         :aria-controls="contentId"
       >
-        Menu
+        {{ label }}
       </summary>
       <SiteNavLinks
         :content-id="contentId"
@@ -118,7 +118,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
     <UiDrawer
       v-else
       v-model:open="open"
-      title="Navigation"
+      :title="label"
       @close-auto-focus="closeAutoFocus"
     >
       <template #trigger>
@@ -127,7 +127,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
           size="lg"
           class="fg-site-rail__toggle"
         >
-          Menu
+          {{ label }}
         </UiButton>
       </template>
       <SiteNavLinks

@@ -84,3 +84,19 @@ test('colors captures with the default terminal palette unless the site sets its
   await page.addStyleTag({ content: ':root { --t6: #ff0000; }' })
   await expect(accent).toHaveCSS('color', 'rgb(255, 0, 0)')
 })
+
+test('keeps the phone header on one row and names the section menu after its label', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(fixture)
+    await expect(page.getByRole('navigation', { name: 'Site links', exact: true })).toBeHidden()
+    // One row: the header keeps its 64px minimum height plus its 1px border.
+    expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
+    const toggle = page.getByRole('button', { name: 'On this page', exact: true })
+    await toggle.click()
+    await expect(page.getByRole('dialog', { name: 'On this page', exact: true })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(toggle).toBeFocused()
+    expect(await page.locator('h1').evaluate(element => element.getBoundingClientRect().top)).toBeLessThanOrEqual(150)
+  }
+})
