@@ -117,3 +117,93 @@ test('keeps the phone header on one row and names the section menu after its lab
     expect(await page.locator('h1').evaluate(element => element.getBoundingClientRect().top)).toBeLessThanOrEqual(150)
   }
 })
+
+test('hides [hidden] elements over page display rules and sizes inline code one step down', async ({ page }) => {
+  await page.goto(fixture)
+  // A page's own display rule would otherwise win over the browser's [hidden] style.
+  await page.addStyleTag({ content: 'main > section > p { display: block; }' })
+  const intro = page.locator('#install > p')
+  await intro.evaluate(element => { element.hidden = true })
+  await expect(intro).toBeHidden()
+  await intro.evaluate(element => { element.hidden = false })
+  await expect(intro.locator('code')).toHaveCSS('font-size', '13px')
+})
+
+test('keeps definition flags such as --all on one line on phones', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 })
+  await page.goto(fixture)
+  const flag = page.locator('.fg-site-definitions code', { hasText: '--all' })
+  // Sweep phone widths so the flag meets the end of a line at least once.
+  for (let width = 320; width <= 480; width += 4) {
+    await page.setViewportSize({ width, height: 900 })
+    expect(await flag.evaluate(element => element.getClientRects().length), `--all at ${width}px`).toBe(1)
+  }
+})
+
+test('gives fact links a touch-sized hit area on phones without taller fact rows', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(fixture)
+    const source = page.locator('.fg-site-facts a', { hasText: 'filipgutica/demo' })
+    expect((await source.boundingBox())?.height ?? 0, `Source link at ${width}px`).toBeGreaterThanOrEqual(44)
+    // The row stays one line: no taller than its label.
+    const row = page.locator('.fg-site-facts > div', { hasText: 'Source' })
+    const rowHeight = (await row.boundingBox())?.height ?? Infinity
+    const labelHeight = (await row.locator('dt').boundingBox())?.height ?? 0
+    expect(rowHeight, `Source row at ${width}px`).toBeLessThanOrEqual(labelHeight + 1)
+  }
+})
+
+test('lets a page set the legend column minimum', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto(fixture)
+  const legend = page.locator('.fg-site-legend')
+  const rows = async () => new Set(await legend.locator('> div').evaluateAll(entries =>
+    entries.map(entry => Math.round(entry.getBoundingClientRect().top)))).size
+  // Four entries at the --sidebar minimum do not fit the 960px column.
+  expect(await rows()).toBe(2)
+  await legend.evaluate(element => element.style.setProperty('--site-legend-column', 'calc(var(--sidebar) - var(--space-4))'))
+  expect(await rows()).toBe(1)
+})
+
+test('fades the clipped edges of a scrolling tab strip and keeps the selected tab clear of the fade', async ({ page }) => {
+  const strip = page.locator('.fg-capture[data-enhanced="true"]').getByRole('tablist', { name: 'Steps', exact: true })
+  const maskOf = () => strip.evaluate(element => getComputedStyle(element).maskImage)
+
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto(fixture)
+  expect(await maskOf(), 'every tab fits at 1280px').toBe('none')
+
+  await page.setViewportSize({ width: 320, height: 900 })
+  await page.goto(`${fixture}#frame-list`)
+  const list = strip.getByRole('tab', { name: 'List', exact: true })
+  await expect(list).toHaveAttribute('aria-selected', 'true')
+  await expect.poll(maskOf, 'later tabs are clipped at 320px').toContain('gradient')
+  // Dry run follows List, so List stops short of the faded end of the strip.
+  const strip320 = await strip.boundingBox()
+  const tab = await list.boundingBox()
+  const fade = await strip.evaluate(element => Number.parseFloat(getComputedStyle(element).scrollPaddingRight))
+  expect(fade).toBeGreaterThan(0)
+  expect((tab?.x ?? 0) + (tab?.width ?? Infinity)).toBeLessThanOrEqual((strip320?.x ?? 0) + (strip320?.width ?? 0) - fade + 1)
+
+  await list.focus()
+  await page.keyboard.press('End')
+  await expect(strip.getByRole('tab', { name: 'Dry run', exact: true })).toHaveAttribute('aria-selected', 'true')
+  // At the end of the strip only the start is clipped.
+  await expect(strip).toHaveAttribute('data-clipped', 'left')
+})
+
+test('reveals the selected tab again when the viewport narrows', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto(`${fixture}#frame-dry-run`)
+  const capture = page.locator('.fg-capture[data-enhanced="true"]')
+  const last = capture.getByRole('tab', { name: 'Dry run', exact: true })
+  await expect(last).toHaveAttribute('aria-selected', 'true')
+  await page.setViewportSize({ width: 320, height: 900 })
+  const list = capture.getByRole('tablist', { name: 'Steps', exact: true })
+  await expect.poll(async () => {
+    const bounds = await list.boundingBox()
+    const tab = await last.boundingBox()
+    return (tab?.x ?? 0) + (tab?.width ?? Infinity) <= (bounds?.x ?? 0) + (bounds?.width ?? 0) + 1
+  }, 'Dry run in view after narrowing to 320px').toBe(true)
+})

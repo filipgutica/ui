@@ -73,6 +73,21 @@ describe('Graphite Indigo generated files', () => {
     expect(() => renderStandaloneTokens({ data: renamed, libraryCss: read('src/theme.css') })).toThrow('--radius-missing')
   })
 
+  it('maps every standalone token to a library variable', () => {
+    const css = renderStandaloneTokens({ data, libraryCss: read('src/theme.css') })
+    const orphan = { ...data, groups: [...data.groups, { comment: 'Orphan', tokens: { 'orphan-gap': '3px' } }] }
+
+    expect(css).not.toContain('ui: none')
+    expect(css).not.toContain('--text-faint')
+    expect(() => renderStandaloneTokens({ data: orphan, libraryCss: read('src/theme.css') })).toThrow('orphan-gap')
+  })
+
+  it('rings the dark popover with the subtle border, as in light mode', () => {
+    const dark = /:root\.dark\s*\{([^}]+)\}/.exec(renderLibraryTheme(data))?.[1]
+
+    expect(dark).toContain('--shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-subtle);')
+  })
+
   it('keeps one :root.dark block that sites can copy into a no-script rule', () => {
     const css = renderLibraryTheme(data)
 
