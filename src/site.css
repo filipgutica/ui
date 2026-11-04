@@ -602,7 +602,7 @@
   }
   @media (max-width: 640px) {
     .fg-site-docs { padding-inline: var(--space-4); }
-    /* One header row on phones. Pages repeat these links in the page or footer. */
+    /* One header row on phones. Pages should repeat these links in the page or footer. */
     .fg-site-header__links { display: none; }
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */

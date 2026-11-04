@@ -122,8 +122,9 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 
 `project` is `wtree`, `annoterm`, `devps`, `workbench`, `filip-stack`, or `ui`. The project
 menu is a native disclosure that works without JavaScript; Escape closes it and
-returns focus to its button. Without a default slot the header renders a
-System, Light, and Dark picker. A page with its own appearance control passes it
+returns focus to its button. At 640px and below the header hides `links` so it
+fits one row, so repeat those destinations in the page or footer. Without a
+default slot the header renders a System, Light, and Dark picker. A page with its own appearance control passes it
 in the default slot and uses `useSiteAppearance({ applyToRoot: false })` when it
 owns the root element.
 
