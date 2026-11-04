@@ -58,3 +58,62 @@ test('draws a focus outline that forced-colors mode keeps on every tab stop', as
     }
   }
 })
+
+test('places the docs shell frame, rail, main, and footer on shared edges', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto(fixture)
+  const box = async (selector: string) => {
+    const bounds = await page.locator(selector).first().boundingBox()
+    return { left: Math.round(bounds?.x ?? -1), right: Math.round((bounds?.x ?? 0) + (bounds?.width ?? 0)) }
+  }
+  expect(await box('.fg-site-header__inner')).toEqual({ left: 32, right: 1248 })
+  expect(await box('.fg-site-rail')).toEqual({ left: 32, right: 256 })
+  expect((await box('main')).left).toBe(288)
+  expect(await box('.fg-site-footer')).toEqual({ left: 32, right: 1248 })
+  for (const link of await page.locator('.fg-site-footer a').all())
+    expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44)
+  expect(await page.evaluate(() => document.querySelector('.fg-site-rail')!.getBoundingClientRect().top))
+    .toBe(await page.evaluate(() => document.querySelector('main')!.getBoundingClientRect().top))
+})
+
+test('colors captures with the default terminal palette unless the site sets its own', async ({ page }) => {
+  await page.goto(fixture)
+  const accent = page.locator('.fg-capture[data-enhanced="true"] .tf6').first()
+  await expect(accent).toHaveCSS('color', 'rgb(95, 211, 217)')
+  await expect(page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()).toHaveCSS('background-color', 'rgb(19, 19, 22)')
+  await page.addStyleTag({ content: ':root { --t6: #ff0000; }' })
+  await expect(accent).toHaveCSS('color', 'rgb(255, 0, 0)')
+  // A plain <pre> capture keeps the code background, so its inherited text stays readable.
+  const screen = page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()
+  await screen.evaluate(element => { element.innerHTML = '<pre>plain output</pre>' })
+  await expect(screen).not.toHaveCSS('background-color', 'rgb(19, 19, 22)')
+})
+
+test('keeps header links on phones for pages outside the docs shell', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 })
+  await page.goto('/#/')
+  await expect(page.getByRole('navigation', { name: 'Site links', exact: true })).toBeVisible()
+})
+
+test('keeps the phone header on one row and names the section menu after its label', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(fixture)
+    // Role queries skip hidden elements, so find the header links by class.
+    const headerLinks = page.locator('.fg-site-header__links a')
+    await expect(headerLinks).toHaveCount(3)
+    await expect(headerLinks.first()).toBeHidden()
+    // Every hidden header destination is still reachable from a visible link.
+    for (const href of await headerLinks.evaluateAll(links => links.map(link => link.getAttribute('href')))) {
+      await expect(page.locator(`a[href="${href}"]:visible`), `${href} at ${width}px`).not.toHaveCount(0)
+    }
+    // One row: the header keeps its 64px minimum height plus its 1px border.
+    expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
+    const toggle = page.getByRole('button', { name: 'On this page', exact: true })
+    await toggle.click()
+    await expect(page.getByRole('dialog', { name: 'On this page', exact: true })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(toggle).toBeFocused()
+    expect(await page.locator('h1').evaluate(element => element.getBoundingClientRect().top)).toBeLessThanOrEqual(150)
+  }
+})

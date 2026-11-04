@@ -41,7 +41,7 @@
   --color-syntax-attribute: var(--color-syntax-number);
   --color-error: #c7372d;
   --color-warning: #86532e;
-  --color-success: #1f8a5b;
+  --color-success: #157249;
   --color-info: #175cd3;
   --color-progress: var(--color-accent);
   --color-error-surface: color-mix(in srgb, var(--color-error) 10%, var(--color-bg));
@@ -64,7 +64,7 @@
 :root.dark {
   color-scheme: dark;
   --color-bg: #151619;
-  --color-surface: #191a1d;
+  --color-surface: #0e0f12;
   --color-surface-raised: #212226;
   --color-surface-muted: #303238;
   --color-text: #f4f5f8;

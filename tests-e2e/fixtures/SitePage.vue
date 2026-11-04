@@ -19,7 +19,7 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
 </script>
 
 <template>
-  <div class="page">
+  <div class="fg-site-docs">
     <UiSiteHeader
       project="ui"
       :links="[
@@ -44,14 +44,31 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
             <p>What the {{ item.label }} capture shows.</p>
           </template>
         </UiCapture>
+        <dl class="fg-site-legend">
+          <div>
+            <dt>M @</dt>
+            <dd>Modified files; the current worktree.</dd>
+          </div>
+          <div>
+            <dt>PR</dt>
+            <dd>An open pull request.</dd>
+          </div>
+        </dl>
       </section>
       <section id="commands">
         <h2>Commands</h2>
+        <p>Press <kbd>Space</kbd> to select a row.</p>
         <UiCommandList :items="[{ command: 'demo ui', description: 'Browse items.' }, { command: 'demo clean --dry-run', description: 'Preview removal.' }]" />
       </section>
     </main>
-    <footer>
-      <a href="#releases">Releases</a>
+    <footer class="fg-site-footer">
+      <a href="#author">Built by Filip Gutica</a>
+      <nav aria-label="Project links">
+        <a href="#guide">Guide</a>
+        <a href="#github">GitHub</a>
+        <a href="#issues">Report an issue</a>
+        <a href="#releases">Releases</a>
+      </nav>
     </footer>
   </div>
 </template>
