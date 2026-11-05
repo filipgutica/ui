@@ -90,7 +90,7 @@ const principles = [
             href="#/components/alert"
           >Alert</a>
           <UiAlert tone="success">
-            Success, announced politely to screen readers.
+            Success status message.
           </UiAlert>
         </div>
       </div>
