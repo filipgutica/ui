@@ -12,8 +12,17 @@
     width: max-content;
     max-width: 100%;
     overflow-x: auto;
+    scroll-padding-inline: var(--space-6);
     margin-block-end: var(--space-4);
     border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  /* A strip that scrolls fades each clipped edge; the scroll padding keeps a revealed tab clear
+   * of the fade. Mask stops are alpha only: #000 keeps a pixel and transparent hides it. */
+  .fg-tabs__list[data-clipped="right"] { mask-image: linear-gradient(to right, #000 calc(100% - var(--space-6)), transparent); }
+  .fg-tabs__list[data-clipped="left"] { mask-image: linear-gradient(to left, #000 calc(100% - var(--space-6)), transparent); }
+  .fg-tabs__list[data-clipped="both"] {
+    mask-image: linear-gradient(to right, transparent, #000 var(--space-6), #000 calc(100% - var(--space-6)), transparent);
   }
 
   .fg-tabs__tab {

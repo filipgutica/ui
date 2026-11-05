@@ -114,6 +114,83 @@ describe('useActiveSection', () => {
     wrapper.unmount()
   })
 
+  describe('after a jump to a section', () => {
+    // Document offsets; each heading's viewport top follows the mocked scroll position.
+    let offsets = { overview: 0, commands: 1300, details: 1700 }
+    let scrolled = 0
+    const scrollTo = (y: number): void => {
+      scrolled = y
+      window.dispatchEvent(new Event('scroll'))
+      flushFrame()
+    }
+    const mountAttached = () => {
+      const host = document.createElement('div')
+      document.body.append(host)
+      const wrapper = mount(PageNavigation, { attachTo: host })
+      cleanups.push(() => wrapper.unmount())
+      return wrapper
+    }
+    const current = (wrapper: ReturnType<typeof mountAttached>) => wrapper.get('[aria-current="location"]').text()
+
+    beforeEach(() => {
+      offsets = { overview: 0, commands: 1300, details: 1700 }
+      scrolled = 0
+      vi.spyOn(window, 'scrollY', 'get').mockImplementation(() => scrolled)
+      for (const id of ['overview', 'commands', 'details'] as const) {
+        const element = document.getElementById(id)
+        if (element) vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => new DOMRect(0, offsets[id] - scrolled, 200, 40))
+      }
+    })
+
+    it('keeps a clicked section current on a page too short to scroll', async () => {
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(800)
+      offsets.commands = 300
+      offsets.details = 600
+      const wrapper = mountAttached()
+      const details = wrapper.get('a[href="#details"]').element
+      // A modified click opens another tab, so this page is not jumping.
+      details.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, metaKey: true }))
+      flushFrame()
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('overview')
+      details.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      flushFrame()
+      window.dispatchEvent(new Event('resize'))
+      flushFrame()
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('details')
+    })
+
+    it('holds through a smooth scroll to the page bottom and releases when the reader scrolls away', async () => {
+      const wrapper = mountAttached()
+      wrapper.get('a[href="#commands"]').element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      // Commands cannot reach the top: the scroll stops at the bottom, where Details would be marked.
+      for (const y of [0, 300, 700, 1000, 1200]) scrollTo(y)
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('commands')
+      scrollTo(1100)
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('overview')
+    })
+
+    it('releases a held jump when the hash returns to the page itself', async () => {
+      vi.spyOn(document.documentElement, 'scrollHeight', 'get').mockReturnValue(800)
+      offsets.commands = 300
+      offsets.details = 600
+      const wrapper = mountAttached()
+      wrapper.get('a[href="#details"]').element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      flushFrame()
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('details')
+      // Going back to the page's own URL empties the hash, and this short page does not scroll.
+      history.replaceState(null, '', location.pathname)
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+      flushFrame()
+      await wrapper.vm.$nextTick()
+      expect(current(wrapper)).toBe('overview')
+    })
+  })
+
   it('selects the final section at the document bottom and cleans up queued work', async () => {
     const wrapper = mountPage()
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(1200)

@@ -35,7 +35,17 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
     <main>
       <section id="install">
         <h1>Demo tool</h1>
-        <p>A project page built from the site components.</p>
+        <p>A project page built from the site components. Run <code>demo ui</code> to start.</p>
+        <dl class="fg-site-facts">
+          <div>
+            <dt>Runs on</dt>
+            <dd>macOS and Linux</dd>
+          </div>
+          <div>
+            <dt>Source</dt>
+            <dd><a href="#github">filipgutica/demo</a></dd>
+          </div>
+        </dl>
         <UiCapture
           label="Steps"
           :items="captures"
@@ -53,11 +63,23 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
             <dt>PR</dt>
             <dd>An open pull request.</dd>
           </div>
+          <div>
+            <dt>* ↑</dt>
+            <dd>Uncommitted changes; unpushed commits.</dd>
+          </div>
+          <div>
+            <dt>✓</dt>
+            <dd>Merged into the default branch.</dd>
+          </div>
         </dl>
       </section>
       <section id="commands">
         <h2>Commands</h2>
         <p>Press <kbd>Space</kbd> to select a row.</p>
+        <dl class="fg-site-definitions">
+          <dt>Scope</dt>
+          <dd>Compiled servers outside your home folder are hidden; <code>--all</code> includes them.</dd>
+        </dl>
         <UiCommandList :items="[{ command: 'demo ui', description: 'Browse items.' }, { command: 'demo clean --dry-run', description: 'Preview removal.' }]" />
       </section>
     </main>

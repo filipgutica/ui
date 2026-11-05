@@ -27,7 +27,13 @@
   .fg-site-docs :where(h1) { max-width: 22ch; font-size: var(--text-3xl); letter-spacing: var(--tracking-tight); }
   .fg-site-docs :where(h2) { font-size: var(--text-xl); }
   .fg-site-docs :where(p) { max-width: var(--measure); }
+  /* Tab panels and other enhanced markup use the hidden attribute, so it outranks the page's own
+   * display rules. until-found keeps the browser's find-in-page behavior. */
+  .fg-site-docs :where([hidden]:not([hidden="until-found"])) { display: none !important; }
   .fg-site-docs :where(code, kbd, pre) { font-family: var(--font-mono); }
+  /* Monospace looks larger than the UI face, so inline code steps down: --text-sm in --text-md text.
+   * Code inside pre keeps the block's own size. */
+  .fg-site-docs :where(:not(pre) > code) { font-size: var(--text-sm); }
   .fg-site-docs :where(a) { color: var(--color-link); text-underline-offset: 0.18em; }
   .fg-site-docs :where(kbd) {
     display: inline-block;
@@ -90,10 +96,11 @@
   }
   .fg-site-footer a:hover { color: var(--color-text); text-decoration: underline; }
 
-  /* Legend: a dl of what a capture shows, with one div per dt and dd pair. */
+  /* Legend: a dl of what a capture shows, with one div per dt and dd pair. Columns are at
+   * least --site-legend-column wide (default --sidebar); a page can lower it to fit more. */
   .fg-site-legend {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(var(--sidebar), 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--site-legend-column, var(--sidebar)), 100%), 1fr));
     gap: 0 var(--space-6);
     margin: 0;
     font-size: var(--text-sm);
@@ -513,6 +520,8 @@
   }
   .fg-site-definitions dt { font-weight: var(--weight-medium); }
   .fg-site-definitions dd { margin: 0; color: var(--color-muted); }
+  /* Keep flags such as --all whole instead of breaking after a hyphen. */
+  .fg-site-definitions code { white-space: nowrap; }
 
   .fg-site-sr-only {
     position: absolute;
@@ -606,6 +615,16 @@
     .fg-site-docs { padding-inline: var(--space-4); }
     /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
     .fg-site-docs .fg-site-header__links { display: none; }
+    /* Fact links, such as a Source link that stands in for the hidden header link, get a
+     * touch-sized hit area. The negative margin keeps each fact row one line tall, and the
+     * row gap of a list with links makes room for the part of the hit area past the line. */
+    .fg-site-facts:has(a) { row-gap: calc(var(--control-lg) - 1lh); }
+    .fg-site-facts a {
+      display: inline-flex;
+      min-height: var(--control-lg);
+      align-items: center;
+      margin-block: calc((1lh - var(--control-lg)) / 2);
+    }
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
     .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }

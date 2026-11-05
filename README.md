@@ -50,9 +50,10 @@ cancelable `closeAutoFocus` event and focus that heading.
 
 `UiTabs` renders every labelled panel during SSR and initial hydration. After
 mounting, it adds keyboard-accessible tabs and hides inactive panels without
-unmounting them. Use unique item values and keep page anchor headings outside
-the panels. Re-align an initial hash after layout settles if enhancement changes
-the page height.
+unmounting them. A tab strip narrower than its tabs scrolls, fades each clipped
+edge, and keeps the selected tab in view when it resizes. Use unique item values
+and keep page anchor headings outside the panels. Re-align an initial hash after
+layout settles if enhancement changes the page height.
 
 Track page sections from a component's setup function:
 
@@ -68,7 +69,10 @@ The returned readonly ref contains the last supplied heading above the root's
 CSS `scroll-padding-top` inset, or the final section at the document bottom.
 IDs must remain stable and in page order; missing elements are ignored after
 mounting. Bind matching links to `aria-current="location"`. Scrolling, resizing,
-layout changes, completed transitions, and restored pages update the value.
+layout changes, completed transitions, and restored pages update the value. After
+a jump to a section, through a `#id` link, a hash change, or a deep link, that
+section stays current until the reader scrolls away from where the jump lands, so
+a page too short to bring it to the top still marks it.
 The composable does not change focus, the URL, or browser history, and removes
 its listeners and observer when the component unmounts. During SSR it returns
 the first supplied ID without accessing browser globals.
@@ -198,9 +202,10 @@ description and wraps.
 
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
 numbered circles, `.fg-site-facts` for an inline `dl` of short label and value
-pairs, `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks
-on phones, `.fg-site-sr-only` for visually hidden text, and `.fg-site-skip` for
-a skip link that appears on focus.
+pairs whose links get a `--control-lg` hit area at 640px and below,
+`.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks on
+phones and keeps `code` such as `--all` on one line, `.fg-site-sr-only` for
+visually hidden text, and `.fg-site-skip` for a skip link that appears on focus.
 
 ### Docs shell
 
@@ -211,9 +216,11 @@ main content, and footer. The shell then supplies:
   the footer on the frame edges. At 800px and below the rail stacks above `main`.
 - element defaults inside the shell, plus the page background and font on
   `body`: box sizing, heading sizes and margins, paragraph measure, links,
-  `kbd`, and a 2px focus outline.
+  inline `code` at `--text-sm`, `kbd`, a 2px focus outline, and a `[hidden]`
+  rule that outranks the page's own `display` rules.
 - `.fg-site-footer` for the footer and `.fg-site-legend` for a `dl` that explains
-  what a capture shows.
+  what a capture shows. Legend columns are at least `--site-legend-column` wide,
+  `--sidebar` by default; set it on the legend to fit more entries in a row.
 
 ```vue
 <template>

@@ -19,10 +19,6 @@
           "#e4e6eb",
           "#303238"
         ],
-        "surface-selected": [
-          "#dde0e6",
-          "#34373e"
-        ],
         "row-hover": [
           "#dfe1e7",
           "#25272d"
@@ -46,10 +42,6 @@
         "text-muted": [
           "#5d626c",
           "#b0b5bf"
-        ],
-        "text-faint": [
-          "#626772",
-          "#a0a6b1"
         ]
       }
     },
@@ -120,7 +112,10 @@
           "#86532e",
           "#d5b98c"
         ],
-        "code-comment": "{text-faint}"
+        "code-comment": [
+          "#626772",
+          "#a0a6b1"
+        ]
       }
     },
     {
@@ -181,7 +176,6 @@
         "radius-sm": "4px",
         "radius-md": "6px",
         "radius-lg": "8px",
-        "radius-xl": "12px",
         "radius-pill": "999px"
       }
     },
@@ -190,7 +184,7 @@
       "tokens": {
         "shadow-popover": [
           "0 8px 24px rgb(16 16 24 / 12%), 0 0 0 1px {border-subtle}",
-          "0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px {border}"
+          "0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px {border-subtle}"
         ]
       }
     },

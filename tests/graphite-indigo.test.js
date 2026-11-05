@@ -50,7 +50,6 @@ describe('Graphite Indigo generated files', () => {
     expect(css).toContain('--bg: #f4f5f8; /* ui: --color-bg */')
     expect(css).toMatch(/--font-sans: [^;]+; \/\* ui: --font-ui \*\//)
     expect(css).toContain('--radius-sm: 4px; /* ui: --radius-inline */')
-    expect(css).toContain('--radius-xl: 12px; /* ui: none */')
     expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
   })
 
@@ -71,6 +70,21 @@ describe('Graphite Indigo generated files', () => {
     const renamed = { ...data, library: { ...data.library, aliases: { ...data.library.aliases, 'radius-md': '--radius-missing' } } }
 
     expect(() => renderStandaloneTokens({ data: renamed, libraryCss: read('src/theme.css') })).toThrow('--radius-missing')
+  })
+
+  it('maps every standalone token to a library variable', () => {
+    const css = renderStandaloneTokens({ data, libraryCss: read('src/theme.css') })
+    const orphan = { ...data, groups: [...data.groups, { comment: 'Orphan', tokens: { 'orphan-gap': '3px' } }] }
+
+    expect(css).not.toContain('ui: none')
+    expect(css).not.toContain('--text-faint')
+    expect(() => renderStandaloneTokens({ data: orphan, libraryCss: read('src/theme.css') })).toThrow('orphan-gap')
+  })
+
+  it('rings the dark popover with the subtle border, as in light mode', () => {
+    const dark = /:root\.dark\s*\{([^}]+)\}/.exec(renderLibraryTheme(data))?.[1]
+
+    expect(dark).toContain('--shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-subtle);')
   })
 
   it('keeps one :root.dark block that sites can copy into a no-script rule', () => {
@@ -101,7 +115,6 @@ describe.each([['light', LIGHT], ['dark', DARK]])('Graphite Indigo %s contrast',
     ['text', 'row-selected'],
     ['text-muted', 'bg'],
     ['text-muted', 'surface'],
-    ['text-faint', 'bg'],
     ['link', 'bg'],
     ['accent', 'bg'],
     ['accent-text', 'accent'],
