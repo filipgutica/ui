@@ -2,60 +2,11 @@
 import { ref } from 'vue'
 
 import { UiAlert, UiBadge, UiButton, UiCodeBlock, UiField, UiInput } from '../../../src/index.js'
+import { stylesImport, themeExample, vueExample } from '../home-examples.js'
 
 const previewQuery = ref('')
 
 const installCommand = 'pnpm add @filipgutica/ui'
-const stylesImport = `@import "tailwindcss";
-@import "@filipgutica/ui/theme.css";
-@import "@filipgutica/ui/themes/graphite-indigo.css";
-@import "@filipgutica/ui/components.css";`
-
-const vueExample = `<script setup lang="ts">
-import { ref } from 'vue'
-import { UiButton } from '@filipgutica/ui'
-import { UiSiteHeader } from '@filipgutica/ui/site'
-
-const count = ref(0)
-<` + `/script>
-
-<template>
-  <!-- Includes the System / Light / Dark appearance picker. -->
-  <UiSiteHeader project="ui" />
-  <main>
-    <UiButton @click="count++">Clicked {{ count }} times</UiButton>
-  </main>
-</template>`
-
-const themeExample = `<script setup lang="ts">
-import { ref } from 'vue'
-import { UiAlert, UiButton } from '@filipgutica/ui'
-import { createOpenVsxThemeService } from '@filipgutica/ui/open-vsx'
-import { applySemanticTheme } from '@filipgutica/ui/theme'
-
-const themes = createOpenVsxThemeService()
-const busy = ref(false)
-const error = ref('')
-
-async function installTheme() {
-  busy.value = true
-  error.value = ''
-  const result = await themes.importTheme('catppuccin.catppuccin-vsc', 'dark')
-  busy.value = false
-  if (result.status === 'error') {
-    error.value = result.error.message
-  } else if (result.status === 'success') {
-    applySemanticTheme({ root: document.documentElement, theme: result.theme })
-  }
-}
-<` + `/script>
-
-<template>
-  <UiButton :loading="busy" @click="installTheme">
-    Use Catppuccin
-  </UiButton>
-  <UiAlert v-if="error" tone="error">{{ error }}</UiAlert>
-</template>`
 
 const principles = [
   { title: 'Quiet by default', description: 'Neutral surfaces, one accent, and clear status colors.' },
