@@ -2,8 +2,8 @@
 
 @filipgutica/ui is a compact Vue 3.5+ component library built on
 [Reka UI](https://reka-ui.com) and styled with Tailwind CSS 4. You can recolor
-it with any VS Code theme: the theme supplies the colors, and the library keeps
-typography, spacing, and component structure the same.
+it with a VS Code color theme: the theme supplies the colors, and the library
+keeps typography, spacing, and component structure the same.
 
 Use it when you want dense, calm controls: neutral surfaces with one accent
 color, compact sizes on a 4px rhythm, and visible keyboard focus. It also
@@ -30,8 +30,7 @@ Import the styles from your application stylesheet:
 ```
 
 The third import adds Graphite Indigo, the palette of the project sites. Leave
-it out to keep the base theme from `theme.css`, with blue actions and warm
-greys.
+it out to keep the base theme from `theme.css`, with blue actions.
 
 ## Use
 
@@ -47,9 +46,9 @@ import { UiButton } from '@filipgutica/ui'
 </template>
 ```
 
-Each component has a page in the
-[component docs](https://filipgutica.github.io/ui/#/components/button) with an
-example, a sandbox, and its props, slots, and events. Read the
+The [component docs](https://filipgutica.github.io/ui/#/components/button)
+show an example, a sandbox, and the props, slots, and events of the components
+in `@filipgutica/ui`. Read the
 [Drawer](https://filipgutica.github.io/ui/#/components/drawer) and
 [Tabs](https://filipgutica.github.io/ui/#/components/tabs) pages before you use
 them for page navigation: they explain how each one behaves before and after
@@ -65,6 +64,9 @@ import { applySemanticTheme, parseVsCodeTheme } from '@filipgutica/ui/theme'
 const theme = parseVsCodeTheme({ source, fileName })
 applySemanticTheme({ root: document.documentElement, theme })
 ```
+
+The theme must define a background color and a foreground color, such as
+`editor.background` and `editor.foreground`.
 
 To let people search for and import themes from Open VSX, use
 `createOpenVsxThemeService` from `@filipgutica/ui/open-vsx`. It runs on Node or
