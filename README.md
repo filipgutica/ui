@@ -1,7 +1,14 @@
 # @filipgutica/ui
 
-Compact Vue 3.5+ components built on [Reka UI](https://reka-ui.com), with
-Tailwind CSS 4 and VS Code theme support.
+@filipgutica/ui is a compact Vue 3.5+ component library built on
+[Reka UI](https://reka-ui.com) and styled with Tailwind CSS 4. You can recolor
+it with any VS Code theme: the theme supplies the colors, and the library keeps
+typography, spacing, and component structure the same.
+
+Use it when you want dense, calm controls: neutral surfaces with one accent
+color, compact sizes on a 4px rhythm, and visible keyboard focus. It also
+provides the shared header, navigation, and page components of Filip's project
+sites.
 
 [Docs and playground](https://filipgutica.github.io/ui/) ·
 [GitHub](https://github.com/filipgutica/ui) ·
@@ -22,6 +29,10 @@ Import the styles from your application stylesheet:
 @import "@filipgutica/ui/components.css";
 ```
 
+The third import adds Graphite Indigo, the palette of the project sites. Leave
+it out to keep the base theme from `theme.css`, with blue actions and warm
+greys.
+
 ## Use
 
 ```vue
@@ -36,46 +47,13 @@ import { UiButton } from '@filipgutica/ui'
 </template>
 ```
 
-The [component docs](https://filipgutica.github.io/ui/#/components/button)
-cover examples, props, slots, and events. Place inputs and selects inside
-`UiField` to connect labels, descriptions, and errors automatically.
-
-## Page navigation
-
-`UiDrawer` provides modal focus containment, Escape dismissal, and trigger focus
-restoration. Keep native navigation in the server-rendered page until hydration;
-the application decides when to replace it and when to close the drawer at a
-desktop breakpoint. To focus a link destination after closing, prevent the
-cancelable `closeAutoFocus` event and focus that heading.
-
-`UiTabs` renders every labelled panel during SSR and initial hydration. After
-mounting, it adds keyboard-accessible tabs and hides inactive panels without
-unmounting them. A tab strip narrower than its tabs scrolls, fades each clipped
-edge, and keeps the selected tab in view when it resizes. Use unique item values
-and keep page anchor headings outside the panels. Re-align an initial hash after
-layout settles if enhancement changes the page height.
-
-Track page sections from a component's setup function:
-
-```ts
-import { useActiveSection } from '@filipgutica/ui'
-
-const activeSection = useActiveSection({
-  targetIds: ['overview', 'install', 'commands'],
-})
-```
-
-The returned readonly ref contains the last supplied heading above the root's
-CSS `scroll-padding-top` inset, or the final section at the document bottom.
-IDs must remain stable and in page order; missing elements are ignored after
-mounting. Bind matching links to `aria-current="location"`. Scrolling, resizing,
-layout changes, completed transitions, and restored pages update the value. After
-a jump to a section, through a `#id` link, a hash change, or a deep link, that
-section stays current until the reader scrolls away from where the jump lands, so
-a page too short to bring it to the top still marks it.
-The composable does not change focus, the URL, or browser history, and removes
-its listeners and observer when the component unmounts. During SSR it returns
-the first supplied ID without accessing browser globals.
+Each component has a page in the
+[component docs](https://filipgutica.github.io/ui/#/components/button) with an
+example, a sandbox, and its props, slots, and events. Read the
+[Drawer](https://filipgutica.github.io/ui/#/components/drawer) and
+[Tabs](https://filipgutica.github.io/ui/#/components/tabs) pages before you use
+them for page navigation: they explain how each one behaves before and after
+hydration.
 
 ## Themes
 
@@ -88,20 +66,44 @@ const theme = parseVsCodeTheme({ source, fileName })
 applySemanticTheme({ root: document.documentElement, theme })
 ```
 
-Themes supply colors; the library keeps typography, spacing, and component
-structure consistent. Open VSX search and imports are available through
-`createOpenVsxThemeService` from `@filipgutica/ui/open-vsx`. It runs on Node
-or in a browser with HTTPS and Web Crypto. Browser requests depend on the
-registry and its resource host allowing cross-origin access.
+To let people search for and import themes from Open VSX, use
+`createOpenVsxThemeService` from `@filipgutica/ui/open-vsx`. It runs on Node or
+in a browser with HTTPS and Web Crypto. In a browser, it works only when the
+registry and its resource host allow cross-origin requests.
 
-The gallery's search-and-install dialog is docs-only, not an exported component.
-Applications can build their own picker with the exported components and theme
-helpers. `UiSiteHeader` includes the built-in System, Light, and Dark control.
+The theme search-and-install dialog on the docs site is not exported. Build
+your own picker from the exported components and theme helpers.
 
-The install steps above import Graphite Indigo, the palette of the project
-sites, after `theme.css`. To keep the base theme instead, with blue actions and
-warm greys, leave out the `themes/graphite-indigo.css` import. Graphite Indigo
-stays opt-in: `theme.css` alone still gives the base theme.
+## Track the current section
+
+`useActiveSection` tells you which section of a long page the reader is on,
+so you can mark its link. Call it from a component's setup function:
+
+```ts
+import { useActiveSection } from '@filipgutica/ui'
+
+const activeSection = useActiveSection({
+  targetIds: ['overview', 'install', 'commands'],
+})
+```
+
+Bind `aria-current="location"` to the link whose section matches the value.
+
+- The returned readonly ref holds the last supplied heading above the root's
+  CSS `scroll-padding-top` inset. At the bottom of the document, it holds the
+  final section.
+- Keep the IDs stable and in page order. IDs with no element on the page are
+  ignored after mounting.
+- Scrolling, resizing, layout changes, completed transitions, and restored
+  pages update the value.
+- After a jump to a section, through a `#id` link, a hash change, or a deep
+  link, that section stays current until the reader scrolls away from where the
+  jump lands. So a page too short to bring the section to the top still marks
+  it.
+- It does not change focus, the URL, or browser history. It removes its
+  listeners and observer when the component unmounts.
+- During SSR it returns the first supplied ID without accessing browser
+  globals.
 
 ## Project sites
 
