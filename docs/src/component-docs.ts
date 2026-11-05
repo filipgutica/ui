@@ -34,7 +34,7 @@ export const componentDocs: ComponentDoc[] = [
     name: 'UiDrawer',
     title: 'Drawer',
     summary: 'Opens a modal side panel with contained keyboard focus.',
-    usage: 'Use a drawer for temporary navigation or supporting content. The trigger slot accepts one button. The application owns responsive breakpoints and an SSR navigation fallback. Content attributes are forwarded to the panel. Prevent closeAutoFocus when navigation should focus a destination heading instead of the trigger.',
+    usage: 'Use a drawer for temporary navigation or supporting content. The trigger slot accepts one button. For page navigation, keep native navigation in the server-rendered page until hydration; the application decides when to replace it with the drawer and when to close the drawer at a desktop breakpoint. Content attributes are forwarded to the panel. To focus a link destination after the drawer closes, prevent closeAutoFocus and focus that heading instead of the trigger.',
     props: [
       { name: 'open', required: true, type: 'boolean', description: 'Controls whether the drawer is visible.' },
       { name: 'title', required: true, type: 'string', description: 'Visible, accessible drawer title.' },
@@ -59,7 +59,7 @@ export const componentDocs: ComponentDoc[] = [
     name: 'UiTabs',
     title: 'Tabs',
     summary: 'Switches between related panels while retaining their content state.',
-    usage: 'Supply unique item values and an accessible group label. Arrow keys, Home, and End select tabs. SSR and the first hydration render show every labelled panel; after mounting, inactive panels are hidden and the tab controls appear. Keep page section headings outside the tabs when they are anchor destinations.',
+    usage: 'Supply unique item values and an accessible group label. Arrow keys, Home, and End select tabs. SSR and the first hydration render show every labelled panel; after mounting, the tab controls appear and inactive panels are hidden. A tab strip narrower than its tabs scrolls, fades each clipped edge, and keeps the selected tab in view when it resizes. Keep page section headings outside the tabs when they are anchor destinations. If enhancement changes the page height, re-align an initial hash after layout settles.',
     props: [
       { name: 'items', required: true, type: 'readonly UiTabItem[]', description: 'Ordered items with a unique value and visible label.' },
       { name: 'label', required: true, type: 'string', description: 'Accessible name for the tab list.' },

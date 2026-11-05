@@ -45,9 +45,9 @@ const principles = [
             href="#/components/button"
           >Button</a>
           <div class="home-preview__row">
-            <UiButton>Use Catppuccin</UiButton>
+            <UiButton>Primary action</UiButton>
             <UiButton variant="secondary">
-              Inspect evidence
+              Secondary action
             </UiButton>
           </div>
         </div>
@@ -58,8 +58,8 @@ const principles = [
           >Field</a>
           <UiField
             control-id="preview-theme-search"
-            label="Search themes"
-            description="Search Open VSX by name."
+            label="Label"
+            description="Help text, read out with the input."
           >
             <UiInput
               v-model="previewQuery"
@@ -90,7 +90,7 @@ const principles = [
             href="#/components/alert"
           >Alert</a>
           <UiAlert tone="success">
-            Theme imported successfully.
+            Success status message.
           </UiAlert>
         </div>
       </div>

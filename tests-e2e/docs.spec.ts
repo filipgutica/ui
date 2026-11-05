@@ -223,9 +223,9 @@ test('previews themed components on the introduction and keeps setup compact and
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await page.goto('/#/')
   const preview = page.getByRole('group', { name: 'Component preview' })
-  const primary = preview.getByRole('button', { name: 'Use Catppuccin', exact: true })
+  const primary = preview.getByRole('button', { name: 'Primary action', exact: true })
   await expect(primary).toBeVisible()
-  await preview.getByRole('searchbox', { name: 'Search themes', exact: true }).fill('Catppuccin')
+  await preview.getByRole('searchbox', { name: 'Label', exact: true }).fill('Catppuccin')
   await expect(preview.getByRole('searchbox')).toHaveValue('Catppuccin')
 
   for (const choice of ['Light', 'Dark']) {
