@@ -64,8 +64,8 @@ it('searches and installs an Open VSX theme on static Pages without a local API'
     input!.value = 'Nord'
     input!.dispatchEvent(new Event('input', { bubbles: true }))
     await vi.advanceTimersByTimeAsync(300)
-    await flushPromises()
-    expect(document.querySelector('.theme-results')?.textContent).toContain('Nord')
+    // The search request resolves through the data-fetching cache, which can take more than one flush.
+    await vi.waitFor(() => expect(document.querySelector('.theme-results')?.textContent).toContain('Nord'))
     button('Install').click()
     // ZIP decoding and Web Crypto complete asynchronously outside Vue's update queue.
     await vi.waitFor(() => expect(wrapper.get('button').text()).toContain('Theme: Nord'))
