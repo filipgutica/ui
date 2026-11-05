@@ -59,7 +59,7 @@ export const componentDocs: ComponentDoc[] = [
     name: 'UiTabs',
     title: 'Tabs',
     summary: 'Switches between related panels while retaining their content state.',
-    usage: 'Supply unique item values and an accessible group label. Arrow keys, Home, and End select tabs. SSR and the first hydration render show every labelled panel; after mounting, the tab controls appear and inactive panels are hidden but stay mounted. A tab strip narrower than its tabs scrolls, fades each clipped edge, and keeps the selected tab in view when it resizes. Keep page section headings outside the tabs when they are anchor destinations. If enhancement changes the page height, re-align an initial hash after layout settles.',
+    usage: 'Supply unique item values and an accessible group label. Arrow keys, Home, and End select tabs. SSR and the first hydration render show every labelled panel; after mounting, the tab controls appear and inactive panels are hidden. A tab strip narrower than its tabs scrolls, fades each clipped edge, and keeps the selected tab in view when it resizes. Keep page section headings outside the tabs when they are anchor destinations. If enhancement changes the page height, re-align an initial hash after layout settles.',
     props: [
       { name: 'items', required: true, type: 'readonly UiTabItem[]', description: 'Ordered items with a unique value and visible label.' },
       { name: 'label', required: true, type: 'string', description: 'Accessible name for the tab list.' },

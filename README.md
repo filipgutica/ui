@@ -16,6 +16,9 @@ sites.
 
 ## Install
 
+You need a Vue 3.5+ app whose stylesheet Tailwind CSS 4 already builds. This
+package does not install Tailwind.
+
 ```sh
 pnpm add @filipgutica/ui
 ```
