@@ -47,7 +47,7 @@ describe('Graphite Indigo generated files', () => {
   it('names the library variable beside each standalone token', () => {
     const css = renderStandaloneTokens({ data, libraryCss: read('src/theme.css') })
 
-    expect(css).toContain('--bg: #f4f5f8; /* ui: --color-bg */')
+    expect(css).toContain('--bg: #f8f9fb; /* ui: --color-bg */')
     expect(css).toMatch(/--font-sans: [^;]+; \/\* ui: --font-ui \*\//)
     expect(css).toContain('--radius-sm: 4px; /* ui: --radius-inline */')
     expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
