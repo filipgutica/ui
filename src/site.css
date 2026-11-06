@@ -623,7 +623,14 @@
 
   /* No-JavaScript desktop: the rail's disclosure stays expanded. */
   @media (min-width: 801px) {
-    .fg-site-rail { border-inline-end: 1px solid var(--color-border-subtle); padding-inline-end: var(--space-4); }
+    .fg-site-rail { padding-inline-end: var(--space-4); }
+    /* The column rule runs the full height of main, not just the sticky rail. Main reaches
+     * back across the column gap to draw it, and its content keeps the same edge. */
+    .fg-site-docs > main {
+      margin-inline-start: calc(var(--space-8) * -1);
+      padding-inline-start: var(--space-8);
+      border-inline-start: 1px solid var(--color-border-subtle);
+    }
     .fg-site-rail__menu::details-content { content-visibility: visible; }
     .fg-site-rail__menu:not([open]) > .fg-site-rail__content { display: block; }
   }

@@ -96,17 +96,17 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
         <ol class="fg-site-steps">
           <li>
             <h3>Open the file</h3>
-            <p>Run <code>demo README.md</code>. Press Up or Down to select a block.</p>
+            <p>Run <code>annoterm README.md</code>. The file opens in rendered mode. Press Up or Down to select a block.</p>
           </li>
           <li>
             <h3>Add your comments</h3>
-            <p>Press <kbd>a</kbd> to comment on the selected block. Press Enter to save it.</p>
+            <p>Press <kbd>a</kbd> to comment on the selected block. Write your comment. Press Enter to save it.</p>
           </li>
           <li>
             <h3>Hand off the feedback</h3>
-            <p>Press <kbd>q</kbd> to quit. The feedback is copied to your clipboard.</p>
+            <p>Press <kbd>q</kbd> to quit from the rendered document. If open comments remain, annoterm tries to copy the feedback to your clipboard. Check the result in your terminal.</p>
             <p class="fg-site-steps__result">
-              If copying fails, run <code>demo export README.md --output feedback.md</code> and paste the file.
+              Paste the feedback into Codex, Claude Code, or another coding agent. If copying fails, run <code>annoterm export README.md --output feedback.md</code>. Then paste the contents of <code>feedback.md</code> into your agent.
             </p>
           </li>
         </ol>
