@@ -285,6 +285,13 @@ test('keeps phone facts compact and adjacent links reachable', async ({ page }) 
         { x: bounds.x + bounds.width / 2, y }), `tap at y=${Math.round(y)}`).toBe(await link.getAttribute('href'))
     }
   }
+  // WCAG 1.4.4 and 1.4.10: at 200% text, long fact values wrap instead of widening the phone page.
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.evaluate(() => {
+    const root = document.documentElement
+    root.style.setProperty('font-size', `${parseFloat(getComputedStyle(root).fontSize) * 2}px`, 'important')
+  })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no page overflow at 200% text').toBe(true)
 })
 
 test('lets a page set the legend column minimum', async ({ page }) => {
