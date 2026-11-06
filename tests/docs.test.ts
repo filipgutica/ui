@@ -91,6 +91,20 @@ describe('component documentation', () => {
     expect(wrapper.get('[data-sandbox-link]').attributes('href')).toBe('#/sandbox/button')
   })
 
+  it('renders a usage list as one item per rule and a usage string as one paragraph', () => {
+    const button = componentDocs.find(({ slug }) => slug === 'button')!
+    const listed = mount(ComponentPage, { props: { component: { ...button, usage: ['First rule.', 'Second rule.'] } } })
+    const usage = listed.get('section[aria-labelledby="usage-heading"]')
+    expect(usage.findAll('ul > li').map(item => item.text())).toEqual(['First rule.', 'Second rule.'])
+    expect(usage.find('p').exists()).toBe(false)
+    listed.unmount()
+
+    const single = mount(ComponentPage, { props: { component: { ...button, usage: 'One rule.' } } })
+    expect(single.get('section[aria-labelledby="usage-heading"] p').text()).toBe('One rule.')
+    expect(single.find('section[aria-labelledby="usage-heading"] ul').exists()).toBe(false)
+    single.unmount()
+  })
+
   it('renders documented examples with a copyable code block', () => {
     const wrapper = mount(ComponentPage, {
       props: { component: componentDocs.find(({ slug }) => slug === 'code-block')! },
@@ -123,15 +137,16 @@ describe('docs introduction', () => {
   it('keeps setup copyable, names sample files, and preserves caveats and principles', () => {
     const wrapper = mount(HomePage)
     const blocks = wrapper.findAllComponents(libraryComponents.UiCodeBlock)
-    expect(blocks.map(block => block.props('title'))).toEqual(['', 'main.css', 'App.vue', 'ThemeButton.vue'])
-    expect(blocks[0]?.props()).toMatchObject({ code: 'pnpm add @filipgutica/ui', variant: 'compact', copyable: true })
-    expect(blocks[0]?.find('.fg-code-block__title').exists()).toBe(false)
-    expect(blocks[1]?.props('code')).toBe('@import "tailwindcss";\n@import "@filipgutica/ui/theme.css";\n@import "@filipgutica/ui/themes/graphite-indigo.css";\n@import "@filipgutica/ui/components.css";')
-    expect(blocks[2]?.props('code')).toContain("import { UiSiteHeader } from '@filipgutica/ui/site'")
-    expect(blocks[3]?.props('code')).toContain("themes.importTheme('catppuccin.catppuccin-vsc', 'dark')")
+    expect(blocks.map(block => block.props('title'))).toEqual(['main.css', '', 'main.css', 'App.vue', 'ThemeButton.vue'])
+    expect(blocks[0]?.props('code')).toBe('@import "tailwindcss";')
+    expect(blocks[1]?.props()).toMatchObject({ code: 'pnpm add @filipgutica/ui', variant: 'compact', copyable: true })
+    expect(blocks[1]?.find('.fg-code-block__title').exists()).toBe(false)
+    expect(blocks[2]?.props('code')).toBe('@import "tailwindcss";\n@import "@filipgutica/ui/theme.css";\n@import "@filipgutica/ui/themes/graphite-indigo.css";\n@import "@filipgutica/ui/components.css";\n@import "@filipgutica/ui/site.css";')
+    expect(blocks[3]?.props('code')).toContain("import { UiSiteHeader } from '@filipgutica/ui/site'")
+    expect(blocks[4]?.props('code')).toContain("themes.importTheme('catppuccin.catppuccin-vsc', 'dark')")
     const caveat = wrapper.get('.fg-alert[data-tone="info"]')
     expect(caveat.text()).toContain('This browser example requires HTTPS and Web Crypto, plus cross-origin access from Open VSX and its resource host.')
-    expect(caveat.text()).toContain('This example applies a theme for the current page; it does not save a preference.')
+    expect(caveat.text()).toContain('This example does not save a preference.')
     expect(wrapper.text()).toContain('themes.search(query)')
     expect(wrapper.text()).toContain('themes.importTheme(id, appearance)')
     expect(wrapper.get('a[href="#/components/button"]').text()).toBe('Browse components')

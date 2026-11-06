@@ -1,10 +1,14 @@
 // Code samples shown on the home page. They live in a .ts module because Vite's dependency
 // scanner reads `import` lines inside a .vue file's strings as real imports and then
 // skips pre-bundling, which reloads the dev server mid-test.
-export const stylesImport = `@import "tailwindcss";
+export const stylesImport = {
+  tailwind: `@import "tailwindcss";`,
+  app: `@import "tailwindcss";
 @import "@filipgutica/ui/theme.css";
 @import "@filipgutica/ui/themes/graphite-indigo.css";
-@import "@filipgutica/ui/components.css";`
+@import "@filipgutica/ui/components.css";
+@import "@filipgutica/ui/site.css";`,
+}
 
 export const vueExample = `<script setup lang="ts">
 import { ref } from 'vue'

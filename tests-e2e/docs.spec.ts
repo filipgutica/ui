@@ -320,12 +320,12 @@ test('previews themed components on the introduction and keeps setup compact and
   }
 
   const blocks = page.locator('.home-page .fg-code-block')
-  const install = blocks.first()
+  const install = blocks.nth(1)
   await expect(install.locator('.fg-code-block__title')).toHaveCount(0)
   expect((await install.boundingBox())?.height ?? Infinity).toBeLessThanOrEqual(60)
   await install.getByRole('button', { name: 'Copy code', exact: true }).click()
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('pnpm add @filipgutica/ui')
-  await expect(blocks.locator('.fg-code-block__title')).toHaveText(['main.css', 'App.vue', 'ThemeButton.vue'])
+  await expect(blocks.locator('.fg-code-block__title')).toHaveText(['main.css', 'main.css', 'App.vue', 'ThemeButton.vue'])
   await expect(page.locator('.home-page .fg-alert[data-tone="info"]')).toContainText('HTTPS and Web Crypto')
 })
 
