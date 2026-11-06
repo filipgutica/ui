@@ -388,7 +388,8 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     return { background: style.backgroundColor, radius: style.borderRadius }
   })
   expect(picker.background).toBe(await select.evaluate(element => getComputedStyle(element).backgroundColor))
-  expect(picker.radius).toBe('3px')
+  // The picker is a floating layer, so it takes the panel radius.
+  expect(picker.radius).toBe(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--radius-panel').trim()))
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
   await expect(select).toHaveValue('passed')

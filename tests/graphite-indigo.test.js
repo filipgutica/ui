@@ -49,7 +49,7 @@ describe('Graphite Indigo generated files', () => {
 
     expect(css).toContain('--bg: #f4f5f6; /* ui: --color-bg, --color-button-text */')
     expect(css).toMatch(/--font-sans: [^;]+; \/\* ui: --font-ui \*\//)
-    expect(css).toContain('--radius-sm: 2px; /* ui: --radius-inline */')
+    expect(css).toContain('--radius-sm: 3px; /* ui: --radius-inline */')
     expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
   })
 
