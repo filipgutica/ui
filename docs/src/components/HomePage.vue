@@ -98,65 +98,87 @@ const principles = [
 
     <section aria-labelledby="start-heading">
       <h2 id="start-heading">
-        Setup
+        Get started
       </h2>
-      <div class="setup-grid">
-        <div>
-          <h3>Install</h3>
+      <ol class="fg-site-steps">
+        <li>
+          <h3>Check Tailwind CSS 4</h3>
+          <p>
+            Start with an app whose stylesheet Tailwind CSS 4 already builds.
+            This library does not install Tailwind.
+            Your stylesheet must include this import.
+          </p>
+          <UiCodeBlock
+            :code="stylesImport.tailwind"
+            language="css"
+            title="main.css"
+          />
+        </li>
+        <li>
+          <h3>Install the package</h3>
+          <p>
+            In your app's project directory, install the package.
+          </p>
           <UiCodeBlock
             :code="installCommand"
             language="sh"
             variant="compact"
           />
-        </div>
-        <div>
-          <h3>Styles</h3>
+        </li>
+        <li>
+          <h3>Load the styles</h3>
+          <p>
+            In the stylesheet your app loads, use these imports in this order.
+            The shared site header needs both <code>graphite-indigo.css</code> and <code>site.css</code>, because <code>site.css</code> reads some type and layout roles that only Graphite Indigo defines.
+          </p>
           <UiCodeBlock
-            :code="stylesImport"
+            :code="stylesImport.app"
             language="css"
             title="main.css"
           />
-        </div>
-      </div>
-    </section>
-
-    <section aria-labelledby="vue-heading">
-      <h2 id="vue-heading">
-        Use in Vue
-      </h2>
+        </li>
+        <li>
+          <h3 id="vue-heading">
+            Use your first component
+          </h3>
+          <p>
+            Replace <code>App.vue</code> with this example.
+            Click the button to increase its count.
+          </p>
+          <UiCodeBlock
+            :code="vueExample"
+            language="vue"
+            title="App.vue"
+          />
+        </li>
+        <li>
+          <h3 id="themes-heading">
+            Add an Open VSX theme
+          </h3>
+          <p>
+            For an optional theme button, create <code>ThemeButton.vue</code> with this example.
+            In <code>App.vue</code>, add <code>import ThemeButton from './ThemeButton.vue'</code> to the script and <code>&lt;ThemeButton /&gt;</code> inside <code>&lt;main&gt;</code>.
+            To find other extensions, call <code>themes.search(query)</code> before <code>themes.importTheme(id, appearance)</code>.
+          </p>
+          <UiAlert tone="info">
+            This browser example requires HTTPS and Web Crypto, plus cross-origin access from Open VSX and its resource host.
+            This example does not save a preference.
+          </UiAlert>
+          <UiCodeBlock
+            :code="themeExample"
+            language="vue"
+            title="ThemeButton.vue"
+          />
+          <p class="fg-site-steps__result">
+            When the import succeeds, the Use Catppuccin button applies the imported dark theme to the current page.
+          </p>
+        </li>
+      </ol>
       <p>
-        Import the styles above in your app's stylesheet, then use components in a Vue single-file component.
-        For the shared site header, also import <code>@filipgutica/ui/site.css</code> and
-        <code>@filipgutica/ui/themes/graphite-indigo.css</code> after <code>theme.css</code>.
+        To try community themes in this gallery, open Theme → Add theme.
+        The gallery's search-and-install dialog is docs-only.
+        The library exports the service and theme helpers for your own picker.
       </p>
-      <UiCodeBlock
-        :code="vueExample"
-        language="vue"
-        title="App.vue"
-      />
-    </section>
-
-    <section aria-labelledby="themes-heading">
-      <h2 id="themes-heading">
-        Open VSX themes
-      </h2>
-      <p>
-        Open Theme → Add theme to search and install community themes in this gallery.
-        The gallery's search-and-install dialog is docs-only; it is not an exported component.
-        The library exports the service and theme helpers to build your own picker.
-      </p>
-      <p>
-        Use <code>themes.search(query)</code> to find extensions before calling <code>themes.importTheme(id, appearance)</code>.
-      </p>
-      <UiAlert tone="info">
-        This browser example requires HTTPS and Web Crypto, plus cross-origin access from Open VSX and its resource host.
-        This example applies a theme for the current page; it does not save a preference.
-      </UiAlert>
-      <UiCodeBlock
-        :code="themeExample"
-        language="vue"
-        title="ThemeButton.vue"
-      />
     </section>
 
     <section aria-labelledby="principles-heading">
