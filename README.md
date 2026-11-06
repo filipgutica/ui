@@ -192,7 +192,8 @@ on desktop. At 800px and below it is a native disclosure until the page is
 interactive, then a drawer. The disclosure, the drawer button, and the drawer
 title all show `label`. When an item has `current: true`, the phone control
 also shows that page's name. Otherwise it shows the current section's name.
-The control's accessible name stays equal to `label`. The drawer closes on
+The control's accessible name is its visible text, so it changes with the
+current page or section. The drawer closes on
 navigation and focuses the destination section, and focus follows the visible control across the
 breakpoint.
 

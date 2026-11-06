@@ -111,7 +111,6 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
       <summary
         class="fg-site-rail__summary"
         :aria-controls="contentId"
-        :aria-label="label"
       >
         {{ disclosureLabel }}
       </summary>
@@ -133,7 +132,6 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
           variant="ghost"
           size="lg"
           class="fg-site-rail__toggle"
-          :aria-label="label"
         >
           {{ disclosureLabel }}
         </UiButton>

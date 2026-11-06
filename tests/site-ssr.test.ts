@@ -31,7 +31,8 @@ describe('site page components on a server', () => {
       ],
     }))
 
-    expect(html).toMatch(/<summary[^>]*aria-label="On this page"[^>]*>\s*On this page: Install\s*<\/summary>/)
+    // The visible label is the accessible name (WCAG 2.5.3), so no aria-label overrides it.
+    expect(html).toMatch(/<summary(?![^>]*aria-label)[^>]*>\s*On this page: Install\s*<\/summary>/)
     expect(html).toContain('aria-current="location"')
     expect(html).toContain('id="frame-read"')
     expect(html).toContain('<pre>read</pre>')

@@ -29,12 +29,6 @@
   .fg-site-docs :where(h3) { font-family: var(--font-ui); font-size: var(--text-lg); }
   :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2) { padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); }
   :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2)::before { content: '## ' / ''; color: var(--color-project); }
-  .fg-site-hero > h1 {
-    max-width: none;
-    font-size: var(--text-display);
-    line-height: 1.04;
-    word-spacing: -0.12em;
-  }
   .fg-site-docs :where(p) { max-width: var(--measure); }
   /* Tab panels and other enhanced markup use the hidden attribute, so it outranks the page's own
    * display rules. until-found keeps the browser's find-in-page behavior. */
@@ -613,6 +607,13 @@
     text-wrap: balance;
   }
   .fg-site-prose :where(h1) { font-family: var(--font-mono); font-size: var(--text-3xl); line-height: 1.08; }
+  /* Hero titles sit in the components layer so they also outrank the prose defaults above. */
+  .fg-site-hero > h1 {
+    max-width: none;
+    font-size: var(--text-display);
+    line-height: 1.04;
+    word-spacing: -0.12em;
+  }
   .fg-site-prose :where(h2) { font-family: var(--font-mono); font-size: var(--text-xl); }
   .fg-site-prose :where(h3, h4) { font-size: var(--text-lg); }
   .fg-site-prose :where(p, ul, ol) { max-width: var(--measure); margin: 0; }
@@ -663,7 +664,10 @@
       border: 1px solid var(--color-border);
       background: var(--color-surface-raised);
       width: max-content;
+      max-width: 100%;
       min-height: var(--control-lg);
+      white-space: normal;
+      text-align: start;
       align-items: center;
       padding-inline: var(--space-3);
       border-radius: var(--radius-control);
@@ -710,8 +714,10 @@
     .fg-site-docs { padding-inline: var(--space-4); }
     /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
     .fg-site-docs .fg-site-header__links { display: none; }
-    /* Expand the link target without adding space between the text rows. */
+    /* Expand the link target without adding space between the text rows. A later link fact
+     * moves a full target below the one before it, so their targets never overlap. */
     .fg-site-facts { row-gap: var(--space-2); }
+    .fg-site-facts > div:has(a) ~ div:has(a) { margin-top: calc(var(--control-lg) - 1lh - var(--space-2)); }
     .fg-site-facts a { position: relative; display: inline-block; }
     .fg-site-facts a::after {
       content: '';
