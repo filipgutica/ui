@@ -21,6 +21,7 @@ import {
   UiScore,
   UiSelect,
   UiSlider,
+  UiSwitch,
   UiTabs,
   UiToggleButton,
 } from '../../../src/index.js'
@@ -178,6 +179,15 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
       >
         Include archived sessions
       </UiCheckbox>
+
+      <UiSwitch
+        v-else-if="slug === 'switch'"
+        v-model="checked"
+        label="Email notifications"
+        description="Receive updates about your account."
+        :disabled="disabled"
+        :size="controlSize"
+      />
 
       <UiToggleButton
         v-else-if="slug === 'toggle-button'"

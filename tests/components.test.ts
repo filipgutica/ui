@@ -18,6 +18,7 @@ import {
   UiSelect,
   UiSlider,
   UiSurface,
+  UiSwitch,
   UiToggleButton,
 } from '../src/index.js'
 
@@ -28,6 +29,7 @@ describe('application primitives', () => {
       mount(UiInput),
       mount(UiSelect),
       mount(UiCheckbox),
+      mount(UiSwitch, { props: { label: 'Email notifications' } }),
       mount(UiSlider, { props: { label: 'Value' } }),
       mount(UiToggleButton).get('button'),
     ]
@@ -43,6 +45,7 @@ describe('application primitives', () => {
       mount(UiInput, { props: { size } }),
       mount(UiSelect, { props: { size } }),
       mount(UiCheckbox, { props: { size } }),
+      mount(UiSwitch, { props: { label: 'Email notifications', size } }),
       mount(UiSlider, { props: { label: 'Value', size } }),
       mount(UiToggleButton, { props: { size } }).get('button'),
     ]
@@ -148,6 +151,85 @@ describe('application primitives', () => {
 
     expect(wrapper.emitted('update:modelValue')).toEqual([[true]])
     expect(wrapper.text()).toContain('Count as a correction')
+  })
+
+  it('updates a switch boolean model in both directions and blocks disabled changes', async () => {
+    const wrapper = mount(UiSwitch, {
+      props: {
+        label: 'Email notifications',
+        'onUpdate:modelValue': (modelValue: boolean) => { void wrapper.setProps({ modelValue }) },
+      },
+    })
+    const control = wrapper.get('[role="switch"]')
+    expect(control.attributes()).toMatchObject({ type: 'button', 'aria-checked': 'false' })
+    await control.trigger('click')
+    expect(control.attributes('aria-checked')).toBe('true')
+    await control.trigger('click')
+    expect(control.attributes('aria-checked')).toBe('false')
+    expect(wrapper.emitted('update:modelValue')).toEqual([[true], [false]])
+    await wrapper.setProps({ disabled: true })
+    expect(control.attributes('disabled')).toBe('')
+    await control.trigger('click')
+    expect(wrapper.emitted('update:modelValue')).toHaveLength(2)
+  })
+
+  it('associates switch labels and help without including help in its name', async () => {
+    const wrapper = mount({
+      components: { UiSwitch },
+      data: () => ({ description: 'Receive account updates.', help: 'external-help' }),
+      template: `<UiSwitch label="Email notifications" :description="description"
+        :aria-describedby="help" name="notifications" />`,
+    })
+    const control = wrapper.get('[role="switch"]')
+    expect(wrapper.get('label').attributes('for')).toBe(control.attributes('id'))
+    expect(wrapper.get('label').text()).toBe('Email notifications')
+    expect(control.attributes('name')).toBe('notifications')
+    const descriptionId = control.attributes('aria-describedby')!.split(' ')[1]!
+    expect(wrapper.get(`[id="${descriptionId}"]`).text()).toBe('Receive account updates.')
+    expect(control.attributes('aria-describedby')).toBe(`external-help ${descriptionId}`)
+    await wrapper.setData({ description: '' })
+    expect(control.attributes('aria-describedby')).toBe('external-help')
+    await wrapper.setData({ help: 'updated-help' })
+    expect(control.attributes('aria-describedby')).toBe('updated-help')
+
+    const slotted = mount(UiSwitch, {
+      props: { label: 'Fallback' },
+      slots: { default: 'Account alerts' },
+    })
+    expect(slotted.get('label').text()).toBe('Account alerts')
+    expect(slotted.get('label').attributes('for')).toBe(slotted.get('button').attributes('id'))
+    const siblings = mount({
+      components: { UiSwitch },
+      template: '<UiSwitch label="First" /><UiSwitch label="Second" />',
+    })
+    const ids = siblings.findAll('button').map(button => button.attributes('id'))
+    expect(ids[0]).not.toBe(ids[1])
+  })
+
+  it('connects a switch to UiField help and errors while preserving its label ID', async () => {
+    const wrapper = mount({
+      components: { UiField, UiSwitch },
+      data: () => ({ error: '' }),
+      template: `
+        <UiField control-id="email-notifications" label="Email notifications"
+          description="Receive updates." :error="error">
+          <UiSwitch id="ignored" description="Account changes only." />
+        </UiField>
+      `,
+    })
+    const control = wrapper.get('[role="switch"]')
+    expect(wrapper.get('label').attributes('for')).toBe('email-notifications')
+    expect(control.attributes()).toMatchObject({
+      id: 'email-notifications',
+      'aria-describedby': 'email-notifications-description email-notifications-switch-description',
+    })
+    await wrapper.setData({ error: 'Choose a notification preference.' })
+    expect(control.attributes()).toMatchObject({
+      'aria-invalid': 'true',
+      'aria-errormessage': 'email-notifications-error',
+      'aria-describedby': 'email-notifications-switch-description',
+    })
+    expect(wrapper.get('#email-notifications-error').text()).toBe('Choose a notification preference.')
   })
 
   it('exposes toggle-button pressed state and blocks a disabled toggle', async () => {
