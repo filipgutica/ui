@@ -93,6 +93,40 @@ test('keeps header links on phones for pages outside the docs shell', async ({ p
   await page.setViewportSize({ width: 390, height: 900 })
   await page.goto('/#/')
   await expect(page.getByRole('navigation', { name: 'Site links', exact: true })).toBeVisible()
+  // Two links fit beside the project menu, so the header stays one row: 64px plus its border.
+  expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
+})
+
+test('puts three phone header links on a second row below the menu and controls', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(fixture)
+    // Outside the docs shell, the fixture's three header links stay on phones.
+    await page.locator('.fg-site-docs').evaluate(element => element.classList.remove('fg-site-docs'))
+    // A page-specific control beside the picker must not overlap it.
+    await page.locator('.fg-site-header__end').evaluate((element) => {
+      element.insertAdjacentHTML('beforeend', '<button type="button" class="fg-button">Search</button>')
+    })
+    const box = async (selector: string) => (await page.locator(selector).first().boundingBox())!
+    const menu = await box('.fg-site-projects')
+    const picker = await box('.fg-site-appearance')
+    const search = await box('.fg-site-header__end > .fg-button')
+    const links = await box('.fg-site-header__links')
+    expect(Math.abs(picker.y - menu.y), `picker beside the menu at ${width}px`).toBeLessThanOrEqual(menu.height)
+    expect(links.y, `links below the controls at ${width}px`).toBeGreaterThanOrEqual(picker.y + picker.height)
+    const apart = search.x >= picker.x + picker.width || search.y >= picker.y + picker.height
+    expect(apart, `second control clear of the picker at ${width}px`).toBe(true)
+  }
+})
+
+test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto(fixture)
+  const pressed = page.locator('.fg-site-appearance__choice[aria-pressed="true"]')
+  const other = page.locator('.fg-site-appearance__choice[aria-pressed="false"]').first()
+  // Forced colors drop fills and rings, so the pressed choice needs its own system colors.
+  const color = (locator: typeof pressed) => locator.evaluate(element => getComputedStyle(element).color)
+  expect(await color(pressed)).not.toBe(await color(other))
 })
 
 test('keeps the phone header on one row and names the section menu after its label', async ({ page }) => {
