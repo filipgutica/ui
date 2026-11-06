@@ -20,6 +20,7 @@ const componentSlugs = [
   'score',
   'select',
   'slider',
+  'switch',
   'tabs',
   'toggle-button',
 ]
@@ -44,22 +45,72 @@ test('operates tabs with the keyboard and retains panel contents', async ({ page
   expect((await list.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44)
 })
 
-test('toggles a toggle button with the keyboard and stills its switch for reduced motion', async ({ page }) => {
-  await page.goto('/#/sandbox/toggle-button')
-  const toggle = page.locator('.playground-stage').getByRole('button', { name: 'Tests with signal Pillar 3', exact: true })
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
-  await toggle.focus()
-  await toggle.press('Space')
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
-  const pressedBorder = await toggle.evaluate(element => getComputedStyle(element).borderColor)
-  await toggle.hover()
-  await expect(toggle).toHaveCSS('border-color', pressedBorder)
-  await toggle.press('Enter')
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
-  await expect(toggle).toHaveCSS('outline-style', 'solid')
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  const thumbTransition = await toggle.locator('.fg-toggle-button__switch').evaluate(element => getComputedStyle(element, '::after').transitionDuration)
-  expect(thumbTransition).toBe('0s')
+for (const { slug, role, name, state, track } of [
+  { slug: 'toggle-button', role: 'button', name: 'Tests with signal Pillar 3', state: 'aria-pressed', track: '.fg-toggle-button__switch' },
+  { slug: 'switch', role: 'switch', name: 'Email notifications', state: 'aria-checked', track: '.fg-switch__track' },
+] as const) {
+  test(`toggles a ${slug} with the keyboard and stills its track for reduced motion`, async ({ page }) => {
+    await page.goto(`/#/sandbox/${slug}`)
+    const toggle = page.locator('.playground-stage').getByRole(role, { name, exact: true })
+    await expect(toggle).toHaveAttribute(state, 'false')
+    await toggle.focus()
+    await toggle.press('Space')
+    await expect(toggle).toHaveAttribute(state, 'true')
+    if (slug === 'toggle-button') {
+      const pressedBorder = await toggle.evaluate(element => getComputedStyle(element).borderColor)
+      await toggle.hover()
+      await expect(toggle).toHaveCSS('border-color', pressedBorder)
+    }
+    await toggle.press('Enter')
+    await expect(toggle).toHaveAttribute(state, 'false')
+    await expect(toggle).toHaveCSS('outline-style', 'solid')
+    await expect(toggle).toHaveCSS('outline-width', '2px')
+    expect((await toggle.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(24)
+    expect((await toggle.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(24)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await expect(toggle.locator(track)).toHaveCSS('transition-duration', '0s')
+    expect(await toggle.locator(track).evaluate(element => getComputedStyle(element, '::after').transitionDuration)).toBe('0s')
+  })
+}
+
+test('keeps switch boundaries and thumb positions distinct in both themes and forced colors', async ({ page }) => {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
+    await page.goto('/#/sandbox/switch')
+    const toggle = page.getByRole('switch', { name: 'Email notifications', exact: true })
+    const track = toggle.locator('.fg-switch__track')
+    const background = await page.locator('.playground-stage').evaluate(element => {
+      const channels = getComputedStyle(element).backgroundColor.match(/\d+/g)!
+      return `#${channels.slice(0, 3).map(channel => Number(channel).toString(16).padStart(2, '0')).join('')}`
+    })
+    for (const checked of [false, true]) {
+      if (checked) await toggle.click()
+      const border = await track.evaluate(element => {
+        const channels = getComputedStyle(element).borderColor.match(/\d+/g)!
+        return `#${channels.slice(0, 3).map(channel => Number(channel).toString(16).padStart(2, '0')).join('')}`
+      })
+      expect(contrast(border, background)).toBeGreaterThanOrEqual(3)
+    }
+    await page.emulateMedia({ forcedColors: 'active' })
+    await toggle.focus()
+    await toggle.press('Space')
+    await expect(toggle).toHaveCSS('outline-style', 'solid')
+    await expect(toggle).toHaveCSS('outline-width', '2px')
+    const off = await track.evaluate(element => ({
+      fill: getComputedStyle(element).backgroundColor,
+      thumb: getComputedStyle(element, '::after').transform,
+    }))
+    await toggle.press('Space')
+    const on = await track.evaluate(element => ({
+      fill: getComputedStyle(element).backgroundColor,
+      thumb: getComputedStyle(element, '::after').transform,
+      thumbFill: getComputedStyle(element, '::after').backgroundColor,
+    }))
+    expect(on.thumb).not.toBe(off.thumb)
+    expect(on.fill).not.toBe(off.fill)
+    expect(on.thumbFill).not.toBe(on.fill)
+    await page.emulateMedia({ forcedColors: 'none' })
+  }
 })
 
 test('contains drawer focus, dismisses it, and restores the trigger in both motion modes', async ({ page }) => {

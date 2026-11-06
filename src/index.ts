@@ -34,6 +34,8 @@ export { default as UiSlider } from './components/UiSlider.vue'
 export type { UiSliderProps } from './components/UiSlider.vue'
 export { default as UiTabs } from './components/UiTabs.vue'
 export type { UiTabItem, UiTabsProps } from './components/UiTabs.vue'
+export { default as UiSwitch } from './components/UiSwitch.vue'
+export type { UiSwitchProps } from './components/UiSwitch.vue'
 export { default as UiToggleButton } from './components/UiToggleButton.vue'
 export type { UiToggleButtonProps } from './components/UiToggleButton.vue'
 /** @deprecated Use UiCard for structured content. */

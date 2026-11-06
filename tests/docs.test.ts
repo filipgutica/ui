@@ -32,6 +32,7 @@ const exportedComponents = [
   'UiScore',
   'UiSelect',
   'UiSlider',
+  'UiSwitch',
   'UiTabs',
   'UiToggleButton',
 ]

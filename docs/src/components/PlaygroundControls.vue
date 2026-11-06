@@ -86,6 +86,7 @@ const supportsControlSize = computed(() => [
   'input',
   'select',
   'slider',
+  'switch',
   'toggle-button',
 ].includes(slug))
 </script>
@@ -204,7 +205,7 @@ const supportsControlSize = computed(() => [
       </UiCheckbox>
     </template>
 
-    <template v-else-if="slug === 'checkbox'">
+    <template v-else-if="slug === 'checkbox' || slug === 'switch'">
       <UiCheckbox v-model="checked">
         Checked
       </UiCheckbox>

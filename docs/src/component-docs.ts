@@ -463,6 +463,33 @@ export const componentDocs: ComponentDoc[] = [
   },
   {
     category: 'Forms',
+    slug: 'switch',
+    name: 'UiSwitch',
+    title: 'Switch',
+    summary: 'Turns a setting on or off with a standalone switch.',
+    usage: 'Use a switch for an immediate on/off setting, such as email notifications. Supply a visible label through label, the default slot, or UiField. Space and Enter toggle the switch. Use UiToggleButton for a pressed card that changes surrounding content.',
+    props: [
+      { name: 'description', required: false, type: 'string', description: 'Visible help text connected with aria-describedby.' },
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents interaction.' },
+      { name: 'id', required: false, type: 'string', description: 'Control ID; inherited from UiField or generated when omitted.' },
+      { name: 'label', required: false, type: 'string', description: 'Visible label; the default slot takes precedence. Required unless a slot or UiField supplies the label.' },
+      { name: 'modelValue', required: false, type: 'boolean', default: 'false', description: 'The on/off state used by v-model.' },
+      { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+    ],
+    slots: [
+      { name: 'default', type: 'unknown', description: 'Visible label, replacing the label prop.' },
+    ],
+    events: [
+      { name: 'update:modelValue', type: 'boolean', description: 'Emitted when the switch is toggled.' },
+    ],
+    example: {
+      title: 'Email notifications',
+      description: 'Keep the label stable as the setting changes.',
+      code: `<UiSwitch\n  v-model="emailNotifications"\n  label="Email notifications"\n  description="Receive updates about your account."\n/>`,
+    },
+  },
+  {
+    category: 'Forms',
     slug: 'toggle-button',
     name: 'UiToggleButton',
     title: 'Toggle button',
