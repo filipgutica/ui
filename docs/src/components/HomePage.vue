@@ -170,7 +170,7 @@ const principles = [
             title="ThemeButton.vue"
           />
           <p class="fg-site-steps__result">
-            When the import succeeds, Use Catppuccin applies the imported dark theme to the current page.
+            When the import succeeds, the Use Catppuccin button applies the imported dark theme to the current page.
           </p>
         </li>
       </ol>
