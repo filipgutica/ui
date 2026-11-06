@@ -84,6 +84,7 @@ const supportsControlSize = computed(() => [
   'checkbox',
   'field',
   'input',
+  'segmented-control',
   'select',
   'slider',
   'switch',
@@ -180,6 +181,12 @@ const supportsControlSize = computed(() => [
       >
         <UiInput v-model="error" />
       </UiField>
+      <UiCheckbox v-model="disabled">
+        Disabled
+      </UiCheckbox>
+    </template>
+
+    <template v-else-if="slug === 'segmented-control'">
       <UiCheckbox v-model="disabled">
         Disabled
       </UiCheckbox>

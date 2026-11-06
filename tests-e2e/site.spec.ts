@@ -174,8 +174,8 @@ test('marks the pressed appearance choice in forced-colors mode', async ({ page 
   const location = page.locator('.fg-site-nav a[aria-current="location"]')
   await expect(location).toHaveCSS('border-inline-start-width', '2px')
   await expect(location).toHaveCSS('border-inline-start-style', 'solid')
-  const pressed = page.locator('.fg-site-appearance__choice[aria-pressed="true"]')
-  const other = page.locator('.fg-site-appearance__choice[aria-pressed="false"]').first()
+  const pressed = page.locator('.fg-site-appearance .fg-segmented__item[aria-pressed="true"]')
+  const other = page.locator('.fg-site-appearance .fg-segmented__item[aria-pressed="false"]').first()
   // Forced colors drop fills and rings, so the pressed choice needs its own system colors.
   const color = (locator: typeof pressed) => locator.evaluate(element => getComputedStyle(element).color)
   expect(await color(pressed)).not.toBe(await color(other))

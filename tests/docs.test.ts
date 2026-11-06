@@ -30,6 +30,7 @@ const exportedComponents = [
   'UiRadioCard',
   'UiRadioCardGroup',
   'UiScore',
+  'UiSegmentedControl',
   'UiSelect',
   'UiSlider',
   'UiSwitch',

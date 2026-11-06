@@ -121,8 +121,9 @@ Bind `aria-current="location"` to the link whose section matches the value.
 ## Project sites
 
 The `site` entry gives the project sites one header, one appearance choice, and
-shared page styles. Import `@filipgutica/ui/site.css` and the Graphite Indigo
-theme above, which supplies the type and spacing roles `site.css` reads. Keep
+shared page styles. Import `@filipgutica/ui/components.css`,
+`@filipgutica/ui/site.css`, and the Graphite Indigo theme above, which supplies
+the type and spacing roles `site.css` reads. Keep
 document-wide link styles in `@layer base` so the header owns its navigation
 appearance.
 
@@ -143,9 +144,10 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 menu is a native disclosure that works without JavaScript; Escape closes it and
 returns focus to its button. Inside `.fg-site-docs`, at 640px and below, the
 header hides `links` so it fits one row, so repeat those destinations in the footer. Without a
-default slot the header renders a System, Light, and Dark picker. A page with its own appearance control passes it
-in the default slot and uses `useSiteAppearance({ applyToRoot: false })` when it
-owns the root element.
+default slot the header renders a System, Light, and Dark picker, built on
+`UiSegmentedControl`. A page with its own appearance control passes it in the
+default slot and uses `useSiteAppearance({ applyToRoot: false })` when it owns
+the root element.
 
 `useSiteAppearance()` returns `choice`, the resolved `appearance`, and
 `chooseAppearance(value)`. The choice is stored under `tool-site-theme`, follows

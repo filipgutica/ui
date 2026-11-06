@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, useSlots } from 'vue'
 
+import type { UiSegmentedItem } from '../components/UiSegmentedControl.vue'
 import type { SiteAppearanceChoice } from './appearance.js'
 import type { SiteProjectId } from './projects.js'
 
+import UiSegmentedControl from '../components/UiSegmentedControl.vue'
 import { useSiteAppearance } from './appearance.js'
 import { SITE_PROJECTS } from './projects.js'
 
@@ -26,10 +28,10 @@ defineSlots<{
   default?(): unknown
 }>()
 
-const appearanceChoices: readonly { value: SiteAppearanceChoice, label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
+const appearanceChoices: readonly UiSegmentedItem<SiteAppearanceChoice>[] = [
+  { value: 'system', label: 'System theme' },
+  { value: 'light', label: 'Light theme' },
+  { value: 'dark', label: 'Dark theme' },
 ]
 
 const currentLabel = computed(() => SITE_PROJECTS.find(({ id }) => id === project)?.label ?? project)
@@ -124,22 +126,17 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
           >{{ link.label }}</a>
         </nav>
         <slot>
-          <div
+          <UiSegmentedControl
             v-if="mounted && appearance"
             class="fg-site-appearance"
-            role="group"
-            aria-label="Color theme"
+            label="Color theme"
+            size="lg"
+            icon-only
+            :items="appearanceChoices"
+            :model-value="appearance.choice.value"
+            @update:model-value="appearance.chooseAppearance"
           >
-            <button
-              v-for="choice in appearanceChoices"
-              :key="choice.value"
-              type="button"
-              class="fg-site-appearance__choice"
-              :aria-label="`${choice.label} theme`"
-              :title="`${choice.label} theme`"
-              :aria-pressed="appearance.choice.value === choice.value"
-              @click="appearance.chooseAppearance(choice.value)"
-            >
+            <template #icon="{ item }">
               <svg
                 viewBox="0 0 24 24"
                 width="18"
@@ -149,7 +146,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
                 stroke-width="1.5"
                 aria-hidden="true"
               >
-                <template v-if="choice.value === 'system'">
+                <template v-if="item.value === 'system'">
                   <rect
                     x="3"
                     y="4"
@@ -159,7 +156,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
                   />
                   <path d="M8 21h8m-4-4v4" />
                 </template>
-                <template v-else-if="choice.value === 'light'">
+                <template v-else-if="item.value === 'light'">
                   <circle
                     cx="12"
                     cy="12"
@@ -172,8 +169,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
                   d="M20.5 13.5A9 9 0 0 1 10.5 3a9 9 0 1 0 10 10.5Z"
                 />
               </svg>
-            </button>
-          </div>
+            </template>
+          </UiSegmentedControl>
         </slot>
       </div>
     </div>
