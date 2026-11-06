@@ -16,7 +16,7 @@ export interface ComponentDoc {
   name: string
   title: string
   summary: string
-  usage: string
+  usage: string | string[]
   props: PropItem[]
   slots: ApiItem[]
   events: ApiItem[]

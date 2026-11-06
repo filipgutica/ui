@@ -23,7 +23,17 @@
       <h2 id="usage-heading">
         Usage
       </h2>
-      <p>{{ component.usage }}</p>
+      <ul v-if="Array.isArray(component.usage)">
+        <li
+          v-for="rule in component.usage"
+          :key="rule"
+          v-text="rule"
+        />
+      </ul>
+      <p
+        v-else
+        v-text="component.usage"
+      />
     </section>
 
     <section aria-labelledby="example-heading">
