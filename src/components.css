@@ -559,7 +559,7 @@
 
   /* A tone badge is a tinted pill whose text carries the status colour, darkened toward the text
    * colour so it reads at small sizes on the tint. */
-  .fg-badge[data-tone] { border-color: transparent; }
+  .fg-badge[data-tone]:not([data-tone="neutral"]) { border-color: transparent; }
   .fg-badge[data-tone="info"] { color: color-mix(in srgb, var(--color-info) 80%, var(--color-text)); background: var(--color-info-surface); }
   .fg-badge[data-tone="success"] { color: color-mix(in srgb, var(--color-success) 80%, var(--color-text)); background: var(--color-success-surface); }
   .fg-badge[data-tone="warning"] { color: color-mix(in srgb, var(--color-warning) 80%, var(--color-text)); background: var(--color-warning-surface); }
