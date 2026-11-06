@@ -50,7 +50,7 @@ const openViewer = (item: UiCaptureItem): void => {
   viewerOpen.value = true
 }
 
-// Focus returns to the Full size button, even after a click on the capture, because the capture is not focusable.
+// Focus returns to the Full size button, including when the capture overlay opened the viewer.
 const restoreViewerFocus = (event: Event): void => {
   if (!fullSizeButton.value?.isConnected) return
   event.preventDefault()

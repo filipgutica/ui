@@ -411,6 +411,8 @@
     background: transparent;
     cursor: zoom-in;
   }
+  /* Leave pointer gestures to the screen when the capture needs to scroll. */
+  .fg-capture__screen:not([data-fit]) + .fg-capture__expand { pointer-events: none; }
   .fg-capture__caption {
     display: grid;
     justify-items: start;
