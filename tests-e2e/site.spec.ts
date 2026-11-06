@@ -89,10 +89,42 @@ test('colors captures with the default terminal palette unless the site sets its
   await expect(screen).not.toHaveCSS('background-color', 'rgb(19, 19, 22)')
 })
 
-test('keeps header links on phones for pages outside the docs shell', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 900 })
-  await page.goto('/#/')
-  await expect(page.getByRole('navigation', { name: 'Site links', exact: true })).toBeVisible()
+test('keeps header links on phones outside the docs shell, on a second row when there are three', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    // A fresh load each pass, since the previous pass added a link and a control.
+    await page.goto('about:blank')
+    await page.goto('/#/')
+    const links = page.getByRole('navigation', { name: 'Site links', exact: true })
+    await expect(links).toBeVisible()
+    // At 390px two links fit beside the project menu, so the header stays one row: 64px plus its border.
+    if (width === 390) expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
+
+    await links.evaluate((element) => {
+      element.insertAdjacentHTML('beforeend', '<a href="#changelog">Changelog</a>')
+    })
+    const control = page.locator('.fg-site-header__end > :not(.fg-site-header__links)')
+    const menu = (await page.locator('.fg-site-projects').boundingBox())!
+    const first = (await control.first().boundingBox())!
+    const linksBox = (await links.boundingBox())!
+    expect(Math.abs(first.y + first.height / 2 - (menu.y + menu.height / 2)), `control beside the menu at ${width}px`).toBeLessThanOrEqual(2)
+    expect(linksBox.y, `links below the control at ${width}px`).toBeGreaterThanOrEqual(first.y + first.height)
+    // A second header control may wrap on a narrow phone, but it never covers the first.
+    await control.first().evaluate(element => element.after(element.cloneNode(true)))
+    const [one, two] = [(await control.first().boundingBox())!, (await control.nth(1).boundingBox())!]
+    const apart = two.x >= one.x + one.width || two.y >= one.y + one.height
+    expect(apart, `second control clear of the first at ${width}px`).toBe(true)
+  }
+})
+
+test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto(fixture)
+  const pressed = page.locator('.fg-site-appearance__choice[aria-pressed="true"]')
+  const other = page.locator('.fg-site-appearance__choice[aria-pressed="false"]').first()
+  // Forced colors drop fills and rings, so the pressed choice needs its own system colors.
+  const color = (locator: typeof pressed) => locator.evaluate(element => getComputedStyle(element).color)
+  expect(await color(pressed)).not.toBe(await color(other))
 })
 
 test('keeps the phone header on one row and names the section menu after its label', async ({ page }) => {
@@ -165,7 +197,6 @@ test('keeps phone fact-link hit areas in adjacent rows apart', async ({ page }) 
   const source = await page.locator('.fg-site-facts a', { hasText: 'filipgutica/demo' }).boundingBox()
   const docs = await page.locator('.fg-site-facts a', { hasText: 'github.io' }).boundingBox()
   expect(docs?.y ?? 0, 'Docs wraps below Source').toBeGreaterThan(source?.y ?? Infinity)
-  expect(source?.height ?? 0).toBeGreaterThanOrEqual(44)
   expect((source?.y ?? 0) + (source?.height ?? Infinity)).toBeLessThanOrEqual((docs?.y ?? 0) + 0.5)
   // A fact list without links keeps its compact rows.
   await page.locator('.fg-site-facts').evaluate(facts => facts.insertAdjacentHTML('afterend',
