@@ -238,7 +238,7 @@ export const componentDocs: ComponentDoc[] = [
       'Bind v-model to the selected value.',
       'Supply UiRadioCard children with unique values.',
       'Use arrow keys without modifiers to move focus and select enabled cards.',
-      'Without modifiers, Home and End select the first and last enabled cards.',
+      'Without modifiers, Home and End move focus to the first or last enabled card and select it. If that card already has focus, the key does nothing.',
       'Space selects the focused card. Enter does not select it.',
     ],
     props: [
