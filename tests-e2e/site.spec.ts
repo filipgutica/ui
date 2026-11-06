@@ -43,9 +43,20 @@ test('lets phone readers reach and scroll a wide capture beneath its overlay', a
 
     await screen.evaluate(element => { element.scrollLeft = 0 })
     await screen.focus()
+    // Native keyboard scrolling animates and can outlive the next jump or resize, so wait for it to end.
+    const keyboardScroll = await screen.evaluateHandle(element => ({
+      finished: new Promise<void>(resolve => element.addEventListener('scrollend', () => resolve(), { once: true })),
+    }))
     await page.keyboard.press('ArrowRight')
     await expect.soft.poll(() => screen.evaluate(element => element.scrollLeft), `keyboard scroll at ${width}px`).toBeGreaterThan(0)
+    await keyboardScroll.evaluate(({ finished }) => finished)
+    await keyboardScroll.dispose()
   }
+
+  await screen.evaluate(element => { element.scrollLeft = 200 })
+  await page.setViewportSize({ width: 800, height: 900 })
+  await expect(screen, 'fits again on a wider screen').toHaveAttribute('data-fit', 'true')
+  await expect.poll(() => screen.evaluate(element => element.scrollLeft), 'fitted capture shows its left edge').toBe(0)
 })
 
 test('shows a deep-linked capture tab in full on phones', async ({ page }) => {

@@ -28,6 +28,8 @@ const measure = (): void => {
   // Hidden tabs measure zero; the observer runs again when the tab is shown.
   if (!screen?.clientWidth || !(capture instanceof HTMLElement) || !capture.offsetWidth) return
   const fitScale = Math.min(1, screen.clientWidth / capture.offsetWidth)
+  // A fitted capture cannot scroll, so drop any offset left from scrolling at a narrower width.
+  if (fitScale >= MIN_FIT_SCALE) screen.scrollLeft = 0
   scale.value = fitScale >= MIN_FIT_SCALE ? fitScale : 1
   height.value = fitScale >= MIN_FIT_SCALE
     ? Math.ceil(capture.offsetHeight * scale.value) + screen.offsetHeight - screen.clientHeight
