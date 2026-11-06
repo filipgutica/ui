@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { contrast, mix } from './contrast.js'
+import { contrast } from './contrast.js'
 
 const source = readFileSync(resolve(process.cwd(), 'src/theme.css'), 'utf8')
 
@@ -11,10 +11,12 @@ const tokensFor = (selector: ':root' | ':root.dark'): Record<string, string> => 
   const escapedSelector = selector.replace('.', String.raw`\.`)
   const match = new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`).exec(source)
   if (!match?.[1]) throw new Error(`Missing ${selector} token block`)
-  return Object.fromEntries(
-    [...match[1].matchAll(/(--[\w-]+):\s*(#[\da-f]{3,8})\s*;/gi)]
-      .map(([, name, value]) => [name, value]),
+  const declarations = Object.fromEntries(
+    [...match[1].matchAll(/(--[\w-]+):\s*([^;]+);/g)]
+      .map(([, name, value]) => [name!, value!.trim()]),
   )
+  const resolveColor = (name: string): string => declarations[name]!.replace(/var\((--[\w-]+)\)/g, (_, target: string) => resolveColor(target))
+  return Object.fromEntries(Object.keys(declarations).map(name => [name, resolveColor(name)]))
 }
 
 describe.each([
@@ -41,7 +43,7 @@ describe.each([
   })
 
   it('keeps danger text readable on its semantic surface', () => {
-    const errorSurface = mix(tokens['--color-error']!, tokens['--color-surface']!, 0.12)
+    const errorSurface = tokens['--color-error-surface']!
 
     expect(contrast(tokens['--color-error']!, errorSurface)).toBeGreaterThanOrEqual(4.5)
   })

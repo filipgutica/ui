@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import { renderLibraryTheme, renderStandaloneTokens } from '../scripts/graphite-indigo.mjs'
 import { semanticCssVariables } from '../src/theme/index.ts'
-import { contrast, mix } from './contrast.ts'
+import { contrast } from './contrast.ts'
 
 const read = (path) => readFileSync(resolve(process.cwd(), path), 'utf8')
 const data = JSON.parse(read('themes/graphite-indigo.json'))
@@ -47,9 +47,9 @@ describe('Graphite Indigo generated files', () => {
   it('names the library variable beside each standalone token', () => {
     const css = renderStandaloneTokens({ data, libraryCss: read('src/theme.css') })
 
-    expect(css).toContain('--bg: #f8f9fb; /* ui: --color-bg */')
+    expect(css).toContain('--bg: #f4f5f6; /* ui: --color-bg, --color-button-text */')
     expect(css).toMatch(/--font-sans: [^;]+; \/\* ui: --font-ui \*\//)
-    expect(css).toContain('--radius-sm: 4px; /* ui: --radius-inline */')
+    expect(css).toContain('--radius-sm: 2px; /* ui: --radius-inline */')
     expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
   })
 
@@ -91,7 +91,7 @@ describe('Graphite Indigo generated files', () => {
     const css = renderLibraryTheme(data)
 
     expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
-    expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain('--color-bg: #151619')
+    expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain('--color-bg: #0d1012')
   })
 
   it('adds only variables the base theme lacks, and site.css reads only defined variables', () => {
@@ -109,39 +109,30 @@ describe('Graphite Indigo generated files', () => {
 
 describe.each([['light', LIGHT], ['dark', DARK]])('Graphite Indigo %s contrast', (_, mode) => {
   it.each([
-    ['text', 'bg'],
-    ['text', 'surface-raised'],
+    ...['text', 'text-muted', 'link', 'project', 'success', 'danger', 'warning', 'info'].flatMap(foreground =>
+      ['bg', 'surface', 'surface-raised', 'surface-hover'].map(background => [foreground, background])),
     ['text', 'row-hover'],
     ['text', 'row-selected'],
-    ['text-muted', 'bg'],
-    ['text-muted', 'surface'],
-    ['link', 'bg'],
-    ['accent', 'bg'],
     ['accent-text', 'accent'],
     ['accent-text', 'accent-hover'],
-    ['code-key', 'surface'],
-    ['code-string', 'surface'],
-    ['code-number', 'surface'],
-    ['code-comment', 'surface'],
-    ['success', 'bg'],
-    ['success', 'surface'],
-    ['success', 'surface-raised'],
-    ['danger', 'bg'],
-    ['warning', 'bg'],
-    ['info', 'bg'],
+    ...['code-key', 'code-string', 'code-number', 'code-comment'].map(foreground => [foreground, 'surface']),
+    ['terminal-text', 'terminal'],
+    ['terminal-caption-text', 'terminal-caption'],
+    ['project-dark', 'terminal'],
   ])('keeps %s readable on %s', (foreground, background) => {
     expect(contrast(color(foreground, mode), color(background, mode))).toBeGreaterThanOrEqual(4.5)
   })
 
-  it('recesses the surface below the page in both modes', () => {
+  it('separates the well from the canvas in each appearance', () => {
     const luminance = hex => contrast(hex, '#000000')
-    expect(luminance(color('surface', mode))).toBeLessThan(luminance(color('bg', mode)))
+    if (mode === LIGHT) expect(luminance(color('surface', mode))).toBeLessThan(luminance(color('bg', mode)))
+    else expect(luminance(color('surface', mode))).toBeGreaterThan(luminance(color('bg', mode)))
   })
 
-  it.each([['success', 0.11], ['warning', 0.12], ['danger', 0.10], ['info', 0.10]])(
-    'keeps status text readable on the %s fill', (status, ratio) => {
+  it.each(['success', 'warning', 'danger', 'info'])(
+    'keeps status text readable on the %s fill', (status) => {
       const foreground = color(data.library.roles['--color-status-text'], mode)
-      const background = mix(color(status, mode), color('bg', mode), ratio)
+      const background = color(`${status}-soft`, mode)
       expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5)
     },
   )
@@ -149,6 +140,10 @@ describe.each([['light', LIGHT], ['dark', DARK]])('Graphite Indigo %s contrast',
   it.each([
     ['border', 'surface-raised'],
     ['border', 'bg'],
+    ['border', 'surface'],
+    ['border', 'surface-hover'],
+    ['project', 'surface-raised'],
+    ['project-dark', 'terminal'],
     ['focus', 'bg'],
     ['focus', 'row-selected'],
   ])('keeps %s visible on %s', (foreground, background) => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, useId } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, useId } from 'vue'
 
 import UiButton from '../components/UiButton.vue'
 import UiDrawer from '../components/UiDrawer.vue'
@@ -41,6 +41,12 @@ const open = ref(false)
 const activeId = useActiveSection({
   targetIds: groups.flatMap(group => group.items)
     .flatMap(({ href }) => href.startsWith('#') && href.length > 1 ? [href.slice(1)] : []),
+})
+const currentPage = computed(() => groups.flatMap(group => group.items).find(item => item.current)?.label)
+const currentSection = computed(() => groups.flatMap(group => group.items).find(item => item.href === `#${activeId.value}`)?.label)
+const disclosureLabel = computed(() => {
+  const current = currentPage.value ?? currentSection.value
+  return current ? `${label}: ${current}` : label
 })
 let media: MediaQueryList | undefined
 let destination: HTMLElement | null = null
@@ -106,7 +112,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
         class="fg-site-rail__summary"
         :aria-controls="contentId"
       >
-        {{ label }}
+        {{ disclosureLabel }}
       </summary>
       <SiteNavLinks
         :content-id="contentId"
@@ -127,7 +133,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
           size="lg"
           class="fg-site-rail__toggle"
         >
-          {{ label }}
+          {{ disclosureLabel }}
         </UiButton>
       </template>
       <SiteNavLinks

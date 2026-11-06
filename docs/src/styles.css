@@ -14,6 +14,9 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+:root { --color-project: #4b45d1; --color-project-dark: #a5a1ff; }
+:root.dark { --color-project: #a5a1ff; }
+
 body { margin: 0; font-size: var(--text-md); }
 @layer base { a { color: var(--color-link); } }
 
@@ -70,7 +73,8 @@ pre,
   margin: 0 0 var(--space-1);
   padding-inline: var(--space-3);
   color: var(--color-muted);
-  font-size: var(--text-sm);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
 }
 
@@ -81,7 +85,17 @@ pre,
 }
 .content-page > section { margin-top: var(--space-12); scroll-margin-top: var(--space-24); }
 .content-page h1:focus { outline: none; }
-.content-page h2 { margin-bottom: var(--space-3); }
+.content-page > section > h2,
+.content-page > section > .section-heading h2 {
+  margin-bottom: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+.content-page > section > h2::before,
+.content-page > section > .section-heading h2::before { content: '## ' / ''; color: var(--color-project); }
+.content-page h3:not(.fg-card__title) { font-family: var(--font-ui); font-size: var(--text-lg); }
+.content-page p { font-size: var(--text-reading); }
+.home-page .intro h1 { font-size: var(--text-display); line-height: 1.04; word-spacing: -0.12em; }
 .content-page h3:not(.fg-card__title) { margin: 0 0 var(--space-1); }
 .lede { color: var(--color-muted); }
 .component-name { display: inline-block; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-sm); }
@@ -147,12 +161,12 @@ pre,
 .home-preview > div { display: grid; min-width: 0; align-content: start; gap: var(--space-2); }
 .home-preview__field { flex: 0 1 12rem; }
 .home-preview__alert { flex: 1 1 8rem; }
-.home-preview__caption { color: var(--color-muted); font-size: var(--text-xs); text-decoration: none; }
+.home-preview__caption { color: var(--color-muted); font-family: var(--font-mono); font-size: var(--text-sm); text-decoration: none; }
 .home-preview__caption:hover { color: var(--color-text); text-decoration: underline; }
 .home-preview__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 
 .setup-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
-.setup-grid h3 { font-size: var(--text-md); }
+.setup-grid h3 { font-size: var(--text-lg); }
 .setup-grid .fg-code-block { margin-top: var(--space-2); }
 .home-page p code { overflow-wrap: anywhere; }
 .home-page section > .fg-alert { margin-block: var(--space-4); }
@@ -199,6 +213,7 @@ pre,
   border-top: 1px solid var(--color-border-subtle);
   border-bottom: 1px solid var(--color-border-subtle);
 }
+.api-table-wrap:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .api-table { width: 100%; min-width: 44rem; border-collapse: collapse; font-size: var(--text-md); text-align: left; font-variant-numeric: tabular-nums; }
 .api-table th,
 .api-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-subtle); vertical-align: top; }
@@ -353,7 +368,7 @@ pre,
 .navigation-trigger {
   display: none; align-items: center; justify-content: center;
   width: var(--control-lg); height: var(--control-lg); flex: none;
-  border: 0; border-radius: var(--radius-control); background: transparent;
+  border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-raised);
   color: var(--color-text); cursor: pointer;
 }
 .docs-mobilebar .navigation-trigger { display: inline-flex; width: auto; gap: var(--space-2); padding-inline: var(--space-3); }
@@ -426,13 +441,12 @@ pre,
   .theme-drop-zone { align-items: flex-start; flex-direction: column; }
 }
 
-/* Keep setup close to the introduction while the preview scrolls within its frame. */
+/* Each phone example stays wholly visible without panning the showcase. */
 @media (max-width: 640px) {
-  .home-preview { flex-wrap: nowrap; gap: var(--space-6); padding: var(--space-4); overflow-x: auto; overscroll-behavior-x: contain; }
-  .home-preview > div { flex: none; }
-  .home-preview__field { width: 12rem; }
-  .home-preview__alert { width: 14rem; }
-  .home-preview__row { flex-wrap: nowrap; }
+  .home-page .intro h1 { font-size: var(--text-display-sm); }
+  .home-preview { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); padding: var(--space-4); }
+  .home-preview > div { width: 100%; }
+  .home-preview__row { flex-wrap: wrap; }
 }
 
 @media (prefers-reduced-motion: reduce) {
