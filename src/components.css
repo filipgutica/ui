@@ -548,8 +548,8 @@
     align-items: center;
     width: fit-content;
     border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-inline);
-    padding: 0.18rem 0.48rem;
+    border-radius: var(--radius-pill);
+    padding: 0.18rem 0.56rem;
     color: var(--color-muted);
     background: var(--color-surface-muted);
     font-size: var(--text-xs);
@@ -557,11 +557,14 @@
     line-height: 1.25;
   }
 
-  .fg-badge[data-tone="info"] { border-color: var(--color-info); color: var(--color-status-text, var(--color-info)); background: var(--color-info-surface); }
-  .fg-badge[data-tone="success"] { border-color: var(--color-success); color: var(--color-status-text, var(--color-success)); background: var(--color-success-surface); }
-  .fg-badge[data-tone="warning"] { border-color: var(--color-warning); color: var(--color-status-text, var(--color-warning)); background: var(--color-warning-surface); }
+  /* A tone badge is a tinted pill whose text carries the status colour, darkened toward the text
+   * colour so it reads at small sizes on the tint. */
+  .fg-badge[data-tone] { border-color: transparent; }
+  .fg-badge[data-tone="info"] { color: color-mix(in srgb, var(--color-info) 80%, var(--color-text)); background: var(--color-info-surface); }
+  .fg-badge[data-tone="success"] { color: color-mix(in srgb, var(--color-success) 80%, var(--color-text)); background: var(--color-success-surface); }
+  .fg-badge[data-tone="warning"] { color: color-mix(in srgb, var(--color-warning) 80%, var(--color-text)); background: var(--color-warning-surface); }
   .fg-badge[data-tone="danger"],
-  .fg-badge[data-tone="error"] { border-color: var(--color-error); color: var(--color-status-text, var(--color-error)); background: var(--color-error-surface); }
+  .fg-badge[data-tone="error"] { color: color-mix(in srgb, var(--color-error) 80%, var(--color-text)); background: var(--color-error-surface); }
 
   .fg-alert {
     display: flex;
@@ -569,17 +572,17 @@
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-panel);
     color: var(--color-text);
     background: var(--color-surface);
   }
 
-  .fg-alert[data-tone="info"] { border-color: var(--color-info); background: var(--color-info-surface); }
-  .fg-alert[data-tone="success"] { border-color: var(--color-success); background: var(--color-success-surface); }
-  .fg-alert[data-tone="warning"] { border-color: var(--color-warning); background: var(--color-warning-surface); }
+  .fg-alert[data-tone="info"] { border-color: color-mix(in srgb, var(--color-info) 35%, var(--color-border-subtle)); background: var(--color-info-surface); }
+  .fg-alert[data-tone="success"] { border-color: color-mix(in srgb, var(--color-success) 35%, var(--color-border-subtle)); background: var(--color-success-surface); }
+  .fg-alert[data-tone="warning"] { border-color: color-mix(in srgb, var(--color-warning) 35%, var(--color-border-subtle)); background: var(--color-warning-surface); }
   .fg-alert[data-tone="danger"],
   .fg-alert[data-tone="error"] {
-    border-color: var(--color-error);
+    border-color: color-mix(in srgb, var(--color-error) 35%, var(--color-border-subtle));
     color: var(--color-status-text, var(--color-error));
     background: var(--color-error-surface);
   }
@@ -752,7 +755,7 @@
     width: 1.75rem;
     height: 1rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-inline);
+    border-radius: var(--radius-pill);
     background: var(--color-surface-muted);
     transition: background-color var(--duration) var(--ease-out), border-color var(--duration) var(--ease-out);
   }
@@ -764,7 +767,7 @@
     left: 0.125rem;
     width: 0.625rem;
     height: 0.625rem;
-    border-radius: var(--radius-inline);
+    border-radius: var(--radius-pill);
     background: var(--color-border);
     content: "";
     transition: transform var(--duration) var(--ease-out), background-color var(--duration) var(--ease-out);
