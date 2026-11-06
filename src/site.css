@@ -514,28 +514,41 @@
   /* Page helpers. Steps number a real sequence; facts are short label and value
    * pairs on one line; definitions pair terms with short meanings. Definitions
    * take dt and dd as direct children. */
-  .fg-site-steps { display: grid; gap: var(--space-5); margin: 0; padding: 0; list-style: none; counter-reset: fg-site-step; }
+  .fg-site-steps { display: grid; gap: var(--space-6); margin: 0; padding: 0; list-style: none; counter-reset: fg-site-step; }
+  /* Each step hangs from a mono number in the project hue, set on the title's baseline; a
+   * rule runs down the leading column to the next step. */
   .fg-site-steps > li {
     position: relative;
-    min-width: 0;
-    padding-inline-start: calc(var(--space-6) + var(--space-3));
+    display: grid;
+    grid-template-columns: var(--space-8) minmax(0, 1fr);
+    row-gap: var(--space-2);
     counter-increment: fg-site-step;
   }
+  .fg-site-steps > li > * { grid-column: 2; }
   .fg-site-steps > li::before {
     content: counter(fg-site-step);
-    position: absolute;
-    top: 0;
-    inset-inline-start: 0;
-    display: grid;
-    width: var(--space-6);
-    height: var(--space-6);
-    place-items: center;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-inline);
-    color: var(--color-muted);
-    font-size: var(--text-xs);
+    grid-area: 1 / 1;
+    align-self: baseline;
+    color: var(--color-project);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
-    line-height: 1;
+  }
+  .fg-site-steps > li > :first-child { align-self: baseline; }
+  .fg-site-steps > li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: var(--space-8);
+    bottom: calc(var(--space-2) - var(--space-6));
+    inset-inline-start: 0.25em;
+    border-inline-start: 1px solid var(--color-border-subtle);
+  }
+  /* The outcome of the last step. */
+  .fg-site-steps__result {
+    padding-inline-start: var(--space-3);
+    border-inline-start: 2px solid var(--color-project);
+    color: var(--color-muted);
   }
   .fg-site-facts {
     display: flex;

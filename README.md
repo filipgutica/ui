@@ -234,7 +234,8 @@ the clipboard is unavailable. At 640px and below each command stacks above its
 description and wraps.
 
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
-numbered markers, `.fg-site-facts` for an inline `dl` of short label and value
+numbered markers (each `li` holds an `h3` title and short paragraphs; mark the last
+step's outcome with `.fg-site-steps__result`), `.fg-site-facts` for an inline `dl` of short label and value
 pairs whose links get a `--control-lg` hit area at 640px and below,
 `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks on
 phones and keeps `code` such as `--all` on one line, `.fg-site-sr-only` for
