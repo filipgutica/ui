@@ -91,6 +91,20 @@ describe('component documentation', () => {
     expect(wrapper.get('[data-sandbox-link]').attributes('href')).toBe('#/sandbox/button')
   })
 
+  it('renders a usage list as one item per rule and a usage string as one paragraph', () => {
+    const button = componentDocs.find(({ slug }) => slug === 'button')!
+    const listed = mount(ComponentPage, { props: { component: { ...button, usage: ['First rule.', 'Second rule.'] } } })
+    const usage = listed.get('section[aria-labelledby="usage-heading"]')
+    expect(usage.findAll('ul > li').map(item => item.text())).toEqual(['First rule.', 'Second rule.'])
+    expect(usage.find('p').exists()).toBe(false)
+    listed.unmount()
+
+    const single = mount(ComponentPage, { props: { component: { ...button, usage: 'One rule.' } } })
+    expect(single.get('section[aria-labelledby="usage-heading"] p').text()).toBe('One rule.')
+    expect(single.find('section[aria-labelledby="usage-heading"] ul').exists()).toBe(false)
+    single.unmount()
+  })
+
   it('renders documented examples with a copyable code block', () => {
     const wrapper = mount(ComponentPage, {
       props: { component: componentDocs.find(({ slug }) => slug === 'code-block')! },
