@@ -3,6 +3,7 @@ import { renderToString } from 'vue/server-renderer'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createSSRApp, h, nextTick } from 'vue'
 
+import CaptureScreen from '../src/site/CaptureScreen.vue'
 import { UiCapture } from '../src/site/index.js'
 import type { UiCaptureItem } from '../src/site/index.js'
 
@@ -151,7 +152,10 @@ describe('UiCapture', () => {
     cleanups.push(() => wrapper.unmount())
   })
 
-  it('scales a wide capture down to the panel width', async () => {
+  it.each([
+    { behavior: 'fits above the readable minimum', width: 800, scale: '0.8', height: '482px', tabindex: null },
+    { behavior: 'scrolls below the readable minimum', width: 500, scale: '1', height: '', tabindex: '0' },
+  ])('$behavior', async ({ width, scale, height, tabindex }) => {
     const observed = new Map<Element, () => void>()
     vi.stubGlobal('ResizeObserver', class implements ResizeObserver {
       callback: ResizeObserverCallback
@@ -161,11 +165,11 @@ describe('UiCapture', () => {
       disconnect() {}
     })
     cleanups.push(() => vi.unstubAllGlobals())
-    const wrapper = await mountCapture()
-    const screen = wrapper.get<HTMLElement>('#frame-read [role="region"]').element
+    const wrapper = mount(CaptureScreen, { props: { html: '<pre>capture</pre>', label: 'Capture', fit: true } })
+    const screen = wrapper.get<HTMLElement>('[role="region"]').element
     const capture = screen.firstElementChild
     if (!(capture instanceof HTMLElement)) throw new Error('Missing capture markup')
-    vi.spyOn(screen, 'clientWidth', 'get').mockReturnValue(500)
+    vi.spyOn(screen, 'clientWidth', 'get').mockReturnValue(width)
     vi.spyOn(screen, 'clientHeight', 'get').mockReturnValue(300)
     vi.spyOn(screen, 'offsetHeight', 'get').mockReturnValue(302)
     vi.spyOn(capture, 'offsetWidth', 'get').mockReturnValue(1000)
@@ -174,13 +178,13 @@ describe('UiCapture', () => {
     observed.get(screen)?.()
     await nextTick()
 
-    expect(screen.style.getPropertyValue('--capture-scale')).toBe('0.5')
-    expect(screen.style.height).toBe('302px')
-    expect(screen.hasAttribute('tabindex')).toBe(false)
+    expect.soft(screen.style.getPropertyValue('--capture-scale')).toBe(scale)
+    expect.soft(screen.style.height).toBe(height)
+    expect.soft(screen.getAttribute('tabindex')).toBe(tabindex)
     cleanups.push(() => wrapper.unmount())
   })
 
-  it('remeasures when a capture keeps its ID but gets new markup', async () => {
+  it('remeasures when a fitted capture gets wider markup', async () => {
     vi.stubGlobal('ResizeObserver', class implements ResizeObserver {
       observe() {}
       unobserve() {}
@@ -191,18 +195,20 @@ describe('UiCapture', () => {
       return this.textContent?.includes('wide') ? 2000 : 1000
     })
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600)
-    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(500)
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(800)
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600)
     cleanups.push(() => vi.restoreAllMocks())
-    const wrapper = await mountCapture()
-    const screen = () => wrapper.get<HTMLElement>('#frame-read [role="region"]').element
+    const wrapper = mount(CaptureScreen, { props: { html: '<pre>read screen</pre>', label: 'Read', fit: true } })
+    const screen = () => wrapper.get<HTMLElement>('[role="region"]').element
     await nextTick()
-    expect(screen().style.getPropertyValue('--capture-scale')).toBe('0.5')
+    expect(screen().style.getPropertyValue('--capture-scale')).toBe('0.8')
 
-    await wrapper.setProps({ items: [{ id: 'read', label: 'Read', command: 'annoterm notes.md', html: '<pre class="term">wide read screen</pre>' }, ...items.slice(1)] })
+    await wrapper.setProps({ html: '<pre>wide read screen</pre>' })
     await nextTick()
 
-    expect(screen().style.getPropertyValue('--capture-scale')).toBe('0.25')
+    expect.soft(screen().style.getPropertyValue('--capture-scale')).toBe('1')
+    expect.soft(screen().style.height).toBe('')
+    expect.soft(screen().getAttribute('tabindex')).toBe('0')
     cleanups.push(() => wrapper.unmount())
   })
 })

@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 const { html, label, fit } = defineProps<{
   html: string
   label: string
-  /** Scales the capture down to the available width instead of scrolling it. */
+  /** Fits the capture to the available width when it remains readable. */
   fit: boolean
 }>()
+
+// Smaller scales make terminal text unreadable; let the capture scroll instead.
+const MIN_FIT_SCALE = 0.7
 
 const container = ref<HTMLElement>()
 const scale = ref(1)
 const height = ref<number>()
+const fitted = computed(() => height.value !== undefined)
 let observer: ResizeObserver | undefined
 
 const measure = (): void => {
@@ -23,8 +27,13 @@ const measure = (): void => {
   const capture = screen?.firstElementChild
   // Hidden tabs measure zero; the observer runs again when the tab is shown.
   if (!screen?.clientWidth || !(capture instanceof HTMLElement) || !capture.offsetWidth) return
-  scale.value = Math.min(1, screen.clientWidth / capture.offsetWidth)
-  height.value = Math.ceil(capture.offsetHeight * scale.value) + screen.offsetHeight - screen.clientHeight
+  const fitScale = Math.min(1, screen.clientWidth / capture.offsetWidth)
+  // A fitted capture cannot scroll, so drop any offset left from scrolling at a narrower width.
+  if (fitScale >= MIN_FIT_SCALE) screen.scrollLeft = 0
+  scale.value = fitScale >= MIN_FIT_SCALE ? fitScale : 1
+  height.value = fitScale >= MIN_FIT_SCALE
+    ? Math.ceil(capture.offsetHeight * scale.value) + screen.offsetHeight - screen.clientHeight
+    : undefined
 }
 
 // The observer watches the screen, whose height this sets, so new markup is remeasured here.
@@ -47,8 +56,8 @@ onUnmounted(() => observer?.disconnect())
     class="fg-capture__screen"
     role="region"
     :aria-label="label"
-    :tabindex="fit ? undefined : 0"
-    :data-fit="fit || undefined"
+    :tabindex="fitted ? undefined : 0"
+    :data-fit="fitted || undefined"
     :style="{ height: height === undefined ? undefined : `${height}px`, '--capture-scale': scale }"
     v-html="html"
   />
