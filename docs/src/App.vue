@@ -30,6 +30,7 @@ const selectedComponent = computed(() =>
     ? componentDocBySlug(route.value.slug)
     : undefined)
 
+const currentPageLabel = computed(() => selectedComponent.value?.title ?? (route.value.name === 'home' ? 'Introduction' : 'Page not found'))
 const navigationOpen = ref(false)
 const narrowViewport = useMediaQuery('(max-width: 900px)')
 let navigationSelected = false
@@ -81,7 +82,10 @@ watch(route, async () => {
 
     <div class="docs-mobilebar">
       <DialogRoot v-model:open="navigationOpen">
-        <DialogTrigger class="navigation-trigger">
+        <DialogTrigger
+          class="navigation-trigger"
+          :aria-label="`Browse components: ${currentPageLabel}`"
+        >
           <svg
             viewBox="0 0 16 16"
             width="16"
@@ -91,9 +95,9 @@ watch(route, async () => {
             stroke-width="1.5"
             aria-hidden="true"
           >
-            <path d="M2 4h12M2 8h12M2 12h12" />
+            <path d="m4 6 4 4 4-4" />
           </svg>
-          Browse components
+          {{ currentPageLabel }}
         </DialogTrigger>
         <DialogPortal>
           <DialogOverlay class="navigation-overlay" />

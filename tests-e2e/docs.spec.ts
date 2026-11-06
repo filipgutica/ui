@@ -158,10 +158,10 @@ test('owns compact component typography independently of host styles', async ({ 
   }
 })
 
-test('keeps documentation hierarchy compact without decorative preview chrome', async ({ page }) => {
+test('keeps documentation heading hierarchy without decorative preview chrome', async ({ page }) => {
   await page.goto('/#/components/button')
   const heading = page.locator('h1')
-  expect(await heading.evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBeLessThanOrEqual(32)
+  expect(await heading.evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBe(44)
   const sectionHeading = page.getByRole('heading', { name: 'Usage', exact: true })
   expect(await sectionHeading.evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBeLessThanOrEqual(20)
   await expect(page.locator('.example-frame')).toHaveCSS('background-image', 'none')
@@ -176,6 +176,7 @@ test('copies code exactly and follows editor theme colors', async ({ page, conte
   await page.goto('/#/components/button')
   const block = page.locator('.fg-code-block').first()
   const source = await block.locator('code').textContent()
+  expect(await block.locator('.fg-code-block__line').first().evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
   const copyBox = await block.getByRole('button', { name: 'Copy code' }).boundingBox()
   expect(copyBox?.height ?? 0).toBeGreaterThanOrEqual(44)
   expect(copyBox?.width ?? 0).toBeGreaterThanOrEqual(44)
@@ -197,6 +198,11 @@ test('keeps compact commands in one row and wraps longer code beside a usable co
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
   const block = page.locator('.playground-stage .fg-code-block')
   const copy = block.getByRole('button', { name: 'Copy code' })
+  await page.getByLabel('Language', { exact: true }).selectOption('typescript')
+  expect(await block.locator('.fg-code-block__line').first().evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
+  await page.getByLabel('Language', { exact: true }).selectOption('bash')
+  expect(await block.locator('.fg-code-block__line').first().evaluate(element => getComputedStyle(element, '::before').content)).toContain('$ ')
+  expect(await block.locator('pre').ariaSnapshot()).not.toContain('$ ')
 
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 })
@@ -285,7 +291,7 @@ test('previews themed components on the introduction and keeps setup compact and
     await page.getByRole('button', { name: /^Theme:/ }).click()
     await page.getByRole('radio', { name: choice, exact: true }).click()
     await page.getByRole('button', { name: 'Done', exact: true }).click()
-    await expect(primary).toHaveCSS('background-color', choice === 'Dark' ? 'rgb(169, 156, 226)' : 'rgb(99, 89, 167)')
+    await expect(primary).toHaveCSS('background-color', choice === 'Dark' ? 'rgb(230, 233, 235)' : 'rgb(16, 19, 21)')
     await expect(preview.getByRole('searchbox')).toHaveValue('Catppuccin')
     for (const width of [320, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 })
@@ -296,9 +302,19 @@ test('previews themed components on the introduction and keeps setup compact and
         expect(new Set(rows).size).toBe(1)
       }
       if (width <= 390) {
-        expect(await preview.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true)
+        const layout = await preview.evaluate(element => {
+          const frame = element.getBoundingClientRect()
+          return [...element.children].map(child => {
+            const bounds = child.getBoundingClientRect()
+            return { top: bounds.top, bottom: bounds.bottom, fits: bounds.left >= frame.left && bounds.right <= frame.right && child.scrollWidth <= child.clientWidth }
+          })
+        })
+        expect(layout.every(example => example.fits)).toBe(true)
+        for (let index = 1; index < layout.length; index += 1)
+          expect(layout[index]!.top).toBeGreaterThanOrEqual(layout[index - 1]!.bottom)
+        expect(await preview.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
         await preview.getByRole('link', { name: 'Alert', exact: true }).focus()
-        expect(await preview.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+        expect(await preview.evaluate(element => element.scrollLeft)).toBe(0)
       }
     }
   }
@@ -372,7 +388,7 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     return { background: style.backgroundColor, radius: style.borderRadius }
   })
   expect(picker.background).toBe(await select.evaluate(element => getComputedStyle(element).backgroundColor))
-  expect(picker.radius).toBe('8px')
+  expect(picker.radius).toBe('3px')
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
   await expect(select).toHaveValue('passed')
@@ -389,7 +405,7 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
 })
 
 test('marks checked radio cards and checkboxes with the accent', async ({ page }) => {
-  const accent = 'rgb(99, 89, 167)'
+  const accent = 'rgb(75, 69, 209)'
   await page.goto('/#/sandbox/radio-card-group')
   await expect(page.locator('.playground-stage .fg-radio-card[data-state="checked"]')).toHaveCSS('border-color', accent)
   await page.goto('/#/sandbox/checkbox')
@@ -463,7 +479,7 @@ test('supports keyboard selection in the theme picker', async ({ page }) => {
 test('navigates with the mobile drawer and restores focus on dismissal', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/#/components/dialog')
-  const trigger = page.getByRole('button', { name: 'Browse components', exact: true })
+  const trigger = page.getByRole('button', { name: /^Browse components:/ })
   expect((await trigger.boundingBox())?.x ?? 390).toBeLessThan(60)
   await trigger.click()
   const drawer = page.getByRole('dialog', { name: 'Browse components', exact: true })
@@ -517,7 +533,7 @@ test('keeps status labels readable on their colored fills in both appearances', 
       const statuses = page.locator(`.playground-stage .fg-${slug}`)
       await expect(statuses.first()).toBeVisible()
       if (slug === 'button') {
-        await expect(statuses.first()).toHaveCSS('background-color', colorScheme === 'dark' ? 'rgb(169, 156, 226)' : 'rgb(99, 89, 167)')
+        await expect(statuses.first()).toHaveCSS('background-color', colorScheme === 'dark' ? 'rgb(230, 233, 235)' : 'rgb(16, 19, 21)')
       }
       const variants = slug === 'button' ? ['danger'] : ['info', 'success', 'warning', 'danger', 'error']
       for (const variant of variants) {
@@ -555,7 +571,7 @@ test('keeps component browsing reachable after scrolling on phones and tablets',
     await page.setViewportSize({ width, height: 700 })
     await page.goto('/#/components/button')
     await page.getByRole('heading', { name: 'Props', exact: true }).scrollIntoViewIfNeeded()
-    const trigger = page.getByRole('button', { name: 'Browse components', exact: true })
+    const trigger = page.getByRole('button', { name: /^Browse components:/ })
     const bounds = await trigger.boundingBox()
     expect(bounds?.y ?? -1).toBeGreaterThanOrEqual(0)
     expect((bounds?.y ?? 700) + (bounds?.height ?? 0)).toBeLessThanOrEqual(700)

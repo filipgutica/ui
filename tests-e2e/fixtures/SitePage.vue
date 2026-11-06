@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UiCodeBlock } from '../../src/index.js'
 import { UiCapture, UiCommandList, UiSiteHeader, UiSiteNav } from '../../src/site/index.js'
 
 const screen = (title: string): string => [
@@ -33,19 +34,36 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
       :groups="[{ items: [{ label: 'Install', href: '#install' }, { label: 'Commands', href: '#commands' }] }]"
     />
     <main>
-      <section id="install">
+      <section
+        id="install"
+        class="fg-site-hero"
+      >
         <h1>Demo tool</h1>
-        <p>A project page built from the site components. Run <code>demo ui</code> to start.</p>
-        <dl class="fg-site-facts">
+        <div class="fg-site-hero__lede">
+          <p>A project page built from the site components. Run <code>demo ui</code> to start.</p>
+        </div>
+        <div class="fg-site-hero__aside">
           <div>
-            <dt>Runs on</dt>
-            <dd>macOS and Linux</dd>
+            <p class="fg-site-meta">
+              Install with Homebrew
+            </p>
+            <UiCodeBlock
+              code="brew install filipgutica/tap/demo"
+              language="bash"
+              variant="compact"
+            />
           </div>
-          <div>
-            <dt>Source</dt>
-            <dd><a href="#github">filipgutica/demo</a></dd>
-          </div>
-        </dl>
+          <dl class="fg-site-facts">
+            <div>
+              <dt>Runs on</dt>
+              <dd>macOS and Linux</dd>
+            </div>
+            <div>
+              <dt>Source</dt>
+              <dd><a href="#github">filipgutica/demo</a></dd>
+            </div>
+          </dl>
+        </div>
         <UiCapture
           label="Steps"
           :items="captures"
@@ -72,6 +90,26 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
             <dd>Merged into the default branch.</dd>
           </div>
         </dl>
+      </section>
+      <section id="start">
+        <h2>From review to agent</h2>
+        <ol class="fg-site-steps">
+          <li>
+            <h3>Open the file</h3>
+            <p>Run <code>annoterm README.md</code>. The file opens in rendered mode. Press Up or Down to select a block.</p>
+          </li>
+          <li>
+            <h3>Add your comments</h3>
+            <p>Press <kbd>a</kbd> to comment on the selected block. Write your comment. Press Enter to save it.</p>
+          </li>
+          <li>
+            <h3>Hand off the feedback</h3>
+            <p>Press <kbd>q</kbd> to quit from the rendered document. If open comments remain, annoterm tries to copy the feedback to your clipboard. Check the result in your terminal.</p>
+            <p class="fg-site-steps__result">
+              Paste the feedback into Codex, Claude Code, or another coding agent. If copying fails, run <code>annoterm export README.md --output feedback.md</code>. Then paste the contents of <code>feedback.md</code> into your agent.
+            </p>
+          </li>
+        </ol>
       </section>
       <section id="commands">
         <h2>Commands</h2>

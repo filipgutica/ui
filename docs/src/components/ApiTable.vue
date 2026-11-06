@@ -10,6 +10,7 @@ const { items } = defineProps<{
   <div
     v-if="items.length"
     class="api-table-wrap"
+    tabindex="0"
   >
     <table class="api-table">
       <thead>

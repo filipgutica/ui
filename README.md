@@ -32,8 +32,16 @@ Import the styles from your application stylesheet:
 @import "@filipgutica/ui/components.css";
 ```
 
-The third import adds Graphite Indigo, the palette of the project sites. Leave
-it out to keep the base theme from `theme.css`, with blue actions.
+The third import adds Graphite Indigo's site typography and layout roles. Both
+the base theme and Graphite Indigo use neutral surfaces, ink primary buttons,
+and the ui project hue for checked and selected states.
+
+`theme.css` loads the package's own IBM Plex Sans and IBM Plex Mono latin woff2
+files (400, 500, 600), with `font-display: swap` and system fallbacks. It makes
+no remote font requests. The files come from Fontsource 5.3.0 and ship under
+their included [Sans OFL](src/fonts/OFL-IBM-Plex-Sans.txt) and
+[Mono OFL](src/fonts/OFL-IBM-Plex-Mono.txt) licences. `fonts.css` and `fonts/*`
+are also exported for applications that import assets separately.
 
 ## Use
 
@@ -176,14 +184,43 @@ import read from './captures/read.html?raw'
 
 `UiSiteNav` renders a labelled list of route rows in optional `groups`. Links to
 `#id` sections track the reader's position with `useActiveSection` and get
-`aria-current="location"`, a text-only marker. An item with `current: true` gets
+`aria-current="location"`, an accent bar without a fill. An item with
+`current: true` gets
 `aria-current="page"`, the selected fill and accent bar; `code: true` shows the
 label in the monospace font. The page grid places the rail, which stays in view
 on desktop. At 800px and below it is a native disclosure until the page is
 interactive, then a drawer. The disclosure, the drawer button, and the drawer
-title all show `label`. The drawer closes on navigation and focuses the
-destination section, and focus follows the visible control across the
+title all show `label`. When an item has `current: true`, the phone control
+also shows that page's name. Otherwise it shows the current section's name.
+The control's accessible name is its visible text, so it changes with the
+current page or section. The drawer closes on
+navigation and focuses the destination section, and focus follows the visible control across the
 breakpoint.
+
+Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
+Set `--color-project-dark` to the dark variant in both appearances, so prompts
+and capture tab underlines stay readable on terminal plates. The default hue
+belongs to ui. Primary buttons stay ink on paper in both appearances.
+
+Compact shell or plain-text `UiCodeBlock` rows and untitled shell blocks are
+terminal commands. Their CSS prompt stays out of copied and accessible text.
+Typed source samples, including compact samples, use theme-matched syntax wells.
+Default blocks with a title are source samples, including shell scripts.
+
+Use `.fg-site-hero` on a tool-home intro section. Its direct `h1` uses the
+56px display size (34px on phones). Wrap the lede paragraphs in
+`.fg-site-hero__lede`. Wrap the install block, metadata, and facts in
+`.fg-site-hero__aside`; use `.fg-site-meta` for the install label above the code.
+
+At 1024px and above, the hero uses `minmax(0, 1.1fr) minmax(0, 1fr)` columns,
+`var(--space-8)` between columns, and top alignment. The `h1` spans both columns
+in row 1. The lede and aside occupy columns 1 and 2 in row 2. All other children,
+including captures and legends, span both columns afterward in source order.
+Below 1024px all children stack in source order. Explicit grid lines and
+`grid-auto-columns: minmax(0, 1fr)` preserve the split if an unlayered site rule
+overrides the column template. Remove that override to retain the 1.1:1 ratio.
+This is the wide exception to the phone/tablet breakpoints; the separate
+design-language update records it in `DESIGN.md`.
 
 `UiCapture` shows one panel: tabs in the header, the capture scaled to the panel
 width, and the `command` and `caption` slot below. `html` is trusted, checked-in
@@ -208,7 +245,8 @@ the clipboard is unavailable. At 640px and below each command stacks above its
 description and wraps.
 
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
-numbered circles, `.fg-site-facts` for an inline `dl` of short label and value
+numbered markers (each `li` holds an `h3` title and short paragraphs; mark the last
+step's outcome with `.fg-site-steps__result`), `.fg-site-facts` for an inline `dl` of short label and value
 pairs whose links get a `--control-lg` hit area at 640px and below,
 `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks on
 phones and keeps `code` such as `--all` on one line, `.fg-site-sr-only` for

@@ -25,6 +25,12 @@ const {
 
 defineSlots<{ actions?(): unknown }>()
 type CodeToken = { content: string; color?: string | undefined }
+// Compact commands may omit a language; typed source never receives a prompt.
+const command = computed(() => {
+  const normalizedLanguage = language.trim().toLowerCase()
+  const shell = ['bash', 'sh', 'shell'].includes(normalizedLanguage)
+  return variant === 'compact' ? shell || normalizedLanguage === 'text' : shell && !title
+})
 const highlighted = shallowRef<CodeToken[][]>()
 const highlightingError = ref('')
 const lines = computed<CodeToken[][]>(() => highlighted.value ?? code.split('\n').map(content => [{ content }]))
@@ -77,6 +83,7 @@ const copyCode = (): Promise<void> => copy(code)
 <template>
   <div
     class="fg-code-block"
+    :data-command="command || undefined"
     :data-wrap="wrap"
     :data-line-numbers="lineNumbers"
     :data-variant="variant"
