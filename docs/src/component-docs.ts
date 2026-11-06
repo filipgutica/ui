@@ -298,7 +298,7 @@ export const componentDocs: ComponentDoc[] = [
     title: 'Field',
     summary: 'Connects a visible label and help or error text to a form control.',
     usage: [
-      'Wrap one UiInput or UiSelect in UiField to connect its label and message automatically.',
+      'Wrap one UiInput, UiSelect, or UiSwitch in UiField to connect its label and message automatically.',
       'Inside UiField, UiSlider receives controlId and the message links. Name it with its label prop.',
       'Give each field a unique controlId.',
       'For a custom control, set its id to controlId and connect its accessibility attributes using the slot IDs.',
@@ -306,7 +306,7 @@ export const componentDocs: ComponentDoc[] = [
       'Use UiCheckbox with its own label; it does not receive UiField context.',
     ],
     props: [
-      { name: 'controlId', required: true, type: 'string', description: 'Control ID and label target. Overrides id on nested UiInput, UiSelect, and UiSlider.' },
+      { name: 'controlId', required: true, type: 'string', description: 'Control ID and label target. Overrides id on nested UiInput, UiSelect, UiSlider, and UiSwitch.' },
       { name: 'description', required: false, type: 'string', description: 'Help text shown when nonempty and error is empty. Its ID is ${controlId}-description.' },
       { name: 'error', required: false, type: 'string', description: 'Nonempty text replaces description and marks supported controls invalid. Its ID is ${controlId}-error.' },
       { name: 'label', required: true, type: 'string', description: 'Visible label associated with controlId.' },
