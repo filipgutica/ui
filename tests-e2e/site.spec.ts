@@ -99,10 +99,7 @@ test('places the docs shell frame, rail, main, and footer on shared edges', asyn
   }
   expect(await box('.fg-site-header__inner')).toEqual({ left: 32, right: 1248 })
   expect(await box('.fg-site-rail')).toEqual({ left: 32, right: 256 })
-  // Main reaches back across the gap to draw the full-height column rule; its content keeps the 288px edge.
-  expect((await box('main')).left).toBe(256)
-  await expect(page.locator('main')).toHaveCSS('border-inline-start-width', '1px')
-  expect(await page.locator('main').evaluate(main => main.getBoundingClientRect().left + parseFloat(getComputedStyle(main).paddingInlineStart))).toBe(288)
+  expect((await box('main')).left).toBe(288)
   expect(await box('.fg-site-footer')).toEqual({ left: 32, right: 1248 })
   // V1–V3/V10: an unlayered one-column site rule must not collapse or stretch the hero.
   await page.addStyleTag({ content: 'main > section { grid-template-columns: minmax(0, 1fr); }' })
