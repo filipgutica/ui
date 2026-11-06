@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UiCodeBlock } from '../../src/index.js'
 import { UiCapture, UiCommandList, UiSiteHeader, UiSiteNav } from '../../src/site/index.js'
 
 const screen = (title: string): string => [
@@ -33,19 +34,36 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
       :groups="[{ items: [{ label: 'Install', href: '#install' }, { label: 'Commands', href: '#commands' }] }]"
     />
     <main>
-      <section id="install">
+      <section
+        id="install"
+        class="fg-site-hero"
+      >
         <h1>Demo tool</h1>
-        <p>A project page built from the site components. Run <code>demo ui</code> to start.</p>
-        <dl class="fg-site-facts">
+        <div class="fg-site-hero__lede">
+          <p>A project page built from the site components. Run <code>demo ui</code> to start.</p>
+        </div>
+        <div class="fg-site-hero__aside">
           <div>
-            <dt>Runs on</dt>
-            <dd>macOS and Linux</dd>
+            <p class="fg-site-meta">
+              Install with Homebrew
+            </p>
+            <UiCodeBlock
+              code="brew install filipgutica/tap/demo"
+              language="bash"
+              variant="compact"
+            />
           </div>
-          <div>
-            <dt>Source</dt>
-            <dd><a href="#github">filipgutica/demo</a></dd>
-          </div>
-        </dl>
+          <dl class="fg-site-facts">
+            <div>
+              <dt>Runs on</dt>
+              <dd>macOS and Linux</dd>
+            </div>
+            <div>
+              <dt>Source</dt>
+              <dd><a href="#github">filipgutica/demo</a></dd>
+            </div>
+          </dl>
+        </div>
         <UiCapture
           label="Steps"
           :items="captures"
@@ -87,7 +105,9 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
           <li>
             <h3>Hand off the feedback</h3>
             <p>Press <kbd>q</kbd> to quit. The feedback is copied to your clipboard.</p>
-            <p class="fg-site-steps__result">If copying fails, run <code>demo export README.md --output feedback.md</code> and paste the file.</p>
+            <p class="fg-site-steps__result">
+              If copying fails, run <code>demo export README.md --output feedback.md</code> and paste the file.
+            </p>
           </li>
         </ol>
       </section>

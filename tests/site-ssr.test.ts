@@ -31,7 +31,7 @@ describe('site page components on a server', () => {
       ],
     }))
 
-    expect(html).toMatch(/<summary[^>]*>\s*On this page\s*<\/summary>/)
+    expect(html).toMatch(/<summary[^>]*aria-label="On this page"[^>]*>\s*On this page: Install\s*<\/summary>/)
     expect(html).toContain('aria-current="location"')
     expect(html).toContain('id="frame-read"')
     expect(html).toContain('<pre>read</pre>')

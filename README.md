@@ -184,14 +184,16 @@ import read from './captures/read.html?raw'
 
 `UiSiteNav` renders a labelled list of route rows in optional `groups`. Links to
 `#id` sections track the reader's position with `useActiveSection` and get
-`aria-current="location"`, a text-only marker. An item with `current: true` gets
+`aria-current="location"`, an accent bar without a fill. An item with
+`current: true` gets
 `aria-current="page"`, the selected fill and accent bar; `code: true` shows the
 label in the monospace font. The page grid places the rail, which stays in view
 on desktop. At 800px and below it is a native disclosure until the page is
 interactive, then a drawer. The disclosure, the drawer button, and the drawer
 title all show `label`. When an item has `current: true`, the phone control
-also shows that page's name. The drawer closes on navigation and focuses the
-destination section, and focus follows the visible control across the
+also shows that page's name. Otherwise it shows the current section's name.
+The control's accessible name stays equal to `label`. The drawer closes on
+navigation and focuses the destination section, and focus follows the visible control across the
 breakpoint.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
@@ -204,12 +206,20 @@ terminal commands. Their CSS prompt stays out of copied and accessible text.
 Typed source samples, including compact samples, use theme-matched syntax wells.
 Default blocks with a title are source samples, including shell scripts.
 
-Tool-home introductions inside `.fg-site-docs` use a wide split at 1024px when
-they contain a direct `.install` block: h1 spans both columns, the `.lede` stays
-on the left, and install, metadata, and facts sit on the right. Below 1024px they
-keep source order. Remove competing page-owned intro grid rules when adopting
-this shared recipe. This is the wide exception to the phone/tablet breakpoints;
-the separate design-language update records it in `DESIGN.md`.
+Use `.fg-site-hero` on a tool-home intro section. Its direct `h1` uses the
+56px display size (34px on phones). Wrap the lede paragraphs in
+`.fg-site-hero__lede`. Wrap the install block, metadata, and facts in
+`.fg-site-hero__aside`; use `.fg-site-meta` for the install label above the code.
+
+At 1024px and above, the hero uses `minmax(0, 1.1fr) minmax(0, 1fr)` columns,
+`var(--space-8)` between columns, and top alignment. The `h1` spans both columns
+in row 1. The lede and aside occupy columns 1 and 2 in row 2. All other children,
+including captures and legends, span both columns afterward in source order.
+Below 1024px all children stack in source order. Explicit grid lines and
+`grid-auto-columns: minmax(0, 1fr)` preserve the split if an unlayered site rule
+overrides the column template. Remove that override to retain the 1.1:1 ratio.
+This is the wide exception to the phone/tablet breakpoints; the separate
+design-language update records it in `DESIGN.md`.
 
 `UiCapture` shows one panel: tabs in the header, the capture scaled to the panel
 width, and the `command` and `caption` slot below. `html` is trusted, checked-in

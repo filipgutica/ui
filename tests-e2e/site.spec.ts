@@ -101,6 +101,22 @@ test('places the docs shell frame, rail, main, and footer on shared edges', asyn
   expect(await box('.fg-site-rail')).toEqual({ left: 32, right: 256 })
   expect((await box('main')).left).toBe(288)
   expect(await box('.fg-site-footer')).toEqual({ left: 32, right: 1248 })
+  // V1–V3/V10: an unlayered one-column site rule must not collapse or stretch the hero.
+  await page.addStyleTag({ content: 'main > section { grid-template-columns: minmax(0, 1fr); }' })
+  const hero = page.locator('.fg-site-hero')
+  const title = (await hero.locator('h1').boundingBox())!
+  const lede = (await hero.locator('.fg-site-hero__lede').boundingBox())!
+  const aside = (await hero.locator('.fg-site-hero__aside').boundingBox())!
+  expect(title.width).toBeGreaterThanOrEqual(aside.x + aside.width - lede.x - 1)
+  expect(lede.x + lede.width).toBeLessThan(aside.x)
+  expect(Math.abs(lede.y - aside.y)).toBeLessThanOrEqual(1)
+  expect((await hero.locator('.fg-site-hero__aside .fg-code-block').boundingBox())?.height).toBeLessThan(80)
+  for (const selector of ['.fg-capture', '.fg-site-legend']) {
+    const child = (await hero.locator(selector).first().boundingBox())!
+    expect(child.y).toBeGreaterThanOrEqual(Math.max(lede.y + lede.height, aside.y + aside.height))
+    expect(child.width).toBeGreaterThanOrEqual(title.width - 1)
+  }
+
   for (const link of await page.locator('.fg-site-footer a').all())
     expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44)
   expect(await page.evaluate(() => document.querySelector('.fg-site-rail')!.getBoundingClientRect().top))
@@ -152,6 +168,9 @@ test('keeps header links on phones outside the docs shell, on a second row when 
 test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' })
   await page.goto(fixture)
+  const location = page.locator('.fg-site-nav a[aria-current="location"]')
+  await expect(location).toHaveCSS('border-inline-start-width', '2px')
+  await expect(location).toHaveCSS('border-inline-start-style', 'solid')
   const pressed = page.locator('.fg-site-appearance__choice[aria-pressed="true"]')
   const other = page.locator('.fg-site-appearance__choice[aria-pressed="false"]').first()
   // Forced colors drop fills and rings, so the pressed choice needs its own system colors.
@@ -174,6 +193,10 @@ test('keeps the phone header on one row and names the section menu after its lab
     // One row: the header keeps its 64px minimum height plus its 1px border.
     expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
     const toggle = page.getByRole('button', { name: 'On this page', exact: true })
+    await expect(toggle).toHaveText('On this page: Install')
+    await page.goto(`${fixture}#commands`)
+    await expect(toggle).toHaveText('On this page: Commands')
+    await expect(toggle).toHaveAccessibleName('On this page')
     await toggle.click()
     await expect(page.getByRole('dialog', { name: 'On this page', exact: true })).toBeVisible()
     await page.keyboard.press('Escape')
@@ -185,15 +208,26 @@ test('keeps the phone header on one row and names the section menu after its lab
 test('hides [hidden] elements over page display rules and sizes inline code one step down', async ({ page }) => {
   await page.goto(fixture)
   // A page's own display rule would otherwise win over the browser's [hidden] style.
-  await page.addStyleTag({ content: 'main > section > p { display: block; }' })
-  const intro = page.locator('#install > p')
+  await page.addStyleTag({ content: 'main > section p { display: block; }' })
+  const intro = page.locator('#install .fg-site-hero__lede > p')
   await intro.evaluate(element => { element.hidden = true })
   await expect(intro).toBeHidden()
   await intro.evaluate(element => { element.hidden = false })
   await expect(intro.locator('code')).toHaveCSS('font-size', '13px')
   // Code in a block keeps the block's size.
   await intro.evaluate(element => element.insertAdjacentHTML('afterend', '<pre style="font-size: 15px"><code>demo ui</code></pre>'))
-  await expect(page.locator('#install > pre > code')).toHaveCSS('font-size', '15px')
+  await expect(page.locator('#install .fg-site-hero__lede > pre > code')).toHaveCSS('font-size', '15px')
+  for (const root of ['fg-site-docs', 'fg-site-prose']) {
+    for (const wrapper of ['', 'header', 'hgroup']) {
+      const content = wrapper ? `<${wrapper}><h2>Section</h2></${wrapper}>` : '<h2>Section</h2>'
+      await page.locator(root === 'fg-site-docs' ? 'main' : 'body').evaluate((element, markup) => element.insertAdjacentHTML('beforeend', markup),
+        `<article class="${root}" id="heading-case"><section>${content}</section></article>`)
+      const heading = page.locator('#heading-case h2')
+      await expect(heading).toHaveCSS('border-top-width', '1px')
+      expect(await heading.evaluate(element => getComputedStyle(element, '::before').content)).toContain('## ')
+      await page.locator('#heading-case').evaluate(element => element.remove())
+    }
+  }
 })
 
 test('keeps definition flags such as --all on one line on phones', async ({ page }) => {
@@ -212,7 +246,12 @@ test('gives fact links a touch-sized hit area on phones without taller fact rows
     await page.setViewportSize({ width, height: 900 })
     await page.goto(fixture)
     const source = page.locator('.fg-site-facts a', { hasText: 'filipgutica/demo' })
-    expect((await source.boundingBox())?.height ?? 0, `Source link at ${width}px`).toBeGreaterThanOrEqual(44)
+    const targetHeight = await source.evaluate(element => Number.parseFloat(getComputedStyle(element, '::after').height))
+    expect(targetHeight, `Source link target at ${width}px`).toBeGreaterThanOrEqual(44)
+    const bounds = (await source.boundingBox())!
+    const target = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('a')?.textContent,
+      { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 - 21 })
+    expect(target).toBe('filipgutica/demo')
     // The row stays one line: no taller than its label.
     const row = page.locator('.fg-site-facts > div', { hasText: 'Source' })
     const rowHeight = (await row.boundingBox())?.height ?? Infinity
@@ -221,7 +260,7 @@ test('gives fact links a touch-sized hit area on phones without taller fact rows
   }
 })
 
-test('keeps phone fact-link hit areas in adjacent rows apart', async ({ page }) => {
+test('keeps phone facts compact and adjacent links reachable', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 900 })
   await page.goto(fixture)
   await page.locator('.fg-site-facts').evaluate(facts => facts.insertAdjacentHTML('beforeend',
@@ -229,7 +268,12 @@ test('keeps phone fact-link hit areas in adjacent rows apart', async ({ page }) 
   const source = await page.locator('.fg-site-facts a', { hasText: 'filipgutica/demo' }).boundingBox()
   const docs = await page.locator('.fg-site-facts a', { hasText: 'github.io' }).boundingBox()
   expect(docs?.y ?? 0, 'Docs wraps below Source').toBeGreaterThan(source?.y ?? Infinity)
-  expect((source?.y ?? 0) + (source?.height ?? Infinity)).toBeLessThanOrEqual((docs?.y ?? 0) + 0.5)
+  await expect(page.locator('.fg-site-facts')).toHaveCSS('row-gap', '8px')
+  for (const link of await page.locator('.fg-site-facts a').all()) {
+    const bounds = (await link.boundingBox())!
+    expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('a')?.getAttribute('href'),
+      { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 })).toBe(await link.getAttribute('href'))
+  }
   // A fact list without links keeps its compact rows.
   await page.locator('.fg-site-facts').evaluate(facts => facts.insertAdjacentHTML('afterend',
     '<dl class="fg-site-facts" id="plain-facts"><div><dt>Runs on</dt><dd>macOS</dd></div></dl>'))

@@ -43,7 +43,11 @@ const activeId = useActiveSection({
     .flatMap(({ href }) => href.startsWith('#') && href.length > 1 ? [href.slice(1)] : []),
 })
 const currentPage = computed(() => groups.flatMap(group => group.items).find(item => item.current)?.label)
-const disclosureLabel = computed(() => currentPage.value ? `${label}: ${currentPage.value}` : label)
+const currentSection = computed(() => groups.flatMap(group => group.items).find(item => item.href === `#${activeId.value}`)?.label)
+const disclosureLabel = computed(() => {
+  const current = currentPage.value ?? currentSection.value
+  return current ? `${label}: ${current}` : label
+})
 let media: MediaQueryList | undefined
 let destination: HTMLElement | null = null
 
@@ -107,6 +111,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
       <summary
         class="fg-site-rail__summary"
         :aria-controls="contentId"
+        :aria-label="label"
       >
         {{ disclosureLabel }}
       </summary>
@@ -128,6 +133,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
           variant="ghost"
           size="lg"
           class="fg-site-rail__toggle"
+          :aria-label="label"
         >
           {{ disclosureLabel }}
         </UiButton>

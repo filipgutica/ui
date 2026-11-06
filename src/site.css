@@ -27,9 +27,9 @@
   .fg-site-docs :where(h1) { max-width: 22ch; font: var(--weight-semibold) var(--text-3xl) / 1.08 var(--font-mono); letter-spacing: var(--tracking-tight); }
   .fg-site-docs :where(h2) { font-family: var(--font-mono); font-size: var(--text-xl); }
   .fg-site-docs :where(h3) { font-family: var(--font-ui); font-size: var(--text-lg); }
-  .fg-site-docs main :where(section > h2) { padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); }
-  .fg-site-docs main :where(section > h2)::before { content: '## ' / ''; color: var(--color-project); }
-  .fg-site-docs :where(.intro:has(> .install) > h1) {
+  :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2) { padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); }
+  :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2)::before { content: '## ' / ''; color: var(--color-project); }
+  .fg-site-hero > h1 {
     max-width: none;
     font-size: var(--text-display);
     line-height: 1.04;
@@ -207,7 +207,7 @@
 
   /* Route rows. Hover is neutral, and the current page keeps its selected fill on
    * hover. An in-page section marker (aria-current="location") must look different
-   * from the current page, so it only strengthens the text. */
+   * from the current page, so it keeps the bar without the selected fill. */
   .fg-site-nav a {
     display: flex;
     min-height: var(--row);
@@ -227,7 +227,7 @@
     color: var(--color-text);
     font-weight: var(--weight-medium);
   }
-  .fg-site-nav a[aria-current="location"] { color: var(--color-text); font-weight: var(--weight-medium); }
+  .fg-site-nav a[aria-current="location"] { box-shadow: inset 2px 0 0 var(--color-project); color: var(--color-text); font-weight: var(--weight-medium); }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
 
   .fg-site-appearance {
@@ -263,6 +263,7 @@
   }
   /* Forced colors drop the fill and the ring, so the pressed choice takes the system highlight. */
   @media (forced-colors: active) {
+    .fg-site-nav a[aria-current] { border-inline-start: 2px solid Highlight; }
     .fg-site-appearance__choice[aria-pressed="true"] { forced-color-adjust: none; color: HighlightText; background: Highlight; }
   }
 
@@ -625,17 +626,25 @@
     .fg-site-rail__menu::details-content { content-visibility: visible; }
     .fg-site-rail__menu:not([open]) > .fg-site-rail__content { display: block; }
   }
-  /* Tool-home split: only introductions with an install block, never Workbench's hero.
-   * 1024px is the documented wide exception; phone/tablet still stack in source order. */
+  /* Explicit opt-in keeps the hero independent of page-owned install and capture markup. */
+  .fg-site-hero { display: grid; gap: var(--space-4); }
+  .fg-site-hero > * { min-width: 0; }
+  .fg-site-hero__lede,
+  .fg-site-hero__aside { display: grid; gap: var(--space-3); align-content: start; }
+  .fg-site-hero__aside .fg-site-meta { margin: 0; align-self: start; }
+  /* 1024px is the documented wide exception; narrower heroes keep source order. */
   @media (min-width: 1024px) {
-    .fg-site-docs .intro:has(> .install) {
-      display: grid;
+    .fg-site-hero {
       grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      grid-auto-columns: minmax(0, 1fr);
       column-gap: var(--space-8);
+      align-items: start;
     }
-    .fg-site-docs .intro:has(> .install) > h1 { grid-column: 1 / -1; }
-    .fg-site-docs .intro:has(> .install) > .lede { grid-column: 1; grid-row: 2 / span 4; }
-    .fg-site-docs .intro:has(> .install) > :is(.install, .fg-site-meta, .fg-site-facts) { grid-column: 2; min-width: 0; }
+    /* Explicit lines also span the implicit column when an unlayered site overrides the template. */
+    .fg-site-hero > * { grid-column: 1 / 3; }
+    .fg-site-hero > h1 { grid-row: 1; }
+    .fg-site-hero > .fg-site-hero__lede { grid-column: 1; grid-row: 2; }
+    .fg-site-hero > .fg-site-hero__aside { grid-column: 2; grid-row: 2; }
   }
   /* Keep in sync with MOBILE_QUERY in UiSiteNav.vue. */
   @media (max-width: 800px) {
@@ -697,19 +706,21 @@
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-projects { margin-inline-end: auto; }
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__links { order: 1; flex-basis: 100%; }
     .fg-site-docs :where(h1) { font-size: 32px; }
-    .fg-site-docs :where(.intro:has(> .install) > h1) { font-size: var(--text-display-sm); }
+    .fg-site-hero > h1 { font-size: var(--text-display-sm); }
     .fg-site-docs { padding-inline: var(--space-4); }
     /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
     .fg-site-docs .fg-site-header__links { display: none; }
-    /* Fact links, such as a Source link that stands in for the hidden header link, get a
-     * touch-sized hit area. The negative margin keeps each fact row one line tall, and the
-     * row gap of a list with links makes room for the part of the hit area past the line. */
-    .fg-site-facts:has(a) { row-gap: calc(var(--control-lg) - 1lh); }
-    .fg-site-facts a {
-      display: inline-flex;
+    /* Expand the link target without adding space between the text rows. */
+    .fg-site-facts { row-gap: var(--space-2); }
+    .fg-site-facts a { position: relative; display: inline-block; }
+    .fg-site-facts a::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      top: 50%;
       min-height: var(--control-lg);
-      align-items: center;
-      margin-block: calc((1lh - var(--control-lg)) / 2);
+      height: 100%;
+      transform: translateY(-50%);
     }
     .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
