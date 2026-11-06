@@ -63,8 +63,10 @@ for (const { slug, role, name, state, track } of [
     }
     await toggle.press('Enter')
     await expect(toggle).toHaveAttribute(state, 'false')
-    await expect(toggle).toHaveCSS('outline-style', 'solid')
-    await expect(toggle).toHaveCSS('outline-width', '2px')
+    // The switch's button is a transparent hit area, so its focus ring is drawn on the visible track.
+    const ring = slug === 'switch' ? toggle.locator(track) : toggle
+    await expect(ring).toHaveCSS('outline-style', 'solid')
+    await expect(ring).toHaveCSS('outline-width', '2px')
     expect((await toggle.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(24)
     expect((await toggle.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(24)
     await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -94,8 +96,8 @@ test('keeps switch boundaries and thumb positions distinct in both themes and fo
     await page.emulateMedia({ forcedColors: 'active' })
     await toggle.focus()
     await toggle.press('Space')
-    await expect(toggle).toHaveCSS('outline-style', 'solid')
-    await expect(toggle).toHaveCSS('outline-width', '2px')
+    await expect(track).toHaveCSS('outline-style', 'solid')
+    await expect(track).toHaveCSS('outline-width', '2px')
     const off = await track.evaluate(element => ({
       fill: getComputedStyle(element).backgroundColor,
       thumb: getComputedStyle(element, '::after').transform,
