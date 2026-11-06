@@ -64,7 +64,7 @@ describe('UiSiteNav', () => {
     container.innerHTML = await renderToString(createSSRApp({ render: () => h(UiSiteNav, { label: 'On this page', groups }) }))
 
     const nav = container.querySelector('nav')
-    expect(container.querySelector('details:not([open]) > summary')?.textContent?.trim()).toBe('On this page')
+    expect(container.querySelector('details:not([open]) > summary')?.textContent?.trim()).toBe('On this page: wtree ui')
     expect(container.querySelector(`[id="${nav?.getAttribute('aria-labelledby')}"]`)?.textContent?.trim()).toBe('On this page')
     expect(container.querySelector('[aria-current="location"]')?.getAttribute('href')).toBe('#install')
     expect(container.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/cli/ui')
@@ -107,7 +107,7 @@ describe('UiSiteNav', () => {
 
     expect(wrapper.find('details').exists()).toBe(false)
     const trigger = wrapper.get('button')
-    expect(trigger.text()).toBe('On this page')
+    expect(trigger.text()).toBe('On this page: wtree ui')
     expect(document.activeElement).toBe(trigger.element)
   })
 

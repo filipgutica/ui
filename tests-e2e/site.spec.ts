@@ -111,13 +111,14 @@ test('colors captures with the default terminal palette unless the site sets its
   await page.goto(fixture)
   const accent = page.locator('.fg-capture[data-enhanced="true"] .tf6').first()
   await expect(accent).toHaveCSS('color', 'rgb(95, 211, 217)')
-  await expect(page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()).toHaveCSS('background-color', 'rgb(19, 19, 22)')
+  await expect(page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()).toHaveCSS('background-color', 'rgb(10, 12, 14)')
   await page.addStyleTag({ content: ':root { --t6: #ff0000; }' })
   await expect(accent).toHaveCSS('color', 'rgb(255, 0, 0)')
-  // A plain <pre> capture keeps the code background, so its inherited text stays readable.
+  // Plain output uses the same terminal plate and its own light foreground.
   const screen = page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()
   await screen.evaluate(element => { element.innerHTML = '<pre>plain output</pre>' })
-  await expect(screen).not.toHaveCSS('background-color', 'rgb(19, 19, 22)')
+  await expect(screen).toHaveCSS('background-color', 'rgb(10, 12, 14)')
+  await expect(screen).toHaveCSS('color', 'rgb(230, 233, 235)')
 })
 
 test('keeps header links on phones outside the docs shell, on a second row when there are three', async ({ page }) => {

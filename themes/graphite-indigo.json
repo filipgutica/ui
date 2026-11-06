@@ -1,73 +1,63 @@
 {
   "groups": [
     {
-      "comment": "Cool graphite neutrals.",
+      "comment": "Neutral paper and graphite surfaces.",
       "tokens": {
         "bg": [
-          "#f8f9fb",
-          "#151619"
+          "#f4f5f6",
+          "#0d1012"
         ],
         "surface": [
-          "#e7e8ec",
-          "#0e0f12"
+          "#e9ebed",
+          "#13171a"
         ],
         "surface-raised": [
-          "#ffffff",
-          "#212226"
+          "#fbfbfc",
+          "#181d21"
         ],
         "surface-hover": [
-          "#e4e6eb",
-          "#303238"
+          "#e2e5e8",
+          "#20262b"
         ],
         "row-hover": [
-          "#dfe1e7",
-          "#25272d"
+          "#e2e5e8",
+          "#20262b"
         ],
-        "row-selected": [
-          "#ffffff",
-          "#38334f"
-        ],
+        "row-selected": "{surface-raised}",
         "border-subtle": [
-          "#d8dbe2",
-          "#3b3e45"
+          "#d3d8dd",
+          "#262d33"
         ],
         "border": [
-          "#777d88",
-          "#818894"
+          "#6d747b",
+          "#78818a"
         ],
         "text": [
-          "#222326",
-          "#f4f5f8"
+          "#101315",
+          "#e6e9eb"
         ],
         "text-muted": [
-          "#5d626c",
-          "#b0b5bf"
+          "#50575e",
+          "#9aa3ab"
         ]
       }
     },
     {
-      "comment": "Primary actions, links, and focus have separate roles.",
+      "comment": "Project hue for selection; ink primary actions; links and focus stay separate.",
       "tokens": {
-        "accent": [
-          "#6359a7",
-          "#a99ce2"
+        "project": [
+          "#4b45d1",
+          "#a5a1ff"
         ],
-        "accent-text": [
-          "#ffffff",
-          "#151619"
-        ],
-        "accent-hover": [
-          "#554b94",
-          "#b7ace9"
-        ],
+        "project-dark": "#a5a1ff",
+        "accent": "{project}",
+        "accent-text": "{bg}",
+        "accent-hover": "{text}",
         "link": [
-          "#075fc7",
-          "#58a6ff"
+          "#0b5f7c",
+          "#67c1df"
         ],
-        "focus": [
-          "#075fc7",
-          "#58a6ff"
-        ]
+        "focus": "{link}"
       }
     },
     {
@@ -82,22 +72,27 @@
           "#e2a54b"
         ],
         "danger": [
-          "#c7372d",
+          "#bd342b",
           "#f0776c"
         ],
         "info": [
           "#175cd3",
           "#84adff"
         ],
-        "success-soft": "color-mix(in srgb, {success} 11%, {bg})",
-        "warning-soft": "color-mix(in srgb, {warning} 12%, {bg})",
-        "danger-soft": "color-mix(in srgb, {danger} 10%, {bg})",
-        "info-soft": "color-mix(in srgb, {info} 10%, {bg})"
+        "success-soft": "{surface-raised}",
+        "warning-soft": "{surface-raised}",
+        "danger-soft": "{surface-raised}",
+        "info-soft": "{surface-raised}"
       }
     },
     {
       "comment": "Code",
       "tokens": {
+        "terminal": "#0a0c0e",
+        "terminal-text": "#e6e9eb",
+        "terminal-border": "#2a3036",
+        "terminal-caption": "#13171a",
+        "terminal-caption-text": "#c9d0d6",
         "code-bg": "{surface}",
         "code-text": "{text}",
         "code-key": [
@@ -119,26 +114,27 @@
       }
     },
     {
-      "comment": "Type: system faces, no font loading.",
+      "comment": "Self-hosted IBM Plex latin faces (OFL); system fallbacks.",
       "tokens": {
-        "font-sans": "-apple-system, BlinkMacSystemFont, \"SF Pro Text\", \"Segoe UI\", system-ui, sans-serif",
-        "font-mono": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, Consolas, monospace",
+        "font-sans": "\"IBM Plex Sans\", -apple-system, BlinkMacSystemFont, \"SF Pro Text\", \"Segoe UI\", system-ui, sans-serif",
+        "font-mono": "\"IBM Plex Mono\", ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, Consolas, monospace",
         "text-xs": "12px",
         "text-sm": "13px",
         "text-md": "14px",
         "text-lg": "16px",
         "text-xl": "20px",
         "text-2xl": "24px",
-        "text-3xl": "32px",
+        "text-3xl": "44px",
         "text-reading": "16px",
         "text-display": "56px",
-        "text-display-sm": "38px",
+        "text-display-sm": "34px",
         "leading-tight": "1.25",
-        "leading": "1.5",
+        "leading": "1.6",
         "weight-regular": "400",
         "weight-medium": "500",
         "weight-semibold": "600",
-        "tracking-tight": "-0.01em"
+        "tracking-tight": "-0.03em",
+        "text-code": "13.5px"
       }
     },
     {
@@ -173,10 +169,10 @@
     {
       "comment": "Shape",
       "tokens": {
-        "radius-sm": "4px",
-        "radius-md": "6px",
-        "radius-lg": "8px",
-        "radius-pill": "999px"
+        "radius-sm": "2px",
+        "radius-md": "2px",
+        "radius-lg": "3px",
+        "radius-pill": "2px"
       }
     },
     {
@@ -199,6 +195,8 @@
   ],
   "library": {
     "roles": {
+      "--color-project": "project",
+      "--color-project-dark": "project-dark",
       "--color-bg": "bg",
       "--color-surface": "surface",
       "--color-surface-raised": "surface-raised",
@@ -210,9 +208,9 @@
       "--color-focus": "focus",
       "--color-border": "border",
       "--color-border-subtle": "border-subtle",
-      "--color-button-bg": "accent",
-      "--color-button-text": "accent-text",
-      "--color-button-hover": "accent-hover",
+      "--color-button-bg": "text",
+      "--color-button-text": "bg",
+      "--color-button-hover": "text-muted",
       "--color-input-bg": "surface-raised",
       "--color-input-text": "text",
       "--color-input-border": "border",
@@ -243,7 +241,14 @@
       "--color-success-surface": "success-soft",
       "--color-info-surface": "info-soft",
       "--shadow-dialog": "shadow-popover",
-      "--color-status-text": "text"
+      "--color-status-text": "text",
+      "--color-terminal": "terminal",
+      "--color-terminal-text": "terminal-text",
+      "--color-terminal-border": "terminal-border",
+      "--color-terminal-caption": "terminal-caption",
+      "--color-terminal-caption-text": "terminal-caption-text",
+      "--color-accent-text": "accent-text",
+      "--color-accent-hover": "accent-hover"
     },
     "aliases": {
       "font-sans": "--font-ui",
