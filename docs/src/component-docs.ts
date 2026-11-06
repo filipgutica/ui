@@ -59,7 +59,7 @@ export const componentDocs: ComponentDoc[] = [
     name: 'UiTabs',
     title: 'Tabs',
     summary: 'Switches between related panels while retaining their content state.',
-    usage: 'Supply unique item values and an accessible group label. Arrow keys, Home, and End select tabs. SSR and the first hydration render show every labelled panel; after mounting, the tab controls appear and inactive panels are hidden. A tab strip narrower than its tabs scrolls, fades each clipped edge, and keeps the selected tab in view when it resizes. Keep page section headings outside the tabs when they are anchor destinations. If enhancement changes the page height, re-align an initial hash after layout settles.',
+    usage: 'Supply unique item values and an accessible group label. The Left and Right arrow keys, Home, and End select tabs. SSR and the first hydration render show every labelled panel; after mounting, the tab controls appear and inactive panels are hidden. A tab strip narrower than its tabs scrolls, fades each clipped edge, and keeps the selected tab in view when it resizes. Keep page section headings outside the tabs when they are anchor destinations. If enhancement changes the page height, re-align an initial hash after layout settles.',
     props: [
       { name: 'items', required: true, type: 'readonly UiTabItem[]', description: 'Ordered items with a unique value and visible label.' },
       { name: 'label', required: true, type: 'string', description: 'Accessible name for the tab list.' },
@@ -270,7 +270,7 @@ export const componentDocs: ComponentDoc[] = [
     usage: 'Use an input inside UiField for a visible label and help or error relationship. Choose the native input type that matches the expected value.',
     props: [
       { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents editing.' },
-      { name: 'id', required: false, type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
+      { name: 'id', required: false, type: 'string', description: 'Native ID. Inside UiField, the field\'s controlId replaces it.' },
       { name: 'invalid', required: false, type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
       { name: 'modelValue', required: false, type: 'string', default: "''", description: 'Current value used by v-model.' },
       { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
@@ -315,7 +315,7 @@ export const componentDocs: ComponentDoc[] = [
     usage: 'Use a select when the available values are known and mutually exclusive. Put it inside UiField and keep option labels concise.',
     props: [
       { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Prevents selection.' },
-      { name: 'id', required: false, type: 'string', description: 'Native ID; inherited from UiField when omitted.' },
+      { name: 'id', required: false, type: 'string', description: 'Native ID. Inside UiField, the field\'s controlId replaces it.' },
       { name: 'invalid', required: false, type: 'boolean', default: 'false', description: 'Marks the control invalid outside UiField.' },
       { name: 'modelValue', required: false, type: 'string', default: "''", description: 'Selected value used by v-model.' },
       { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
@@ -347,7 +347,7 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'min', required: false, type: 'number', default: '0', description: 'Minimum selectable value. Non-finite values fall back to 0.' },
       { name: 'modelValue', required: false, type: 'number', default: 'min', description: 'Current value used by v-model; display is clamped to the configured range.' },
       { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
-      { name: 'step', required: false, type: 'number', default: '1', description: 'Positive amount changed by each keyboard or pointer increment; invalid values fall back to 1.' },
+      { name: 'step', required: false, type: 'number', default: '1', description: 'Positive amount for each arrow-key or pointer increment. Page Up, Page Down, and Shift with an arrow key move 10 steps. Invalid values fall back to 1.' },
     ],
     slots: [],
     events: [
