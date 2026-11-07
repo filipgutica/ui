@@ -479,23 +479,35 @@
    * rule runs down the leading column to the next step. */
   .fg-site-steps > li {
     position: relative;
-    display: grid;
-    grid-template-columns: var(--space-8) minmax(0, 1fr);
-    row-gap: var(--space-2);
+    display: flow-root;
+    min-width: 0;
+    padding-inline-start: var(--space-8);
     counter-increment: fg-site-step;
   }
-  .fg-site-steps > li > * { grid-column: 2; }
-  .fg-site-steps > li::before {
+  /* Keep text and inline elements in normal flow; only the number occupies the gutter. */
+  .fg-site-steps > li > * + * { margin-block-start: var(--space-2); }
+  .fg-site-steps > li::before,
+  .fg-site-steps > li > h3:first-child::before {
     content: counter(fg-site-step);
-    grid-area: 1 / 1;
-    align-self: baseline;
     color: var(--color-project);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
+    line-height: var(--leading);
   }
-  .fg-site-steps > li > :first-child { align-self: baseline; }
+  .fg-site-steps > li::before {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+  }
+  /* A titled step keeps the number on the heading's baseline and preserves its line box. */
+  .fg-site-steps > li:has(> h3:first-child)::before { content: none; }
+  .fg-site-steps > li > h3:first-child::before {
+    display: inline-block;
+    width: var(--space-8);
+    margin-inline-start: calc(-1 * var(--space-8));
+  }
   .fg-site-steps > li:not(:last-child)::after {
     content: '';
     position: absolute;

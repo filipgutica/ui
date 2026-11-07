@@ -111,6 +111,12 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
           </li>
         </ol>
       </section>
+      <section id="inline-steps">
+        <h2>Start with the guide</h2>
+        <ol class="fg-site-steps">
+          <li>Run <code>demo ui</code> to open the app, then read the <a href="#start">getting started guide</a> before continuing.</li>
+        </ol>
+      </section>
       <section id="commands">
         <h2>Commands</h2>
         <p>Press <kbd>Space</kbd> to select a row.</p>

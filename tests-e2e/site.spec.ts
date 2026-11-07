@@ -5,6 +5,42 @@ import { expect, test } from '@playwright/test'
 // The docs dev server serves this fixture through Vite's /@fs/ route, so it uses the real components.
 const fixture = `/@fs${fileURLToPath(new URL('./fixtures/site.html', import.meta.url))}`
 
+test('keeps inline code, links, and surrounding step text beside the number', async ({ page }) => {
+  for (const width of [320, 375, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(fixture)
+    const step = page.locator('#inline-steps li')
+    const contentStart = (await page.locator('#start h3').first().boundingBox())!.x
+    const layout = await step.evaluate(element => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+      const lines: { left: number; right: number }[] = []
+      while (walker.nextNode()) {
+        const node = walker.currentNode
+        // Inspect visible characters, including anonymous text runs around inline elements.
+        for (let offset = 0; offset < (node.textContent?.length ?? 0); offset += 1) {
+          if (!node.textContent?.[offset]?.trim()) continue
+          const range = document.createRange()
+          range.setStart(node, offset)
+          range.setEnd(node, offset + 1)
+          for (const rect of range.getClientRects()) lines.push({ left: rect.left, right: rect.right })
+        }
+      }
+      return {
+        lines,
+        right: element.getBoundingClientRect().right,
+        height: element.getBoundingClientRect().height,
+        lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
+      }
+    })
+    expect(layout.lines.length).toBeGreaterThan(0)
+    for (const line of layout.lines) {
+      expect(line.left, `step text starts after the gutter at ${width}px`).toBeGreaterThanOrEqual(contentStart - 1)
+      expect(line.right, `step text fits at ${width}px`).toBeLessThanOrEqual(layout.right + 1)
+    }
+    expect(layout.height, `step stays within five lines at ${width}px`).toBeLessThanOrEqual(5 * layout.lineHeight)
+  }
+})
+
 test('keeps every capture tab clear of the Full size button', async ({ page }) => {
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 })
