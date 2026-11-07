@@ -798,10 +798,13 @@ export const applySemanticTheme = ({
     root.style.setProperty('--color-switch-off-thumb', thumb)
     const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
     // The current nav row and selected tab put accent text on --color-nav-current: the raised surface
-    // in light, text at 7% in dark. The accent is validated only at 3:1, so keep it only where it
-    // reads at 4.5:1 over that fill on the page and on a surface; otherwise use the body text colour.
-    const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(host =>
-      dark ? compositeColor(`${foreground}12`, host) : compositeColor(surfaceRaised, host))
+    // tinted 8% toward the accent in light, the accent at 14% in dark. The accent is validated only at
+    // 3:1, so keep it only where it reads at 4.5:1 over that fill on the page and on a surface;
+    // otherwise use the body text colour.
+    const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(host => {
+      const base = dark ? host : compositeColor(surfaceRaised, host)
+      return compositeColor(`${compositeColor(theme.tokens.accent, base)}${dark ? '24' : '14'}`, base)
+    })
     const accentReads = currentFills.every(fill => contrastRatio(theme.tokens.accent, fill, fill) >= 4.5)
     root.style.setProperty('--color-nav-current-text', accentReads ? theme.tokens.accent : foreground)
     // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white

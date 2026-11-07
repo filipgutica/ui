@@ -765,7 +765,8 @@
     gap: var(--space-3);
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-control);
+    /* A labelled card, not a pill: it takes the field corner so wrapped labels sit square. */
+    border-radius: var(--radius-field);
     color: var(--color-text);
     background: var(--color-surface-raised);
     line-height: var(--leading-tight);
@@ -778,7 +779,11 @@
   .fg-toggle-button[data-size="lg"] { min-height: var(--control-lg); font-size: var(--text-lg); }
 
   .fg-toggle-button:hover:not(:disabled, [aria-pressed="true"]) { border-color: var(--color-border); }
-  .fg-toggle-button[aria-pressed="true"] { border-color: var(--color-accent); }
+  /* The switch carries the on state; the card takes the selected rows' faint tint and the hairline a focused field uses. */
+  .fg-toggle-button[aria-pressed="true"] {
+    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-raised));
+  }
 
   /* Segmented control: one pressed choice on a muted track, so it reads as a raised thumb in both themes. */
   .fg-segmented {
