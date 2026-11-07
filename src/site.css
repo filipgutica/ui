@@ -244,8 +244,6 @@
     top: var(--space-6);
     align-self: start;
     min-width: 0;
-    max-height: calc(100svh - var(--space-12));
-    overflow-y: auto;
     padding-block: var(--space-4);
     color: var(--color-text);
     font-family: var(--font-ui);
@@ -593,6 +591,8 @@
   /* No-JavaScript desktop: the rail's disclosure stays expanded. */
   @media (min-width: 801px) {
     .fg-site-rail { border-inline-end: 1px solid var(--color-border-subtle); padding-inline-end: var(--space-4); }
+    /* The links scroll, not the bordered rail, so an overlay scrollbar sits clear of the divider. */
+    .fg-site-rail__content { max-height: calc(100svh - var(--space-12) - var(--space-8)); overflow-y: auto; }
     .fg-site-rail__menu::details-content { content-visibility: visible; }
     .fg-site-rail__menu:not([open]) > .fg-site-rail__content { display: block; }
   }
@@ -622,8 +622,6 @@
     .fg-site-docs > main { gap: var(--space-8); padding-top: var(--space-6); }
     .fg-site-rail {
       position: static;
-      max-height: none;
-      overflow: visible;
       padding-block: var(--space-2);
     }
     .fg-site-rail__summary,

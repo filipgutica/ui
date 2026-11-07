@@ -126,6 +126,26 @@ test('places the docs shell frame, rail, main, and footer on shared edges', asyn
     .toBe(await page.evaluate(() => document.querySelector('main')!.getBoundingClientRect().top))
 })
 
+test('scrolls an overflowing desktop rail inside its divider, so the scrollbar sits clear of the border', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 160 })
+  await page.goto(fixture)
+  // Scrolled down, the sticky rail sits at its top offset and must end inside the viewport.
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
+  const rail = await page.locator('.fg-site-rail').evaluate(element => {
+    const content = element.querySelector('.fg-site-rail__content')!
+    return {
+      railScrolls: element.scrollHeight > element.clientHeight,
+      contentScrolls: content.scrollHeight > content.clientHeight && getComputedStyle(content).overflowY === 'auto',
+      gap: element.getBoundingClientRect().right - content.getBoundingClientRect().right,
+      bottom: element.getBoundingClientRect().bottom,
+    }
+  })
+  expect(rail.railScrolls).toBe(false)
+  expect(rail.contentScrolls).toBe(true)
+  expect(rail.gap).toBeGreaterThanOrEqual(16)
+  expect(rail.bottom).toBeLessThanOrEqual(160)
+})
+
 test('colors captures with the default terminal palette unless the site sets its own', async ({ page }) => {
   await page.goto(fixture)
   const accent = page.locator('.fg-capture[data-enhanced="true"] .tf6').first()
