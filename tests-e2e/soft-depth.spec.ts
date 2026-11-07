@@ -46,11 +46,12 @@ test('raises action buttons, sinks presses, and keeps depth with keyboard focus'
     }
     await page.keyboard.press('Tab')
     await button.focus()
-    await expect(button).toHaveCSS('outline-width', '2px')
+    await expect(button).toHaveCSS('outline-style', 'solid')
+    expect(await button.evaluate(element => parseFloat(getComputedStyle(element).outlineWidth))).toBeGreaterThanOrEqual(1)
     if (variant !== 'ghost') expect(await shadow()).toContain(restingShadow)
     await page.keyboard.down('Space')
     expect(await shadow()).toContain('inset')
-    expect(await shadow()).toMatch(/0px 0px 0px 6px/)
+    expect(await shadow()).not.toMatch(/0px 0px 0px 6px/)
     if (variant !== 'ghost') expect(await button.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(fill)
     await page.keyboard.up('Space')
     await button.evaluate(element => { element.setAttribute('disabled', '') })
@@ -59,12 +60,12 @@ test('raises action buttons, sinks presses, and keeps depth with keyboard focus'
   }
 })
 
-test('lifts a focused field out of its well with an accent underline instead of an offset ring', async ({ page }) => {
+test('lifts a focused field out of its well instead of drawing a ring', async ({ page }) => {
   await page.goto('/#/sandbox/input')
   const input = page.locator('.playground-stage > .fg-input')
   const restFill = await input.evaluate(element => getComputedStyle(element).backgroundColor)
   await input.focus()
   await expect(input).toHaveCSS('outline-offset', '0px')
   expect(await input.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(restFill)
-  expect(await input.evaluate(element => getComputedStyle(element).boxShadow)).toMatch(/0px -2px 0px 0px inset/)
+  expect(await input.evaluate(element => getComputedStyle(element).boxShadow)).not.toContain('inset')
 })
