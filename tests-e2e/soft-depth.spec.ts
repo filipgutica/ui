@@ -68,4 +68,12 @@ test('lifts a focused field out of its well instead of drawing a ring', async ({
   await expect(input).toHaveCSS('outline-offset', '0px')
   expect(await input.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(restFill)
   expect(await input.evaluate(element => getComputedStyle(element).boxShadow)).not.toContain('inset')
+
+  // An invalid field keeps its error edge while focused, including in high contrast.
+  const error = await input.evaluate(element => {
+    element.setAttribute('aria-invalid', 'true')
+    return getComputedStyle(element).borderTopColor
+  })
+  await page.evaluate(() => document.documentElement.classList.add('high-contrast'))
+  await expect(input).toHaveCSS('border-top-color', error)
 })

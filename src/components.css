@@ -1094,8 +1094,6 @@
     background-color: var(--color-control-thumb);
     box-shadow: var(--shadow-raise);
   }
-  .fg-input[aria-invalid="true"]:focus-visible,
-  .fg-select[aria-invalid="true"]:focus-visible { border-color: var(--color-error); }
 
   /* The control is a larger transparent hit area, so the ring follows the visible track instead. */
   .fg-switch__control:focus-visible { outline: none; }
@@ -1114,6 +1112,12 @@
     border-width: 2px;
     border-color: var(--color-border);
   }
+
+  /* An invalid field keeps its error edge when focused and in high contrast. */
+  .fg-input[aria-invalid="true"]:focus-visible,
+  .fg-select[aria-invalid="true"]:focus-visible,
+  :root.high-contrast .fg-input[aria-invalid="true"],
+  :root.high-contrast .fg-select[aria-invalid="true"] { border-color: var(--color-error); }
 
   @media (max-width: 640px) {
     .fg-dialog__content {

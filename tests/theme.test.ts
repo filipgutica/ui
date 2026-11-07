@@ -245,6 +245,29 @@ describe('VS Code theme parsing and normalization', () => {
     expect(theme.tokens.buttonForeground).toBe('#11111B')
   })
 
+  it('keeps field text readable when a focused field lifts onto the raised surface', () => {
+    const theme = parseVsCodeTheme({
+      fileName: 'deep-well.json',
+      source: JSON.stringify({
+        type: 'dark',
+        colors: {
+          'editor.background': '#000000',
+          'editor.foreground': '#EEEEEE',
+          'panel.background': '#343434',
+          'input.background': '#000000',
+          'input.foreground': '#777777',
+          'input.placeholderForeground': '#777777',
+        },
+      }),
+    })
+
+    // The well, the raised surface, and the dark-mode thumb (raised mixed 12% toward white).
+    for (const background of ['#000000', '#343434', '#4D4D4D']) {
+      expect(contrast(theme.tokens.inputForeground, background)).toBeGreaterThanOrEqual(4.5)
+      expect(contrast(theme.tokens.inputPlaceholder, background)).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
   it('keeps muted text and links readable across page and surface backgrounds', () => {
     const theme = parseVsCodeTheme({
       fileName: 'split-surfaces.json',

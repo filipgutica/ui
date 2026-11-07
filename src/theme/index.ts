@@ -540,6 +540,10 @@ const mapSemanticTokens = ({
     ? visibleIndicator({ color: borderSubtleCandidate, against: surface, fallback: border })
     : borderSubtleCandidate
   const inputBackground = firstColor(colors, ['input.background'], surface)
+  // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white in
+  // dark mode. Field text must read on the well and on both forms of that lift.
+  const raisedOpaque = compositeColor(surfaceRaised, surface)
+  const fieldBackgrounds = [inputBackground, raisedOpaque, compositeColor('#FFFFFF1F', raisedOpaque)]
   const inputBorderCandidate = firstColor(
     colors,
     appearance.startsWith('high-contrast')
@@ -575,19 +579,20 @@ const mapSemanticTokens = ({
     buttonForeground,
     buttonHoverBackground,
     inputBackground,
-    inputForeground: readableForeground({
-      background: inputBackground,
-      preferred: firstColor(colors, ['input.foreground', 'editor.foreground', 'foreground'], textPrimary),
+    inputForeground: readableAcrossBackgrounds({
+      color: firstColor(colors, ['input.foreground', 'editor.foreground', 'foreground'], textPrimary),
+      backgrounds: fieldBackgrounds,
       underlay: surface,
+      fallbacks: ['#000000', '#FFFFFF'],
     }),
     inputBorder: appearance.startsWith('high-contrast')
       ? visibleIndicator({ color: inputBorderCandidate, against: inputBackground, fallback: border })
       : inputBorderCandidate,
-    inputPlaceholder: readableSemanticColor({
+    inputPlaceholder: readableAcrossBackgrounds({
       color: firstColor(colors, ['input.placeholderForeground', 'descriptionForeground'], textMuted),
-      background: inputBackground,
+      backgrounds: fieldBackgrounds,
       underlay: surface,
-      fallback: fallback.textMuted,
+      fallbacks: [fallback.textMuted, '#000000', '#FFFFFF'],
     }),
     rowHoverBackground,
     rowSelectedBackground: firstColor(
