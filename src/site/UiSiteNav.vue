@@ -129,7 +129,7 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
     >
       <template #trigger>
         <UiButton
-          variant="ghost"
+          variant="secondary"
           size="lg"
           class="fg-site-rail__toggle"
         >

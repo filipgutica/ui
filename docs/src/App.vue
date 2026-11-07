@@ -103,7 +103,7 @@ watch(route, async () => {
             stroke-width="1.5"
             aria-hidden="true"
           >
-            <path d="m4 6 4 4 4-4" />
+            <path d="M2.5 4h11M2.5 8h11M2.5 12h11" />
           </svg>
           {{ currentPageLabel }}
         </DialogTrigger>
