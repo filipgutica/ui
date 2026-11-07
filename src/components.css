@@ -147,13 +147,15 @@
   }
 
   .fg-button {
+    --fg-button-shadow: var(--shadow-raise);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
     color: var(--color-button-text);
     background: var(--color-button-bg);
-    box-shadow: none;
+    box-shadow: var(--fg-button-shadow);
+    transition: background-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
     font-weight: 500;
     letter-spacing: -0.01em;
     line-height: 1.25;
@@ -164,8 +166,8 @@
     background: var(--color-button-hover);
   }
 
-  .fg-button:active:not(:disabled) {
-    box-shadow: none;
+  .fg-button:where(:not([data-variant]), [data-variant="primary"]):is(:active, [aria-pressed="true"]):not(:disabled) {
+    background: color-mix(in srgb, var(--color-button-bg) 80%, var(--color-bg));
   }
 
   .fg-button:disabled,
@@ -241,12 +243,12 @@
 
   .fg-button[data-variant="secondary"] {
     color: var(--color-text);
-    background: var(--color-surface-muted);
+    background: var(--color-control-thumb);
   }
 
   .fg-button[data-variant="secondary"]:hover:not(:disabled) {
     color: var(--color-text);
-    background: color-mix(in srgb, var(--color-text) 8%, var(--color-surface-muted));
+    background: color-mix(in srgb, var(--color-text) 8%, var(--color-control-thumb));
   }
 
   .fg-button[data-variant="ghost"]:hover:not(:disabled) {
@@ -255,12 +257,14 @@
   }
 
   .fg-button[data-variant="ghost"] {
+    --fg-button-shadow: 0 0 0 0 transparent;
     color: var(--color-muted);
     background: transparent;
     box-shadow: none;
   }
 
   .fg-button[data-variant="danger"] {
+    --fg-button-shadow: 0 0 0 0 transparent;
     color: var(--color-status-text, var(--color-error));
     background: var(--color-error-surface);
     box-shadow: none;
@@ -274,6 +278,7 @@
   }
 
   .fg-button[data-variant="text"] {
+    --fg-button-shadow: 0 0 0 0 transparent;
     height: auto;
     min-height: auto;
     padding: var(--space-1);
@@ -288,6 +293,14 @@
     color: var(--color-link);
     background: transparent;
   }
+
+  /* Keep press specificity level with focus so its halo can wrap the sink shadow. */
+  .fg-button:where(:not([data-variant="danger"], [data-variant="text"])):is(:active, [aria-pressed="true"]):not(:disabled) {
+    --fg-button-shadow: var(--shadow-sink);
+    box-shadow: var(--fg-button-shadow);
+  }
+  .fg-button[data-variant="secondary"]:is(:active, [aria-pressed="true"]):not(:disabled) { background: var(--color-well); }
+  .fg-button:disabled { box-shadow: none; }
 
   .fg-input,
   .fg-select {
@@ -1022,6 +1035,10 @@
     outline: 2px solid color-mix(in srgb, var(--color-accent) 80%, transparent);
     outline-offset: 2px;
     box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  .fg-button:focus-visible:not(:disabled) {
+    box-shadow: var(--fg-button-shadow), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
   }
 
   .fg-input:focus-visible,

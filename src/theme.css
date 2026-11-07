@@ -38,6 +38,7 @@
   --color-surface-raised: #fbfbfc;
   --color-surface-muted: #e2e5e8;
   --color-well: var(--color-surface-muted);
+  --color-control-thumb: var(--color-surface-raised);
   --color-text: #101315;
   --color-muted: #50575e;
   --color-link: #0b5f7c;
@@ -110,6 +111,7 @@
   --color-surface-raised: #181d21;
   --color-surface-muted: #20262b;
   --color-well: color-mix(in srgb, var(--color-bg) 87.5%, black);
+  --color-control-thumb: color-mix(in srgb, var(--color-surface-raised) 88%, white);
   --color-text: #e6e9eb;
   --color-muted: #9aa3ab;
   --color-link: #67c1df;

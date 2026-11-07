@@ -201,30 +201,39 @@
 
   /* Route rows. Hover is neutral, and the current page keeps its selected fill on
    * hover. An in-page section marker (aria-current="location") must look different
-   * from the current page, so it keeps the bar without the selected fill. */
+   * from the current page, so it uses an accent pip without the raised fill. */
   .fg-site-nav a {
     display: flex;
     min-height: var(--row);
     align-items: center;
     padding-inline: var(--space-3);
-    border-radius: var(--radius-inline);
+    border-radius: var(--radius-control);
     color: var(--color-muted);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-decoration: none;
-    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease;
+    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
   }
   .fg-site-nav a:hover { background: var(--color-row-hover); color: var(--color-text); }
   .fg-site-nav a[aria-current="page"] {
-    background: var(--color-surface-raised);
-    box-shadow: inset 2px 0 0 var(--color-project);
-    color: var(--color-text);
+    background: var(--color-control-thumb);
+    box-shadow: var(--shadow-raise);
+    color: var(--color-accent);
     font-weight: var(--weight-medium);
   }
-  .fg-site-nav a[aria-current="location"] { box-shadow: inset 2px 0 0 var(--color-project); color: var(--color-text); font-weight: var(--weight-medium); }
+  .fg-site-nav a[aria-current="location"] { position: relative; color: var(--color-text); font-weight: var(--weight-medium); }
+  .fg-site-nav a[aria-current="location"]::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: var(--space-1);
+    width: 3px;
+    height: 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+  }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
 
-  /* Forced colors drop the inset marker, so the current link takes a system border. */
+  /* Forced colors drop shadows, so the current link takes a system border. */
   @media (forced-colors: active) {
     .fg-site-nav a[aria-current] { border-inline-start: 2px solid Highlight; }
   }
