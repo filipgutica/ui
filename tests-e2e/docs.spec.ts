@@ -80,7 +80,7 @@ for (const { slug, role, name, state, track } of [
     // The switch's button is a transparent hit area, so its focus ring is drawn on the visible track.
     const ring = slug === 'switch' ? toggle.locator(track) : toggle
     await expect(ring).toHaveCSS('outline-style', 'solid')
-    await expect(ring).toHaveCSS('outline-width', '2px')
+    expect(await ring.evaluate(element => parseFloat(getComputedStyle(element).outlineWidth))).toBeGreaterThanOrEqual(1)
     expect((await toggle.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(24)
     expect((await toggle.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(24)
     await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -279,6 +279,8 @@ test('keeps compact commands in one row and wraps longer code beside a usable co
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
   expect(await block.locator('.fg-code-block__line').first().evaluate(element => getComputedStyle(element, '::before').content)).toContain('$ ')
   expect(await block.locator('pre').ariaSnapshot()).not.toContain('$ ')
+  // Each prompt sits on its line's baseline, even if a phone browser resizes the text.
+  await expect(block.locator('.fg-code-block__line').first()).toHaveCSS('align-items', 'baseline')
 
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 })

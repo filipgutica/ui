@@ -41,6 +41,39 @@ describe('VS Code theme parsing and normalization', () => {
       }),
     })).toThrow(ThemeValidationError)
   })
+  it('keeps selected nav and tab text readable on the current-row fill', () => {
+    // Each accent clears the 3:1 indicator check but not 4.5:1 text on the lifted fill.
+    const cases = [
+      { type: 'light', page: '#FFFFFF', text: '#111111', accent: '#888888', fill: (page: string) => page },
+      { type: 'dark', page: '#000000', text: '#EEEEEE', accent: '#666666', fill: () => '#111111' },
+    ]
+    for (const { type, page, text, accent, fill } of cases) {
+      const root = document.createElement('div')
+      const theme = parseVsCodeTheme({
+        fileName: `${type}-quiet-accent.json`,
+        source: JSON.stringify({
+          type,
+          colors: { 'editor.background': page, 'editor.foreground': text, focusBorder: accent },
+        }),
+      })
+      applySemanticTheme({ root, theme })
+      expect(contrast(root.style.getPropertyValue('--color-nav-current-text'), fill(page))).toBeGreaterThanOrEqual(4.5)
+      applySemanticTheme({ root, theme: null })
+      expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('')
+    }
+
+    // A translucent accent renders over the fill, not the page: #00000099 on #B4B4B4 is #484848, 4.41:1.
+    const root = document.createElement('div')
+    applySemanticTheme({ root, theme: parseVsCodeTheme({
+      fileName: 'translucent-accent.json',
+      source: JSON.stringify({
+        type: 'light',
+        colors: { 'editor.background': '#808080', 'editor.foreground': '#000000', 'sideBar.background': '#B4B4B4', focusBorder: '#00000099' },
+      }),
+    }) })
+    expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
+  })
+
   it('applies and clears every normalized color through the public CSS-variable contract', () => {
     const root = document.createElement('div')
     const theme = parseVsCodeTheme({
@@ -243,6 +276,35 @@ describe('VS Code theme parsing and normalization', () => {
 
     expect(theme.tokens.buttonBackground).toBe('#89B4FA')
     expect(theme.tokens.buttonForeground).toBe('#11111B')
+  })
+
+  it('keeps a focused field on its resting fill when its text would not read on the lift', () => {
+    const fieldFocusFill = (type: string, colors: Record<string, string>) => {
+      const root = document.createElement('div')
+      applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: `${type}.json`, source: JSON.stringify({ type, colors }) }) })
+      return root.style.getPropertyValue('--color-field-focus-bg')
+    }
+
+    // Grey text on a black well, under a lighter raised surface.
+    expect(fieldFocusFill('dark', {
+      'editor.background': '#000000',
+      'editor.foreground': '#EEEEEE',
+      'panel.background': '#343434',
+      'input.background': '#000000',
+      'input.foreground': '#777777',
+      'input.placeholderForeground': '#777777',
+    })).toBe('var(--color-well)')
+    // White text on a black well in a white light theme.
+    expect(fieldFocusFill('light', {
+      'editor.background': '#FFFFFF',
+      'editor.foreground': '#000000',
+      'panel.background': '#FFFFFF',
+      'input.background': '#000000',
+      'input.foreground': '#FFFFFF',
+      'input.placeholderForeground': '#FFFFFF',
+    })).toBe('var(--color-well)')
+    // Readable on the lift: the field lifts.
+    expect(fieldFocusFill('dark', { 'editor.background': '#101010', 'editor.foreground': '#F0F0F0' })).toBe('')
   })
 
   it('keeps muted text and links readable across page and surface backgrounds', () => {
