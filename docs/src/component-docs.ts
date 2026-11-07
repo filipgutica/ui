@@ -167,7 +167,7 @@ export const componentDocs: ComponentDoc[] = [
     ],
     example: {
       title: 'Supporting action',
-      description: 'secondary and sm give Inspect evidence a compact appearance with a faint fill.',
+      description: 'secondary and sm give Inspect evidence a compact raised appearance that sinks while pressed.',
       code: `<UiButton variant="secondary" size="sm">\n  Inspect evidence\n</UiButton>`,
     },
   },
