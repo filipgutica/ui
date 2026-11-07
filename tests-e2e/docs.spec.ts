@@ -368,7 +368,7 @@ test('previews themed components on the introduction and keeps setup compact and
 
   for (const choice of ['Light', 'Dark']) {
     await page.getByRole('button', { name: `${choice} theme`, exact: true }).click()
-    await expect(primary).toHaveCSS('background-color', choice === 'Dark' ? 'rgb(230, 233, 235)' : 'rgb(16, 19, 21)')
+    await expect(primary).toHaveCSS('background-color', choice === 'Dark' ? 'rgb(165, 161, 255)' : 'rgb(75, 69, 209)')
     await expect(preview.getByRole('searchbox')).toHaveValue('Catppuccin')
     for (const width of [320, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 900 })
@@ -732,7 +732,7 @@ test('keeps status labels readable on their colored fills in both appearances', 
       const statuses = page.locator(`.playground-stage .fg-${slug}`)
       await expect(statuses.first()).toBeVisible()
       if (slug === 'button') {
-        await expect(statuses.first()).toHaveCSS('background-color', colorScheme === 'dark' ? 'rgb(230, 233, 235)' : 'rgb(16, 19, 21)')
+        await expect(statuses.first()).toHaveCSS('background-color', colorScheme === 'dark' ? 'rgb(165, 161, 255)' : 'rgb(75, 69, 209)')
       }
       const variants = slug === 'button' ? ['danger'] : ['info', 'success', 'warning', 'danger', 'error']
       for (const variant of variants) {

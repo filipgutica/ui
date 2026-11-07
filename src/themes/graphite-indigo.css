@@ -15,12 +15,13 @@
   --color-muted: #50575e;
   --color-link: #0b5f7c;
   --color-accent: var(--color-project);
+  --color-accent-text: var(--color-bg);
   --color-focus: var(--color-link);
   --color-border: #6d747b;
   --color-border-subtle: #d3d8dd;
-  --color-button-bg: var(--color-text);
-  --color-button-text: var(--color-bg);
-  --color-button-hover: var(--color-muted);
+  --color-button-bg: var(--color-accent);
+  --color-button-text: var(--color-accent-text);
+  --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
   --color-input-bg: var(--color-surface-raised);
   --color-input-text: var(--color-text);
   --color-input-border: var(--color-border);
@@ -57,8 +58,9 @@
   --color-terminal-border: #2a3036;
   --color-terminal-caption: #13171a;
   --color-terminal-caption-text: #c9d0d6;
-  --color-accent-text: var(--color-bg);
   --color-accent-hover: var(--color-text);
+  --color-command-bg: color-mix(in srgb, var(--color-project) 25%, #101010);
+  --color-command-border: transparent;
   --text-3xl: 44px;
   --text-reading: 16px;
   --text-display: 56px;
@@ -82,12 +84,13 @@
   --color-muted: #9aa3ab;
   --color-link: #67c1df;
   --color-accent: var(--color-project);
+  --color-accent-text: var(--color-bg);
   --color-focus: var(--color-link);
   --color-border: #78818a;
   --color-border-subtle: #262d33;
-  --color-button-bg: var(--color-text);
-  --color-button-text: var(--color-bg);
-  --color-button-hover: var(--color-muted);
+  --color-button-bg: var(--color-accent);
+  --color-button-text: var(--color-accent-text);
+  --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
   --color-input-bg: var(--color-surface-raised);
   --color-input-text: var(--color-text);
   --color-input-border: var(--color-border);
@@ -124,6 +127,7 @@
   --color-terminal-border: #2a3036;
   --color-terminal-caption: #13171a;
   --color-terminal-caption-text: #c9d0d6;
-  --color-accent-text: var(--color-bg);
   --color-accent-hover: var(--color-text);
+  --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
+  --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
 }
