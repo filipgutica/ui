@@ -3,6 +3,7 @@ import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { describe, expect, it } from 'vitest'
 
+import { UiSegmentedControl } from '../src/index.js'
 import { UiCapture, UiCommandList, UiSiteHeader, UiSiteNav } from '../src/site/index.js'
 
 describe('site header on a server', () => {
@@ -16,6 +17,22 @@ describe('site header on a server', () => {
     expect(html).toContain('aria-label="Projects"')
     expect(html).toContain('GitHub')
     expect(html).not.toContain('aria-label="Color theme"')
+  })
+})
+
+describe('segmented control on a server', () => {
+  it('marks the pressed option before any script runs', async () => {
+    const html = await renderToString(createSSRApp({
+      render: () => h(UiSegmentedControl, {
+        label: 'View',
+        modelValue: 'board',
+        items: [{ value: 'list', label: 'List' }, { value: 'board', label: 'Board' }],
+      }),
+    }))
+
+    // The CSS thumb follows aria-pressed, so this markup alone shows the choice.
+    expect(html.match(/aria-pressed="\w+"/g)).toEqual(['aria-pressed="false"', 'aria-pressed="true"'])
+    expect(html).not.toContain('data-slide')
   })
 })
 

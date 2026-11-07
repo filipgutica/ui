@@ -759,13 +759,14 @@
     border-radius: var(--radius-control);
     background: var(--color-well);
     box-shadow: var(--shadow-sink);
+    /* Thumbs stack on the track, under every label, so a sliding thumb never covers its neighbour's. */
+    isolation: isolate;
   }
   :root.dark .fg-segmented { --fg-segmented-thumb: color-mix(in srgb, var(--color-surface-raised) 88%, white); }
   .fg-segmented[data-size="sm"] { --fg-segmented-item: var(--control-sm); font-size: var(--text-sm); }
   .fg-segmented[data-size="lg"] { --fg-segmented-item: var(--control-lg); font-size: var(--text-lg); }
   .fg-segmented__item {
     position: relative;
-    isolation: isolate;
     display: inline-flex;
     gap: var(--space-2);
     min-height: var(--fg-segmented-item);
@@ -781,7 +782,7 @@
   }
   .fg-segmented[data-icon-only="true"] .fg-segmented__item { width: var(--fg-segmented-item); padding: 0; }
   /* The thumb is inset inside each full-size button, so it floats on the track and the hit target keeps its size. */
-  .fg-segmented__item::before { content: ""; position: absolute; inset: 2px; z-index: -1; border-radius: var(--radius-control); }
+  .fg-segmented__item::before { content: ""; position: absolute; inset: 2px; z-index: -2; border-radius: var(--radius-control); pointer-events: none; }
   .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }
   .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"])::before { background: color-mix(in srgb, var(--fg-segmented-thumb) 45%, transparent); }
   /* The accent label or icon marks the pressed choice at 3:1 against its thumb. */
@@ -789,8 +790,19 @@
   /* Drawn inside the button, the ring hugs the thumb instead of reaching the next choice. */
   .fg-segmented .fg-segmented__item:focus-visible { outline-offset: -2px; }
   .fg-segmented__item[aria-pressed="true"]::before {
+    z-index: -1;
     background: var(--fg-segmented-thumb);
     box-shadow: var(--shadow-raise);
+  }
+  /* Motion answers only the reader: hover, and a change of choice, which the script marks
+   * with the thumb's start over the previous option. A theme change recolours at once. */
+  @media (prefers-reduced-motion: no-preference) {
+    .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { transition: color var(--duration-fast) var(--ease-out); }
+    .fg-segmented[data-slide] .fg-segmented__item { transition: color var(--duration) var(--ease-out); }
+    .fg-segmented[data-slide] .fg-segmented__item[aria-pressed="true"]::before { animation: fg-segmented-slide var(--duration) var(--ease-out); }
+  }
+  @keyframes fg-segmented-slide {
+    from { left: var(--fg-segmented-slide-left); right: var(--fg-segmented-slide-right); }
   }
 
   .fg-switch { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
