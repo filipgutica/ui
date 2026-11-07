@@ -13,8 +13,10 @@
     max-width: 100%;
     overflow-x: auto;
     scroll-padding-inline: var(--space-6);
-    margin-block-end: var(--space-4);
-    border-bottom: 1px solid var(--color-border-subtle);
+    /* The strip scrolls, so it clips on every side: the padding keeps the selected tab's lifted
+     * shadow whole and the frame edge clear of its fill. */
+    padding: var(--space-1);
+    margin-block-end: var(--space-3);
   }
 
   /* A strip that scrolls fades each clipped edge; the scroll padding keeps a revealed tab clear
@@ -30,7 +32,7 @@
     min-height: var(--control-md);
     padding: var(--space-2) var(--space-3);
     border: 0;
-    border-bottom: 2px solid transparent;
+    border-radius: var(--radius-field);
     color: var(--color-muted);
     background: transparent;
     font: inherit;
@@ -39,10 +41,11 @@
     cursor: pointer;
   }
 
-  .fg-tabs__tab:hover { color: var(--color-text); }
+  .fg-tabs__tab:hover { background: var(--color-row-hover); color: var(--color-text); }
   .fg-tabs__tab[aria-selected="true"] {
-    border-bottom-color: var(--color-accent);
-    color: var(--color-text);
+    background: var(--color-nav-current);
+    box-shadow: var(--shadow-nav-current);
+    color: var(--color-nav-current-text, var(--color-accent));
   }
 
   .fg-tabs__panel { min-width: 0; }
@@ -61,6 +64,14 @@
   .fg-tabs__panel:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
+  }
+
+  /* Forced colors discard the lifted shadow; compensate the border with padding. */
+  @media (forced-colors: active) {
+    .fg-tabs__tab[aria-selected="true"] {
+      border: 2px solid Highlight;
+      padding: calc(var(--space-2) - 2px) calc(var(--space-3) - 2px);
+    }
   }
 
   @media (max-width: 640px) {

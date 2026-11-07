@@ -218,7 +218,7 @@
   .fg-site-nav a[aria-current="page"] {
     background: var(--color-nav-current);
     box-shadow: var(--shadow-nav-current);
-    color: var(--color-accent);
+    color: var(--color-nav-current-text, var(--color-accent));
     font-weight: var(--weight-medium);
   }
   .fg-site-nav a[aria-current="location"] { position: relative; color: var(--color-text); font-weight: var(--weight-medium); }
@@ -279,6 +279,11 @@
    * default. A site can set --site-capture-bg and --t* values on :root, which also
    * reach the full-size viewer. Nothing clips the panel, so focus rings inside it stay whole. */
   .fg-capture {
+    /* The header stays terminal-dark in either page appearance. */
+    --color-nav-current: color-mix(in srgb, var(--color-terminal-text) 7%, transparent);
+    --shadow-nav-current: 0 1px 2px rgb(0 0 0 / 25%);
+    --color-row-hover: color-mix(in srgb, var(--color-terminal-text) 4%, transparent);
+    --color-nav-current-text: var(--color-project-dark);
     --color-text: var(--color-terminal-text);
     --color-muted: var(--color-terminal-caption-text);
     --color-accent: var(--color-project-dark);
@@ -294,11 +299,11 @@
   .fg-capture .fg-tabs__list { width: 100%; margin-block-end: 0; padding-inline: var(--space-2); }
   .fg-capture .fg-tabs__tab { min-height: var(--control-lg); font-family: var(--font-mono); font-size: var(--text-sm); }
   /* The Full size control sits at the end of the tab row. The list's margin, not its
-   * padding, reserves the control's width, so the scroll area and divider end before it. */
+   * padding, reserves the control's width, so the scroll area ends before it. */
   .fg-capture[data-enhanced="true"] .fg-tabs__list { width: auto; margin-inline-end: calc(var(--space-2) + 7rem); }
   .fg-capture__full {
     position: absolute;
-    top: 0;
+    top: var(--space-1);
     right: var(--space-2);
     display: inline-flex;
     align-items: center;
