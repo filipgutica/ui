@@ -207,7 +207,7 @@
     min-height: var(--row);
     align-items: center;
     padding-inline: var(--space-3);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-field);
     color: var(--color-muted);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
@@ -216,8 +216,8 @@
   }
   .fg-site-nav a:hover { background: var(--color-row-hover); color: var(--color-text); }
   .fg-site-nav a[aria-current="page"] {
-    background: var(--color-control-thumb);
-    box-shadow: var(--shadow-raise);
+    background: var(--color-nav-current);
+    box-shadow: var(--shadow-nav-current);
     color: var(--color-accent);
     font-weight: var(--weight-medium);
   }
