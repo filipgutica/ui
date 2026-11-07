@@ -107,6 +107,7 @@
   /* Shape */
   --radius-sm: 6px; /* ui: --radius-inline */
   --radius-md: 999px; /* ui: --radius-control */
+  --radius-field: 10px; /* ui: --radius-field */
   --radius-lg: 16px; /* ui: --radius-panel */
   --radius-pill: 999px; /* ui: --radius-pill */
 

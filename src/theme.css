@@ -84,6 +84,7 @@
   --color-info-surface: #d9e3f2;
   --radius-inline: 6px;
   --radius-control: 999px;
+  --radius-field: 10px;
   --radius-panel: 16px;
   --radius-field: 10px;
   --radius-pill: 999px;
@@ -192,5 +193,6 @@
   --color-ui-info: var(--color-info);
   --radius-ui-inline: var(--radius-inline);
   --radius-ui-control: var(--radius-control);
+  --radius-ui-field: var(--radius-field);
   --radius-ui-panel: var(--radius-panel);
 }

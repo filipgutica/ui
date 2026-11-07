@@ -183,6 +183,7 @@
       "tokens": {
         "radius-sm": "6px",
         "radius-md": "999px",
+        "radius-field": "10px",
         "radius-lg": "16px",
         "radius-pill": "999px"
       }
@@ -266,6 +267,7 @@
       "font-sans": "--font-ui",
       "radius-sm": "--radius-inline",
       "radius-md": "--radius-control",
+      "radius-field": "--radius-field",
       "radius-lg": "--radius-panel"
     },
     "extras": [
