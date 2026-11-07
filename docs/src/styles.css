@@ -360,11 +360,17 @@ pre,
 .navigation-trigger {
   display: none; align-items: center; justify-content: center;
   width: var(--control-lg); height: var(--control-lg); flex: none;
-  border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-raised);
+  border: 1px solid transparent; border-radius: var(--radius-control); background: transparent;
   color: var(--color-text); cursor: pointer;
 }
-.docs-mobilebar .navigation-trigger { display: inline-flex; width: auto; gap: var(--space-2); padding-inline: var(--space-3); }
+/* The bar's trigger matches a secondary button; the drawer's close button stays flat. */
+.docs-mobilebar .navigation-trigger {
+  display: inline-flex; width: auto; gap: var(--space-2); padding-inline: var(--space-3);
+  background: var(--color-control-thumb); box-shadow: var(--shadow-raise); font-weight: var(--weight-medium);
+}
 .navigation-trigger:hover { background: var(--color-row-hover); }
+.docs-mobilebar .navigation-trigger:hover { background: color-mix(in srgb, var(--color-text) 8%, var(--color-control-thumb)); }
+.docs-mobilebar .navigation-trigger:active { background: var(--color-well); box-shadow: var(--shadow-sink); }
 .navigation-trigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .navigation-overlay { position: fixed; inset: 0; z-index: 40; background: var(--color-overlay); }
 .navigation-drawer {

@@ -651,8 +651,6 @@
     .fg-site-rail__toggle {
       display: flex;
       gap: var(--space-3);
-      border: 1px solid var(--color-border);
-      background: var(--color-surface-raised);
       width: max-content;
       max-width: 100%;
       min-height: var(--control-lg);
@@ -661,13 +659,27 @@
       align-items: center;
       padding-inline: var(--space-3);
       border-radius: var(--radius-control);
-      color: var(--color-muted);
       font-weight: var(--weight-medium);
       list-style: none;
       cursor: pointer;
     }
-    .fg-site-rail__summary::after,
-    .fg-site-rail__toggle::after {
+    /* Without JavaScript the list opens in place, so the summary matches a secondary button
+     * and keeps its chevron. The drawer toggle is a secondary UiButton with a menu glyph. */
+    .fg-site-rail__summary {
+      border: 1px solid transparent;
+      background: var(--color-control-thumb);
+      box-shadow: var(--shadow-raise);
+      color: var(--color-text);
+    }
+    .fg-site-rail__toggle::before {
+      content: '';
+      flex: none;
+      width: 14px;
+      height: 10px;
+      border-block: 1.5px solid currentColor;
+      background: linear-gradient(currentColor, currentColor) center / 100% 1.5px no-repeat;
+    }
+    .fg-site-rail__summary::after {
       content: '';
       width: 6px;
       height: 6px;
@@ -676,7 +688,7 @@
       transform: rotate(45deg);
     }
     .fg-site-rail__summary::-webkit-details-marker { display: none; }
-    .fg-site-rail__summary:hover { color: var(--color-text); background: var(--color-row-hover); }
+    .fg-site-rail__summary:hover { background: color-mix(in srgb, var(--color-text) 8%, var(--color-control-thumb)); }
     .fg-site-rail__summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
     .fg-site-rail__menu > .fg-site-rail__content { padding-block: var(--space-4); }
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
