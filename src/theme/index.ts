@@ -796,19 +796,31 @@ export const applySemanticTheme = ({
     const toggleHost = compositeColor(surfaceRaised, thumb)
     root.style.setProperty('--color-toggle-switch-off-track', visibleIndicator({ color: raisedCue, against: toggleHost, fallback: foreground }))
     root.style.setProperty('--color-switch-off-thumb', thumb)
+    const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
     // The current nav row and selected tab put accent text on --color-nav-current: the raised surface
     // in light, text at 7% in dark. The accent is validated only at 3:1, so keep it only where it
     // reads at 4.5:1 over that fill on the page and on a surface; otherwise use the body text colour.
-    const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
     const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(host =>
       dark ? compositeColor(`${foreground}12`, host) : compositeColor(surfaceRaised, host))
     const accentReads = currentFills.every(fill => contrastRatio(theme.tokens.accent, fill, fill) >= 4.5)
     root.style.setProperty('--color-nav-current-text', accentReads ? theme.tokens.accent : foreground)
+    // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white
+    // in dark mode. If the theme's field text would not read there, the field keeps its resting fill.
+    const { inputForeground, inputPlaceholder, surface } = theme.tokens
+    const lifts = [pageBackground, compositeColor(surface, pageBackground)].map(host => {
+      const raised = compositeColor(surfaceRaised, host)
+      return dark ? compositeColor('#FFFFFF1F', raised) : raised
+    })
+    const liftReads = lifts.every(fill =>
+      [inputForeground, inputPlaceholder].every(text => contrastRatio(text, fill, fill) >= 4.5))
+    if (liftReads) root.style.removeProperty('--color-field-focus-bg')
+    else root.style.setProperty('--color-field-focus-bg', 'var(--color-well)')
   } else {
     root.style.removeProperty('--color-switch-off-track')
     root.style.removeProperty('--color-toggle-switch-off-track')
     root.style.removeProperty('--color-switch-off-thumb')
     root.style.removeProperty('--color-nav-current-text')
+    root.style.removeProperty('--color-field-focus-bg')
   }
 
   for (const role of syntaxTokenNames) {
