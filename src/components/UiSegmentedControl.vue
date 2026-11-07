@@ -6,7 +6,6 @@
     :aria-label="label"
     :data-size="size"
     :data-icon-only="iconOnly ? 'true' : undefined"
-    @animationend="$event.animationName === 'fg-segmented-slide' && clearSlide()"
   >
     <button
       v-for="item in items"
@@ -33,7 +32,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends string">
-import { onMounted, useTemplateRef, watch } from 'vue'
+import { nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
 import type { UiControlSize } from '../control.js'
 
@@ -79,6 +78,9 @@ const root = useTemplateRef<HTMLElement>('root')
 let canSlide = false
 onMounted(() => requestAnimationFrame(() => { canSlide = true }))
 
+// Each choice's slide; a newer choice makes an older slide's ending irrelevant.
+let currentSlide = 0
+
 const clearSlide = (): void => {
   if (!root.value) return
   delete root.value.dataset.slide
@@ -89,7 +91,7 @@ const clearSlide = (): void => {
 /*
  * Each pressed button draws its own thumb in CSS, which also covers server rendering
  * and resizes. A change of choice only starts the new thumb where the old one is, and
- * a CSS animation brings it home while the labels crossfade. The pre flush reads the
+ * CSS animations glide each edge home while the labels crossfade. The pre flush reads the
  * old thumb before the DOM changes, so no frame shows the thumb already moved.
  */
 watch(() => modelValue, (next, previous) => {
@@ -111,6 +113,18 @@ watch(() => modelValue, (next, previous) => {
   clearSlide()
   element.style.setProperty('--fg-segmented-slide-left', `${fromLeft - toRect.left}px`)
   element.style.setProperty('--fg-segmented-slide-right', `${toRect.right - fromRight}px`)
-  element.dataset.slide = ''
+  const direction = toRect.left + toRect.right > fromLeft + fromRight ? 'right' : 'left'
+  const trailingEdge = direction === 'right' ? 'fg-segmented-left-edge' : 'fg-segmented-right-edge'
+  element.dataset.slide = direction
+  const slide = ++currentSlide
+  const endSlide = () => { if (slide === currentSlide) clearSlide() }
+  // The slide is over when its trailing edge settles: finished, or cancelled by reduced
+  // motion or hiding the control, which can happen before the animation ever starts.
+  void nextTick(() => {
+    const trailing = element.getAnimations({ subtree: true })
+      .find(animation => (animation as CSSAnimation).animationName === trailingEdge)
+    if (trailing) trailing.finished.then(endSlide, endSlide)
+    else endSlide()
+  })
 }, { flush: 'pre' })
 </script>

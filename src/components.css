@@ -767,6 +767,11 @@
   .fg-segmented {
     --fg-segmented-item: var(--control-md);
     --fg-segmented-thumb: var(--color-surface-raised);
+    /* The thumb glides across the whole control, so it moves longer and softer than a menu
+     * (--duration). Its leading edge settles first and the trailing edge follows, so the
+     * thumb stretches a little on the way. Both were fitted to a reference tab bar. */
+    --fg-segmented-glide-lead: 260ms;
+    --fg-segmented-glide-trail: 300ms;
     display: inline-flex;
     flex: none;
     /* The fill alone marks the track. The transparent border keeps its size, and forced colors draw it. */
@@ -813,12 +818,16 @@
    * with the thumb's start over the previous option. A theme change recolours at once. */
   @media (prefers-reduced-motion: no-preference) {
     .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { transition: color var(--duration-fast) var(--ease-out); }
-    .fg-segmented[data-slide] .fg-segmented__item { transition: color var(--duration) var(--ease-out); }
-    .fg-segmented[data-slide] .fg-segmented__item[aria-pressed="true"]::before { animation: fg-segmented-slide var(--duration) var(--ease-out); }
+    .fg-segmented[data-slide] .fg-segmented__item { transition: color var(--fg-segmented-glide-lead) ease; }
+    .fg-segmented[data-slide="right"] .fg-segmented__item[aria-pressed="true"]::before {
+      animation: fg-segmented-left-edge var(--fg-segmented-glide-trail) ease, fg-segmented-right-edge var(--fg-segmented-glide-lead) ease;
+    }
+    .fg-segmented[data-slide="left"] .fg-segmented__item[aria-pressed="true"]::before {
+      animation: fg-segmented-left-edge var(--fg-segmented-glide-lead) ease, fg-segmented-right-edge var(--fg-segmented-glide-trail) ease;
+    }
   }
-  @keyframes fg-segmented-slide {
-    from { left: var(--fg-segmented-slide-left); right: var(--fg-segmented-slide-right); }
-  }
+  @keyframes fg-segmented-left-edge { from { left: var(--fg-segmented-slide-left); } }
+  @keyframes fg-segmented-right-edge { from { right: var(--fg-segmented-slide-right); } }
 
   .fg-switch { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
   .fg-switch__control {
