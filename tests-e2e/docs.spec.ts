@@ -201,6 +201,7 @@ test('contains drawer focus, dismisses it, and restores the trigger in both moti
     const drawer = page.getByRole('dialog', { name: 'Page navigation', exact: true })
     await expect(drawer).toBeVisible()
     await expect(drawer).toHaveCSS('left', '0px')
+    if (reducedMotion === 'reduce') await expect(drawer).toHaveCSS('animation-name', 'none')
     const close = drawer.getByRole('button', { name: 'Close drawer' })
     await close.focus()
     await close.press('Shift+Tab')
@@ -677,7 +678,8 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
   await trigger.click()
   const drawer = page.getByRole('dialog', { name: 'Browse components', exact: true })
   await expect(drawer).toBeVisible()
-  expect((await drawer.boundingBox())?.x).toBe(0)
+  // The drawer slides in, so wait for it to settle at the edge.
+  await expect.poll(async () => (await drawer.boundingBox())?.x).toBe(0)
   await expect(drawer.getByRole('link', { name: 'Dialog', exact: true })).toHaveAttribute('aria-current', 'page')
   await page.keyboard.press('Escape')
   await expect(drawer).not.toBeVisible()

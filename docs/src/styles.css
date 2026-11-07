@@ -338,18 +338,7 @@ pre,
 /* Below 901px the component list moves into a drawer opened from this bar. */
 .docs-mobilebar { display: none; padding: var(--space-2) var(--space-4) 0; }
 .navigation-trigger { min-height: var(--control-lg); }
-.navigation-close { width: var(--control-lg); min-height: var(--control-lg); flex: none; padding: 0; }
-.navigation-overlay { position: fixed; inset: 0; z-index: 40; background: var(--color-overlay); }
-.navigation-drawer {
-  position: fixed; z-index: 41; inset: 0 auto 0 0;
-  width: min(20rem, calc(100vw - var(--space-12))); height: 100dvh;
-  overflow-y: auto; overscroll-behavior: contain;
-  padding: var(--space-4); background: var(--color-surface-raised);
-  color: var(--color-text); box-shadow: var(--shadow-dialog);
-}
-.navigation-drawer-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-6); }
-.navigation-drawer-heading h2 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-semibold); }
-.navigation-drawer .docs-navigation a { min-height: var(--control-lg); }
+.fg-drawer__body .docs-navigation a { min-height: var(--control-lg); }
 
 @media (max-width: 1000px) {
   .example-workbench { grid-template-columns: 1fr; }
