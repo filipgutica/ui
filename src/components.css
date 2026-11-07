@@ -402,6 +402,19 @@
     border-color: var(--color-error);
   }
 
+  /* The native search clear button, quieted to a thin muted cross. */
+  .fg-input[type="search"]::-webkit-search-cancel-button {
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-inline-start: var(--space-2);
+    background: var(--color-muted);
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 2.5l7 7m0-7l-7 7' stroke='black' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .fg-input[type="search"]::-webkit-search-cancel-button:hover { background: var(--color-text); }
+
   .fg-field {
     display: grid;
     gap: 0.4rem;
@@ -1081,6 +1094,17 @@
   .fg-switch__control:focus-visible .fg-switch__track {
     box-shadow: var(--shadow-sink), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
   }
+  /* Fields focus inside their own edge: the border turns accent (3:1 against the well) with a
+   * soft halo and no offset ring. The transparent outline still shows in forced colors. */
+  .fg-input:focus-visible,
+  .fg-select:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 0;
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-sink), 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+  .fg-input[aria-invalid="true"]:focus-visible,
+  .fg-select[aria-invalid="true"]:focus-visible { border-color: var(--color-error); }
   .fg-dialog__content:focus-visible {
     box-shadow: var(--shadow-dialog), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
   }
