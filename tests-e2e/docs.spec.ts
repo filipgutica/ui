@@ -261,6 +261,26 @@ test('rings quiet actions in the accent, like every control that acts', async ({
   await expect(close).toHaveCSS('font-size', '20px')
 })
 
+test('leaves a disabled quiet action without hover or press fills', async ({ page }) => {
+  await page.goto('/#/sandbox/code-block')
+  const copy = page.locator('.playground-stage .fg-code-block').getByRole('button', { name: 'Copy code' })
+  // On the dark command plate, an enabled Copy keeps the plate's text colour on hover.
+  await page.getByLabel('Variant', { exact: true }).selectOption('compact')
+  await page.getByLabel('Language', { exact: true }).selectOption('bash')
+  const block = page.locator('.playground-stage .fg-code-block')
+  await expect(block).toHaveAttribute('data-command', 'true')
+  const plateText = await block.evaluate(element => getComputedStyle(element).color)
+  await copy.hover()
+  await expect(copy).toHaveCSS('color', plateText)
+  await page.mouse.move(0, 0)
+  // Copy is disabled while its clipboard write is pending; hold that state to inspect it.
+  await copy.evaluate(element => { (element as HTMLButtonElement).disabled = true })
+  await copy.hover({ force: true })
+  await expect(copy).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(copy).toHaveCSS('cursor', 'not-allowed')
+  await expect(copy).toHaveCSS('opacity', '0.58')
+})
+
 test('owns compact component typography independently of host styles', async ({ page }) => {
   for (const slug of ['button', 'card', 'alert', 'radio-card']) {
     await page.goto(`/#/sandbox/${slug}`)
