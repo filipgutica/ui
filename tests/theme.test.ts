@@ -61,6 +61,17 @@ describe('VS Code theme parsing and normalization', () => {
       applySemanticTheme({ root, theme: null })
       expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('')
     }
+
+    // A translucent accent renders over the fill, not the page: #00000099 on #B4B4B4 is #484848, 4.41:1.
+    const root = document.createElement('div')
+    applySemanticTheme({ root, theme: parseVsCodeTheme({
+      fileName: 'translucent-accent.json',
+      source: JSON.stringify({
+        type: 'light',
+        colors: { 'editor.background': '#808080', 'editor.foreground': '#000000', 'sideBar.background': '#B4B4B4', focusBorder: '#00000099' },
+      }),
+    }) })
+    expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
   })
 
   it('applies and clears every normalized color through the public CSS-variable contract', () => {

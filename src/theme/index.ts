@@ -797,16 +797,13 @@ export const applySemanticTheme = ({
     root.style.setProperty('--color-toggle-switch-off-track', visibleIndicator({ color: raisedCue, against: toggleHost, fallback: foreground }))
     root.style.setProperty('--color-switch-off-thumb', thumb)
     // The current nav row and selected tab put accent text on --color-nav-current: the raised surface
-    // in light, text at 7% in dark. The accent is validated only at 3:1, so check that fill at 4.5:1.
+    // in light, text at 7% in dark. The accent is validated only at 3:1, so keep it only where it
+    // reads at 4.5:1 over that fill on the page and on a surface; otherwise use the body text colour.
     const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
-    const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(underlay =>
-      dark ? compositeColor(`${foreground}12`, underlay) : compositeColor(surfaceRaised, underlay))
-    root.style.setProperty('--color-nav-current-text', readableAcrossBackgrounds({
-      color: theme.tokens.accent,
-      backgrounds: currentFills,
-      underlay: pageBackground,
-      fallbacks: [foreground],
-    }))
+    const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(host =>
+      dark ? compositeColor(`${foreground}12`, host) : compositeColor(surfaceRaised, host))
+    const accentReads = currentFills.every(fill => contrastRatio(theme.tokens.accent, fill, fill) >= 4.5)
+    root.style.setProperty('--color-nav-current-text', accentReads ? theme.tokens.accent : foreground)
   } else {
     root.style.removeProperty('--color-switch-off-track')
     root.style.removeProperty('--color-toggle-switch-off-track')
