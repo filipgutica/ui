@@ -78,3 +78,36 @@ test('lifts a focused field out of its well instead of drawing a ring', async ({
   await input.focus()
   await expect(input).toHaveCSS('border-top-color', error)
 })
+
+test('marks a pressed toggle card with its switch and a faint hairline, on square corners', async ({ page }) => {
+  await page.goto('/#/components/toggle-button')
+  const card = page.locator('.fg-toggle-button').first()
+  if ((await card.getAttribute('aria-pressed')) !== 'true') await card.click()
+  await page.locator('h1').click()
+  await expect(card).toHaveCSS('border-top-left-radius', '10px')
+  const { edge, accent } = await card.evaluate(element => ({
+    edge: getComputedStyle(element).borderTopColor,
+    accent: getComputedStyle(element).getPropertyValue('--color-accent').trim(),
+  }))
+  // A translucent accent edge, not the solid accent the switch track uses.
+  expect(edge).not.toBe(await card.locator('.fg-toggle-button__switch').evaluate(element => getComputedStyle(element).backgroundColor))
+  expect(edge).toMatch(/\/ 0\.35\)|, 0\.35\)/)
+  expect(accent).not.toBe('')
+  // Selected cards and rows take a faint accent tint, so they read on near-white panels.
+  const fills = await page.evaluate(() => {
+    const paint = (element: Element) => getComputedStyle(element).backgroundColor
+    const cards = [...document.querySelectorAll('.fg-toggle-button')]
+    const probe = document.createElement('div')
+    probe.style.background = 'var(--color-surface-raised)'
+    document.body.append(probe)
+    const raised = paint(probe)
+    probe.remove()
+    return {
+      pressed: paint(cards.find(card => card.getAttribute('aria-pressed') === 'true')!),
+      current: paint(document.querySelector('[aria-current="page"]')!),
+      raised,
+    }
+  })
+  expect(fills.pressed).not.toBe(fills.raised)
+  expect(fills.current).not.toBe(fills.raised)
+})

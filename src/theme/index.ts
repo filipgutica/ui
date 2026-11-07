@@ -300,6 +300,18 @@ const compositeChannels = (color: string, underlay: string): [number, number, nu
 const compositeColor = (color: string, underlay: string): string =>
   '#' + compositeChannels(color, underlay).map(channel => Math.round(channel).toString(16).padStart(2, '0')).join('')
 
+// CSS color-mix(in srgb, color weight, other) with premultiplied alpha, then composited over host.
+const mixColors = (color: string, weight: number, other: string, host: string): string => {
+  const [red, green, blue, alpha] = colorChannels(color)
+  const [otherRed, otherGreen, otherBlue, otherAlpha] = colorChannels(other)
+  const mixedAlpha = weight * alpha + (1 - weight) * otherAlpha
+  if (mixedAlpha === 0) return compositeColor(host, host)
+  const channel = (value: number, otherValue: number) =>
+    Math.round((weight * alpha * value + (1 - weight) * otherAlpha * otherValue) / mixedAlpha).toString(16).padStart(2, '0')
+  const mixed = `#${channel(red, otherRed)}${channel(green, otherGreen)}${channel(blue, otherBlue)}${Math.round(mixedAlpha * 255).toString(16).padStart(2, '0')}`
+  return compositeColor(mixed, host)
+}
+
 const contrastRatio = (foreground: string, background: string, underlay: string): number => {
   const luminance = ([red, green, blue]: [number, number, number]): number => {
     const linear = [red, green, blue].map(channel => {
@@ -797,13 +809,17 @@ export const applySemanticTheme = ({
     root.style.setProperty('--color-toggle-switch-off-track', visibleIndicator({ color: raisedCue, against: toggleHost, fallback: foreground }))
     root.style.setProperty('--color-switch-off-thumb', thumb)
     const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
-    // The current nav row and selected tab put accent text on --color-nav-current: the raised surface
-    // in light, text at 7% in dark. The accent is validated only at 3:1, so keep it only where it
-    // reads at 4.5:1 over that fill on the page and on a surface; otherwise use the body text colour.
+    // The current nav row and selected tab put accent text on --color-nav-current, which theme.css mixes
+    // as color-mix(accent 8%, raised surface) in light and color-mix(accent 14%, transparent) in dark.
+    // The accent is validated only at 3:1, so pick the first text colour that reads at 4.5:1 over that
+    // fill on the page and on a surface: the accent, then body text, then black or white.
     const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(host =>
-      dark ? compositeColor(`${foreground}12`, host) : compositeColor(surfaceRaised, host))
-    const accentReads = currentFills.every(fill => contrastRatio(theme.tokens.accent, fill, fill) >= 4.5)
-    root.style.setProperty('--color-nav-current-text', accentReads ? theme.tokens.accent : foreground)
+      dark ? mixColors(theme.tokens.accent, 0.14, '#00000000', host) : mixColors(theme.tokens.accent, 0.08, surfaceRaised, host))
+    const reads = (text: string) => currentFills.every(fill => contrastRatio(text, fill, fill) >= 4.5)
+    const minimumContrast = (text: string) => Math.min(...currentFills.map(fill => contrastRatio(text, fill, fill)))
+    const candidates = [theme.tokens.accent, foreground, '#000000', '#FFFFFF']
+    root.style.setProperty('--color-nav-current-text', candidates.find(reads)
+      ?? candidates.reduce((best, candidate) => minimumContrast(candidate) > minimumContrast(best) ? candidate : best))
     // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white
     // in dark mode. If the theme's field text would not read there, the field keeps its resting fill.
     const { inputForeground, inputPlaceholder, surface } = theme.tokens
