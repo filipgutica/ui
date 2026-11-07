@@ -167,7 +167,9 @@ watch(route, async () => {
         </h1>
         <p>The requested component or sandbox does not exist.</p>
         <a
-          class="docs-button"
+          class="fg-button"
+          data-variant="primary"
+          data-size="md"
           href="#/"
         >Return home</a>
       </article>

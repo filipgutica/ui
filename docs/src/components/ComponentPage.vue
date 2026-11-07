@@ -11,7 +11,9 @@
         <code class="component-name">{{ component.name }}</code>
       </div>
       <a
-        class="docs-button"
+        class="fg-button"
+        data-variant="primary"
+        data-size="md"
         :href="`#/sandbox/${component.slug}`"
         data-sandbox-link
       >

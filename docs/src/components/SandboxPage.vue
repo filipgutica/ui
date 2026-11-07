@@ -11,7 +11,9 @@
         <code class="component-name">{{ component.name }}</code>
       </div>
       <a
-        class="docs-button docs-button--secondary"
+        class="fg-button"
+        data-variant="secondary"
+        data-size="md"
         :href="`#/components/${component.slug}`"
       >
         View documentation

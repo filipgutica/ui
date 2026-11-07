@@ -111,3 +111,24 @@ test('marks a pressed toggle card with its switch and a faint hairline, on squar
   expect(fills.pressed).not.toBe(fills.raised)
   expect(fills.current).not.toBe(fills.raised)
 })
+
+// A local copy of the button drifts from the library's raise, hover, and press.
+test('docs actions with the button fill are library buttons', async ({ page }) => {
+  for (const route of ['/#/', '/#/components/button', '/#/sandbox/button', '/#/missing']) {
+    await page.goto('/')
+    await page.goto(route)
+    await page.locator('main h1').waitFor()
+    const strays = await page.evaluate(() => {
+      const probe = document.body.appendChild(document.createElement('span'))
+      probe.style.background = 'var(--color-button-bg)'
+      const fill = getComputedStyle(probe).backgroundColor
+      probe.remove()
+      return [...document.querySelectorAll('main a, main button')]
+        .filter(element => getComputedStyle(element).backgroundColor === fill && !element.closest('.fg-button, .playground-stage'))
+        .map(element => element.outerHTML.slice(0, 80))
+    })
+    expect(strays, route).toEqual([])
+    const action = page.locator('main a.fg-button').first()
+    if (await action.count()) expect(await action.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none')
+  }
+})
