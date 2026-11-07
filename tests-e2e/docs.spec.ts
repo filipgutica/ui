@@ -261,6 +261,17 @@ test('rings quiet actions in the accent, like every control that acts', async ({
   await expect(close).toHaveCSS('font-size', '20px')
 })
 
+test('leaves a disabled quiet action without hover or press fills', async ({ page }) => {
+  await page.goto('/#/sandbox/code-block')
+  const copy = page.locator('.playground-stage .fg-code-block').getByRole('button', { name: 'Copy code' })
+  // Copy is disabled while its clipboard write is pending; hold that state to inspect it.
+  await copy.evaluate(element => { (element as HTMLButtonElement).disabled = true })
+  await copy.hover({ force: true })
+  await expect(copy).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(copy).toHaveCSS('cursor', 'not-allowed')
+  await expect(copy).toHaveCSS('opacity', '0.58')
+})
+
 test('owns compact component typography independently of host styles', async ({ page }) => {
   for (const slug of ['button', 'card', 'alert', 'radio-card']) {
     await page.goto(`/#/sandbox/${slug}`)

@@ -157,8 +157,8 @@
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
   }
-  .fg-quiet-action:hover { color: var(--color-text); background: color-mix(in srgb, currentColor 12%, transparent); }
-  .fg-quiet-action:active { background: color-mix(in srgb, currentColor 18%, transparent); }
+  .fg-quiet-action:hover:not(:disabled) { color: var(--color-text); background: color-mix(in srgb, currentColor 12%, transparent); }
+  .fg-quiet-action:active:not(:disabled) { background: color-mix(in srgb, currentColor 18%, transparent); }
 
   .fg-button {
     --fg-button-shadow: var(--shadow-raise);
@@ -197,7 +197,8 @@
   .fg-checkbox[data-disabled="true"],
   .fg-switch[data-disabled="true"],
   .fg-toggle-button:disabled,
-  .fg-segmented__item:disabled {
+  .fg-segmented__item:disabled,
+  .fg-quiet-action:disabled {
     cursor: not-allowed;
     opacity: 0.58;
   }
