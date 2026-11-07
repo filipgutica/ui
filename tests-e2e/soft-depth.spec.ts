@@ -50,7 +50,7 @@ test('raises action buttons, sinks presses, and keeps depth with keyboard focus'
     if (variant !== 'ghost') expect(await shadow()).toContain(restingShadow)
     await page.keyboard.down('Space')
     expect(await shadow()).toContain('inset')
-    expect(await shadow()).toContain('6px')
+    expect(await shadow()).toMatch(/0px 0px 0px 6px/)
     if (variant !== 'ghost') expect(await button.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(fill)
     await page.keyboard.up('Space')
     await button.evaluate(element => { element.setAttribute('disabled', '') })
