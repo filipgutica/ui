@@ -781,6 +781,13 @@ export const applySemanticTheme = ({
     else root.style.removeProperty(variable)
   }
 
+  if (theme) {
+    const { border, pageBackground, surfaceRaised, textPrimary } = theme.tokens
+    // The normalized text fallback is readable on both hosts; keep the track opaque so its thumb sees the same color.
+    const raisedCue = visibleIndicator({ color: opaqueBackground(border, textPrimary), against: surfaceRaised, fallback: textPrimary })
+    root.style.setProperty('--color-switch-off-track', visibleIndicator({ color: raisedCue, against: pageBackground, fallback: textPrimary }))
+  } else root.style.removeProperty('--color-switch-off-track')
+
   for (const role of syntaxTokenNames) {
     const variable = `--color-syntax-${role}`
     if (!theme) {

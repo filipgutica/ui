@@ -7,6 +7,8 @@ import {
   parseVsCodeTheme,
 } from '../src/theme/index.js'
 
+import { contrast } from './contrast.js'
+
 describe('VS Code theme parsing and normalization', () => {
   it('imports syntax colors, persists a validated palette, and clears it on reset', () => {
     const theme = parseVsCodeTheme({
@@ -54,12 +56,16 @@ describe('VS Code theme parsing and normalization', () => {
     applySemanticTheme({ root, theme })
     expect(root.style.getPropertyValue('--color-bg')).toBe('#101010')
     expect(root.style.getPropertyValue('--color-text')).toBe('#F0F0F0')
+    const offTrack = root.style.getPropertyValue('--color-switch-off-track')
+    expect(contrast(offTrack, theme.tokens.pageBackground)).toBeGreaterThanOrEqual(3)
+    expect(contrast(offTrack, theme.tokens.surfaceRaised)).toBeGreaterThanOrEqual(3)
     expect(root.classList.contains('dark')).toBe(true)
     expect(root.classList.contains('high-contrast')).toBe(false)
 
     applySemanticTheme({ root, theme: null })
     expect(root.style.getPropertyValue('--color-bg')).toBe('')
     expect(root.style.getPropertyValue('--color-text')).toBe('')
+    expect(root.style.getPropertyValue('--color-switch-off-track')).toBe('')
     expect(root.classList.contains('dark')).toBe(false)
     expect(root.classList.contains('high-contrast')).toBe(false)
   })

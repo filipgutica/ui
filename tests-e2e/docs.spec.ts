@@ -94,8 +94,37 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
     { slug: 'switch', role: 'switch', name: 'Email notifications', state: 'aria-checked', selector: '.fg-switch__track' },
     { slug: 'toggle-button', role: 'button', name: 'Tests with signal Pillar 3', state: 'aria-pressed', selector: '.fg-toggle-button__switch' },
   ] as const) {
-    for (const colorScheme of ['light', 'dark'] as const) {
+    for (const { colorScheme, palette } of [
+      { colorScheme: 'light', palette: null },
+      { colorScheme: 'dark', palette: null },
+      { colorScheme: 'light', palette: { background: '#ffffff', border: '#929292' } },
+      { colorScheme: 'dark', palette: { background: '#202020', border: '#707070' } },
+    ] as const) {
       await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
+      await page.goto('/#/themes')
+      if (palette) {
+        const name = `S1 ${colorScheme}`
+        const fileChooser = page.waitForEvent('filechooser')
+        await page.getByRole('button', { name: 'Choose file', exact: true }).click()
+        await (await fileChooser).setFiles({
+          name: `${name}.json`,
+          mimeType: 'application/json',
+          buffer: Buffer.from(JSON.stringify({
+            name,
+            type: colorScheme,
+            colors: {
+              'editor.background': palette.background,
+              'editor.foreground': colorScheme === 'light' ? '#000000' : '#ffffff',
+              'sideBar.background': palette.background,
+              'panel.background': palette.background,
+              'panel.border': palette.border,
+            },
+          })),
+        })
+        await expect(page.getByRole('radio', { name, exact: true })).toBeChecked()
+      } else {
+        await page.getByRole('radio', { name: colorScheme === 'light' ? 'Light' : 'Dark', exact: true }).click()
+      }
       await page.goto(`/#/sandbox/${slug}`)
       const stage = page.locator('.playground-stage')
       const toggle = stage.getByRole(role, { name, exact: true })
@@ -119,7 +148,7 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
               surface: hex(getComputedStyle(element.closest('.playground-stage')!).backgroundColor),
             }
           })
-          expect(contrast(colors.track, colors.surface), `${slug} ${colorScheme} ${surface} checked=${checked}`).toBeGreaterThanOrEqual(3)
+          expect(contrast(colors.track, colors.surface), `${slug} ${colorScheme} imported=${!!palette} ${surface} checked=${checked}`).toBeGreaterThanOrEqual(3)
           expect(contrast(colors.thumb, colors.track)).toBeGreaterThanOrEqual(3)
           if (!checked) await expect(track).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
         }
