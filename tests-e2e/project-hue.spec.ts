@@ -47,7 +47,7 @@ test('tints command plates with the project hue while captures stay neutral', as
   }
 })
 
-test('fills primary actions with a readable project hue at rest and hover', async ({ page }) => {
+test('fills primary actions with a readable project hue at rest, hover, and press', async ({ page }) => {
   for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
     await page.goto('/#/sandbox/button')
@@ -60,5 +60,12 @@ test('fills primary actions with a readable project hue at rest and hover', asyn
     const hover = await colorsFor(button)
     expect(hover.background).not.toBe(rest.background)
     expect(contrast(hover.text, hover.background)).toBeGreaterThanOrEqual(4.5)
+    await page.mouse.move(0, 0)
+    await button.evaluate(element => element.setAttribute('aria-pressed', 'true'))
+    const pressed = await colorsFor(button)
+    expect(pressed.background).not.toBe(rest.background)
+    expect(contrast(pressed.text, pressed.background)).toBeGreaterThanOrEqual(4.5)
+    // The next pass only changes the hash, so the page keeps this attribute unless it is removed.
+    await button.evaluate(element => element.removeAttribute('aria-pressed'))
   }
 })

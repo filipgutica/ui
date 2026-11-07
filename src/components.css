@@ -168,8 +168,10 @@
     background: var(--color-button-hover);
   }
 
+  /* A pressed primary keeps the hover fill, which moves away from its text, and the sink shadow
+   * marks the press. Mixing toward the canvas would wash a hue fill out below 4.5:1. */
   .fg-button:where(:not([data-variant]), [data-variant="primary"]):is(:active, [aria-pressed="true"]):not(:disabled) {
-    background: color-mix(in srgb, var(--color-button-bg) 80%, var(--color-bg));
+    background: var(--color-button-hover);
   }
 
   .fg-button:disabled,
