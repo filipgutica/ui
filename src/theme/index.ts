@@ -540,10 +540,6 @@ const mapSemanticTokens = ({
     ? visibleIndicator({ color: borderSubtleCandidate, against: surface, fallback: border })
     : borderSubtleCandidate
   const inputBackground = firstColor(colors, ['input.background'], surface)
-  // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white in
-  // dark mode. Field text must read on the well and on both forms of that lift.
-  const raisedOpaque = compositeColor(surfaceRaised, surface)
-  const fieldBackgrounds = [inputBackground, raisedOpaque, compositeColor('#FFFFFF1F', raisedOpaque)]
   const inputBorderCandidate = firstColor(
     colors,
     appearance.startsWith('high-contrast')
@@ -579,20 +575,19 @@ const mapSemanticTokens = ({
     buttonForeground,
     buttonHoverBackground,
     inputBackground,
-    inputForeground: readableAcrossBackgrounds({
-      color: firstColor(colors, ['input.foreground', 'editor.foreground', 'foreground'], textPrimary),
-      backgrounds: fieldBackgrounds,
+    inputForeground: readableForeground({
+      background: inputBackground,
+      preferred: firstColor(colors, ['input.foreground', 'editor.foreground', 'foreground'], textPrimary),
       underlay: surface,
-      fallbacks: ['#000000', '#FFFFFF'],
     }),
     inputBorder: appearance.startsWith('high-contrast')
       ? visibleIndicator({ color: inputBorderCandidate, against: inputBackground, fallback: border })
       : inputBorderCandidate,
-    inputPlaceholder: readableAcrossBackgrounds({
+    inputPlaceholder: readableSemanticColor({
       color: firstColor(colors, ['input.placeholderForeground', 'descriptionForeground'], textMuted),
-      backgrounds: fieldBackgrounds,
+      background: inputBackground,
       underlay: surface,
-      fallbacks: [fallback.textMuted, '#000000', '#FFFFFF'],
+      fallback: fallback.textMuted,
     }),
     rowHoverBackground,
     rowSelectedBackground: firstColor(
@@ -801,10 +796,23 @@ export const applySemanticTheme = ({
     const toggleHost = compositeColor(surfaceRaised, thumb)
     root.style.setProperty('--color-toggle-switch-off-track', visibleIndicator({ color: raisedCue, against: toggleHost, fallback: foreground }))
     root.style.setProperty('--color-switch-off-thumb', thumb)
+    // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white
+    // in dark mode. If the theme's field text would not read there, the field keeps its resting fill.
+    const { inputForeground, inputPlaceholder, surface } = theme.tokens
+    const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
+    const lifts = [pageBackground, compositeColor(surface, pageBackground)].map(host => {
+      const raised = compositeColor(surfaceRaised, host)
+      return dark ? compositeColor('#FFFFFF1F', raised) : raised
+    })
+    const liftReads = lifts.every(fill =>
+      [inputForeground, inputPlaceholder].every(text => contrastRatio(text, fill, fill) >= 4.5))
+    if (liftReads) root.style.removeProperty('--color-field-focus-bg')
+    else root.style.setProperty('--color-field-focus-bg', 'var(--color-well)')
   } else {
     root.style.removeProperty('--color-switch-off-track')
     root.style.removeProperty('--color-toggle-switch-off-track')
     root.style.removeProperty('--color-switch-off-thumb')
+    root.style.removeProperty('--color-field-focus-bg')
   }
 
   for (const role of syntaxTokenNames) {
