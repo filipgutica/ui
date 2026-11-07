@@ -279,6 +279,8 @@ test('keeps compact commands in one row and wraps longer code beside a usable co
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
   expect(await block.locator('.fg-code-block__line').first().evaluate(element => getComputedStyle(element, '::before').content)).toContain('$ ')
   expect(await block.locator('pre').ariaSnapshot()).not.toContain('$ ')
+  // Each prompt sits on its line's baseline, even if a phone browser resizes the text.
+  await expect(block.locator('.fg-code-block__line').first()).toHaveCSS('align-items', 'baseline')
 
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 })

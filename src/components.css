@@ -85,7 +85,9 @@
   .fg-code-block__pre { margin: 0; padding: var(--space-4); overflow: auto; max-height: 32rem; tab-size: 2; }
   .fg-code-block__pre, .fg-code-block__pre code { font-family: var(--font-mono); font-size: var(--text-code); line-height: 1.65; }
   .fg-code-block__pre code { display: block; color: inherit; }
-  .fg-code-block__line { display: flex; min-height: 1.65em; }
+  /* iOS Safari enlarges some lines of wide wrapped text; code keeps one size, with each prompt on its line's baseline. */
+  .fg-code-block { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  .fg-code-block__line { display: flex; align-items: baseline; min-height: 1.65em; }
   .fg-code-block__text { white-space: pre; }
   .fg-code-block__number { min-width: 2.5em; padding-right: 1em; flex-shrink: 0; text-align: right; color: var(--color-muted); user-select: none; }
   .fg-code-block[data-wrap="true"] .fg-code-block__text { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
