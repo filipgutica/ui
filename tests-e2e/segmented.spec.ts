@@ -75,3 +75,20 @@ test('keeps no slide to replay after a reduced-motion choice', async ({ page }) 
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   expect(await runningAnimations(page), 'turning motion back on replays nothing').toEqual([])
 })
+
+test('keeps no slide to replay after a glide is cancelled', async ({ page }) => {
+  for (const [cancel, resume] of [
+    [() => page.emulateMedia({ reducedMotion: 'reduce' }), () => page.emulateMedia({ reducedMotion: 'no-preference' })],
+    [() => driven(page).evaluate((element) => { element.style.display = 'none' }), () => driven(page).evaluate((element) => { element.style.display = '' })],
+  ] as const) {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto(fixture)
+    await driven(page).getByRole('button', { name: 'Timeline' }).click()
+    expect(await slides(page), 'the choice starts a glide').not.toEqual([])
+    await cancel()
+    // Longer than the glide, so an armed slide would have nothing left to wait for.
+    await page.waitForTimeout(400)
+    await resume()
+    expect(await slides(page), 'resuming replays nothing').toEqual([])
+  }
+})

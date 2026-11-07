@@ -6,7 +6,6 @@
     :aria-label="label"
     :data-size="size"
     :data-icon-only="iconOnly ? 'true' : undefined"
-    @animationend="endSlide"
   >
     <button
       v-for="item in items"
@@ -33,7 +32,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends string">
-import { onMounted, useTemplateRef, watch } from 'vue'
+import { nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
 import type { UiControlSize } from '../control.js'
 
@@ -79,18 +78,14 @@ const root = useTemplateRef<HTMLElement>('root')
 let canSlide = false
 onMounted(() => requestAnimationFrame(() => { canSlide = true }))
 
-// The trailing edge's animation ends last; the slide is over when it does.
-let trailingEdge = ''
+// Each choice's slide; a newer choice makes an older slide's ending irrelevant.
+let currentSlide = 0
 
 const clearSlide = (): void => {
   if (!root.value) return
   delete root.value.dataset.slide
   root.value.style.removeProperty('--fg-segmented-slide-left')
   root.value.style.removeProperty('--fg-segmented-slide-right')
-}
-
-const endSlide = (event: AnimationEvent): void => {
-  if (event.animationName === trailingEdge) clearSlide()
 }
 
 /*
@@ -119,7 +114,17 @@ watch(() => modelValue, (next, previous) => {
   element.style.setProperty('--fg-segmented-slide-left', `${fromLeft - toRect.left}px`)
   element.style.setProperty('--fg-segmented-slide-right', `${toRect.right - fromRight}px`)
   const direction = toRect.left + toRect.right > fromLeft + fromRight ? 'right' : 'left'
-  trailingEdge = direction === 'right' ? 'fg-segmented-left-edge' : 'fg-segmented-right-edge'
+  const trailingEdge = direction === 'right' ? 'fg-segmented-left-edge' : 'fg-segmented-right-edge'
   element.dataset.slide = direction
+  const slide = ++currentSlide
+  const endSlide = () => { if (slide === currentSlide) clearSlide() }
+  // The slide is over when its trailing edge settles: finished, or cancelled by reduced
+  // motion or hiding the control, which can happen before the animation ever starts.
+  void nextTick(() => {
+    const trailing = element.getAnimations({ subtree: true })
+      .find(animation => (animation as CSSAnimation).animationName === trailingEdge)
+    if (trailing) trailing.finished.then(endSlide, endSlide)
+    else endSlide()
+  })
 }, { flush: 'pre' })
 </script>
