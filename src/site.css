@@ -302,7 +302,7 @@
   .fg-capture[data-enhanced="true"] .fg-tabs__list { width: auto; margin-inline-end: calc(var(--space-2) + 7rem); }
   .fg-capture__full {
     position: absolute;
-    top: 0;
+    top: var(--space-1);
     right: var(--space-2);
     display: inline-flex;
     align-items: center;

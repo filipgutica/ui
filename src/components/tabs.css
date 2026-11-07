@@ -13,7 +13,10 @@
     max-width: 100%;
     overflow-x: auto;
     scroll-padding-inline: var(--space-6);
-    margin-block-end: var(--space-4);
+    /* The strip scrolls, so it clips vertically too: the block padding keeps the selected
+     * tab's lifted shadow and the frame edge clear of its fill. */
+    padding-block: var(--space-1);
+    margin-block-end: var(--space-3);
   }
 
   /* A strip that scrolls fades each clipped edge; the scroll padding keeps a revealed tab clear
