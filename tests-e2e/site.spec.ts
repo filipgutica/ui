@@ -254,6 +254,23 @@ test('shows a stored appearance choice without moving the picker on load', async
   expect(await page.evaluate(() => (window as unknown as { segmentedStarts: string[] }).segmentedStarts)).toEqual([])
 })
 
+test('rings the project trigger in the accent, like the other quiet actions', async ({ page }) => {
+  await page.goto(fixture)
+  const trigger = page.locator('.fg-site-projects__trigger')
+  await trigger.focus()
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Shift+Tab')
+  await expect(trigger).toBeFocused()
+  const accent = await page.evaluate(() => {
+    const probe = document.body.appendChild(document.createElement('i'))
+    probe.style.color = 'var(--color-accent)'
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  })
+  await expect(trigger).toHaveCSS('outline-color', accent)
+})
+
 test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' })
   await page.goto(fixture)

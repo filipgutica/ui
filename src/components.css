@@ -145,8 +145,9 @@
 
   /* A quiet action is an icon or short text action that sits inside a component: Copy, Full size,
    * a dialog or drawer close, a menu trigger. One recipe gives each the same hover, press, edge, and
-   * focus. The tint mixes currentColor, so it reads on a light panel and on a dark plate. */
-  .fg-quiet-action {
+   * focus. The tint mixes currentColor, so it reads on a light panel and on a dark plate.
+   * :where keeps the base below each component's own size and layout, whatever the file order. */
+  :where(.fg-quiet-action) {
     border: 1px solid transparent;
     border-radius: var(--radius-control);
     background: transparent;

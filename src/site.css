@@ -180,7 +180,8 @@
   .fg-site-projects__trigger { font-family: var(--font-mono); }
   .fg-site-projects__trigger::before { content: '~/' / ''; color: var(--color-project); }
   .fg-site-projects__trigger::-webkit-details-marker { display: none; }
-  .fg-site-projects[open] > .fg-site-projects__trigger { background: color-mix(in srgb, currentColor 12%, transparent); }
+  /* :where keeps the open tint below the quiet action's press. */
+  :where(.fg-site-projects[open]) > .fg-site-projects__trigger { background: color-mix(in srgb, currentColor 12%, transparent); }
   .fg-site-projects__chevron { transition: transform var(--duration-fast) var(--ease-out); }
   .fg-site-projects[open] .fg-site-projects__chevron { transform: rotate(180deg); }
   .fg-site-projects__menu {
@@ -239,8 +240,7 @@
 
   /* Focus is a 2px outline outside the control, which forced-colors mode keeps. An
    * inset ring is used only where a scrolling ancestor would clip an outer one. */
-  .fg-site-header a:focus-visible,
-  .fg-site-projects__trigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-site-header a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
   /* Inset: the desktop rail and the phone drawer scroll. */
   .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 

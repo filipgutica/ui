@@ -242,6 +242,8 @@ test('rings quiet actions in the accent, like every control that acts', async ({
   const close = drawer.getByRole('button', { name: 'Close drawer' })
   await expect(close).toBeFocused()
   await expect(close).toHaveCSS('outline-color', await accent())
+  // The shared recipe leaves each action's own glyph size alone.
+  await expect(close).toHaveCSS('font-size', '20px')
 })
 
 test('owns compact component typography independently of host styles', async ({ page }) => {
