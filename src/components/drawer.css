@@ -51,18 +51,8 @@
     min-height: var(--control-lg);
     padding: 0;
     place-items: center;
-    border: 0;
-    border-radius: var(--radius-control);
     color: var(--color-muted);
-    background: transparent;
-    font: inherit;
     font-size: var(--text-xl);
-    cursor: pointer;
-  }
-
-  .fg-drawer__close:hover {
-    color: var(--color-text);
-    background: var(--color-row-hover);
   }
 
   .fg-drawer__body {
@@ -72,11 +62,6 @@
     padding: var(--space-4);
   }
 
-  .fg-drawer__close:focus-visible,
-  .fg-drawer__content:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
 
   .fg-drawer__overlay[data-state="open"] { animation: fg-drawer-fade-in var(--duration) var(--ease-out); }
   .fg-drawer__overlay[data-state="closed"] { animation: fg-drawer-fade-out var(--duration-fast) var(--ease-out); }

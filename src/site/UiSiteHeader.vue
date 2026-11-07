@@ -75,7 +75,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
       >
         <summary
           ref="trigger"
-          class="fg-site-projects__trigger"
+          class="fg-site-projects__trigger fg-quiet-action"
           :aria-label="`Project: ${currentLabel}`"
         >
           <span>{{ currentLabel }}</span>

@@ -105,7 +105,7 @@ const copyCode = (): Promise<void> => copy(code)
         <button
           v-if="copyable"
           type="button"
-          class="fg-code-block__copy"
+          class="fg-code-block__copy fg-quiet-action"
           :disabled="pending"
           aria-label="Copy code"
           :title="variant === 'compact' ? (copySucceeded ? 'Copied' : 'Copy code') : undefined"

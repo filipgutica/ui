@@ -39,6 +39,8 @@
     font-weight: var(--weight-medium);
     white-space: nowrap;
     cursor: pointer;
+    /* The selected tab shares the navigation row's current fill, so it shares its motion too. */
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
   }
 
   .fg-tabs__tab:hover { background: var(--color-row-hover); color: var(--color-text); }
@@ -76,5 +78,9 @@
 
   @media (max-width: 640px) {
     .fg-tabs__tab { min-height: var(--control-lg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fg-tabs__tab { transition: none; }
   }
 }

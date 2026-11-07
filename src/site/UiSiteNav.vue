@@ -109,7 +109,9 @@ onUnmounted(() => media?.removeEventListener('change', syncBreakpoint))
       :open="enhanced && !mobile"
     >
       <summary
-        class="fg-site-rail__summary"
+        class="fg-button fg-site-rail__summary"
+        data-variant="secondary"
+        data-size="lg"
         :aria-controls="contentId"
       >
         {{ disclosureLabel }}

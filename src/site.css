@@ -172,19 +172,17 @@
     align-items: center;
     gap: var(--space-1);
     padding-inline: var(--space-3);
-    border-radius: var(--radius-control);
     color: var(--color-text);
     font-weight: var(--weight-semibold);
     list-style: none;
-    cursor: pointer;
     user-select: none;
   }
   .fg-site-projects__trigger { font-family: var(--font-mono); }
   .fg-site-projects__trigger::before { content: '~/' / ''; color: var(--color-project); }
   .fg-site-projects__trigger::-webkit-details-marker { display: none; }
-  .fg-site-projects__trigger:hover,
-  .fg-site-projects[open] > .fg-site-projects__trigger { background: var(--color-row-hover); }
-  .fg-site-projects__chevron { transition: transform var(--duration-fast) ease; }
+  /* :where keeps the open tint below the quiet action's press. */
+  :where(.fg-site-projects[open]) > .fg-site-projects__trigger { background: color-mix(in srgb, currentColor 12%, transparent); }
+  .fg-site-projects__chevron { transition: transform var(--duration-fast) var(--ease-out); }
   .fg-site-projects[open] .fg-site-projects__chevron { transform: rotate(180deg); }
   .fg-site-projects__menu {
     position: absolute;
@@ -212,7 +210,7 @@
     font-family: var(--font-mono);
     font-size: var(--text-sm);
     text-decoration: none;
-    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
   }
   .fg-site-nav a:hover { background: var(--color-row-hover); color: var(--color-text); }
   .fg-site-nav a[aria-current="page"] {
@@ -233,15 +231,16 @@
   }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
 
-  /* Forced colors drop shadows, so the current link takes a system border. */
+  /* Forced colors drop fills and shadows. The current page takes a system border; the
+   * in-page location keeps its pip, redrawn in the system highlight, so the two still differ. */
   @media (forced-colors: active) {
-    .fg-site-nav a[aria-current] { border-inline-start: 2px solid Highlight; }
+    .fg-site-nav a[aria-current="page"] { border-inline-start: 2px solid Highlight; }
+    .fg-site-nav a[aria-current="location"]::before { forced-color-adjust: none; background: Highlight; }
   }
 
   /* Focus is a 2px outline outside the control, which forced-colors mode keeps. An
    * inset ring is used only where a scrolling ancestor would clip an outer one. */
-  .fg-site-header a:focus-visible,
-  .fg-site-projects__trigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-site-header a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
   /* Inset: the desktop rail and the phone drawer scroll. */
   .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 
@@ -310,17 +309,12 @@
     gap: var(--space-1);
     min-height: var(--control-lg);
     padding-inline: var(--space-2);
-    border: 0;
-    border-radius: var(--radius-control);
-    background: transparent;
     color: var(--color-muted);
     font: var(--text-sm) / var(--leading) var(--font-mono);
-    cursor: pointer;
   }
-  .fg-capture__full:hover { color: var(--color-text); }
   .fg-capture__full svg { width: 14px; height: 14px; flex: none; }
   /* Inset: the capture preview below would cover an outset ring. */
-  .fg-capture__full:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-capture__full:focus-visible { outline-offset: -2px; }
   /* Without JavaScript every capture is listed under its own heading. */
   .fg-capture .fg-tabs__heading { margin: 0; padding: var(--space-3) var(--space-4); }
   .fg-capture:not([data-enhanced="true"]) .fg-tabs__panel + .fg-tabs__panel { border-top: 1px solid var(--color-border-subtle); }
@@ -472,17 +466,11 @@
     height: var(--control-lg);
     padding: 0;
     place-items: center;
-    border: 0;
-    border-radius: var(--radius-control);
     color: var(--color-muted);
-    background: transparent;
-    font: inherit;
-    cursor: pointer;
   }
-  .fg-command-list__copy:hover { color: var(--color-text); background: var(--color-row-hover); }
   .fg-command-list__copy svg { width: 1rem; height: 1rem; }
   /* Inset: the table scrolls sideways on larger screens. */
-  .fg-command-list__copy:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-command-list__copy:focus-visible { outline-offset: -2px; }
   .fg-command-list__status:not(:empty) { display: block; padding-top: var(--space-2); font-size: var(--text-sm); }
 
   /* Page helpers. Steps number a real sequence; facts are short label and value
@@ -663,19 +651,10 @@
       text-align: start;
       align-items: center;
       padding-inline: var(--space-3);
-      border-radius: var(--radius-control);
-      font-weight: var(--weight-medium);
       list-style: none;
-      cursor: pointer;
     }
-    /* Without JavaScript the list opens in place, so the summary matches a secondary button
-     * and keeps its chevron. The drawer toggle is a secondary UiButton with a menu glyph. */
-    .fg-site-rail__summary {
-      border: 1px solid transparent;
-      background: var(--color-control-thumb);
-      box-shadow: var(--shadow-raise);
-      color: var(--color-text);
-    }
+    /* Without JavaScript the list opens in place. The summary is a secondary button (fg-button)
+     * with a chevron; the drawer toggle is a secondary UiButton with a menu glyph. */
     .fg-site-rail__toggle::before {
       content: '';
       flex: none;
@@ -693,8 +672,6 @@
       transform: rotate(45deg);
     }
     .fg-site-rail__summary::-webkit-details-marker { display: none; }
-    .fg-site-rail__summary:hover { background: color-mix(in srgb, var(--color-text) 8%, var(--color-control-thumb)); }
-    .fg-site-rail__summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
     .fg-site-rail__menu > .fg-site-rail__content { padding-block: var(--space-4); }
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fg-site-rail__menu .fg-site-rail__group-label { grid-column: 1 / -1; }
