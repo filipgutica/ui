@@ -13,9 +13,9 @@
     max-width: 100%;
     overflow-x: auto;
     scroll-padding-inline: var(--space-6);
-    /* The strip scrolls, so it clips vertically too: the block padding keeps the selected
-     * tab's lifted shadow and the frame edge clear of its fill. */
-    padding-block: var(--space-1);
+    /* The strip scrolls, so it clips on every side: the padding keeps the selected tab's lifted
+     * shadow whole and the frame edge clear of its fill. */
+    padding: var(--space-1);
     margin-block-end: var(--space-3);
   }
 
@@ -45,7 +45,7 @@
   .fg-tabs__tab[aria-selected="true"] {
     background: var(--color-nav-current);
     box-shadow: var(--shadow-nav-current);
-    color: var(--color-accent);
+    color: var(--color-nav-current-text, var(--color-accent));
   }
 
   .fg-tabs__panel { min-width: 0; }

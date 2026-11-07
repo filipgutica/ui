@@ -41,6 +41,28 @@ describe('VS Code theme parsing and normalization', () => {
       }),
     })).toThrow(ThemeValidationError)
   })
+  it('keeps selected nav and tab text readable on the current-row fill', () => {
+    // Each accent clears the 3:1 indicator check but not 4.5:1 text on the lifted fill.
+    const cases = [
+      { type: 'light', page: '#FFFFFF', text: '#111111', accent: '#888888', fill: (page: string) => page },
+      { type: 'dark', page: '#000000', text: '#EEEEEE', accent: '#666666', fill: () => '#111111' },
+    ]
+    for (const { type, page, text, accent, fill } of cases) {
+      const root = document.createElement('div')
+      const theme = parseVsCodeTheme({
+        fileName: `${type}-quiet-accent.json`,
+        source: JSON.stringify({
+          type,
+          colors: { 'editor.background': page, 'editor.foreground': text, focusBorder: accent },
+        }),
+      })
+      applySemanticTheme({ root, theme })
+      expect(contrast(root.style.getPropertyValue('--color-nav-current-text'), fill(page))).toBeGreaterThanOrEqual(4.5)
+      applySemanticTheme({ root, theme: null })
+      expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('')
+    }
+  })
+
   it('applies and clears every normalized color through the public CSS-variable contract', () => {
     const root = document.createElement('div')
     const theme = parseVsCodeTheme({

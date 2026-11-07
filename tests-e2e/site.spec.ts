@@ -468,6 +468,10 @@ test('keeps selected tabs lifted, readable, and stable on docs and terminal surf
       await expect(selected).not.toHaveCSS('box-shadow', 'none')
       await expect(selected).toHaveCSS('border-bottom-width', '0px')
       await expect(selected).toHaveCSS('border-radius', '10px')
+      // The strip scrolls and clips, so it must leave room for the lifted shadow on every side.
+      const [strip, fill] = [await tabs.boundingBox(), await selected.boundingBox()]
+      expect(fill!.x - strip!.x, `${colorScheme} ${url} shadow room`).toBeGreaterThanOrEqual(3)
+      expect(strip!.y + strip!.height - (fill!.y + fill!.height), `${colorScheme} ${url} shadow room below`).toBeGreaterThanOrEqual(3)
       const bounds = await other.boundingBox()
       await selected.hover()
       await expect(selected).toHaveCSS('background-color', colors.fill)

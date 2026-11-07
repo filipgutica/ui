@@ -218,7 +218,7 @@
   .fg-site-nav a[aria-current="page"] {
     background: var(--color-nav-current);
     box-shadow: var(--shadow-nav-current);
-    color: var(--color-accent);
+    color: var(--color-nav-current-text, var(--color-accent));
     font-weight: var(--weight-medium);
   }
   .fg-site-nav a[aria-current="location"] { position: relative; color: var(--color-text); font-weight: var(--weight-medium); }
@@ -283,6 +283,7 @@
     --color-nav-current: color-mix(in srgb, var(--color-terminal-text) 7%, transparent);
     --shadow-nav-current: 0 1px 2px rgb(0 0 0 / 25%);
     --color-row-hover: color-mix(in srgb, var(--color-terminal-text) 4%, transparent);
+    --color-nav-current-text: var(--color-project-dark);
     --color-text: var(--color-terminal-text);
     --color-muted: var(--color-terminal-caption-text);
     --color-accent: var(--color-project-dark);

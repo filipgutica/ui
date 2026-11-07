@@ -796,10 +796,22 @@ export const applySemanticTheme = ({
     const toggleHost = compositeColor(surfaceRaised, thumb)
     root.style.setProperty('--color-toggle-switch-off-track', visibleIndicator({ color: raisedCue, against: toggleHost, fallback: foreground }))
     root.style.setProperty('--color-switch-off-thumb', thumb)
+    // The current nav row and selected tab put accent text on --color-nav-current: the raised surface
+    // in light, text at 7% in dark. The accent is validated only at 3:1, so check that fill at 4.5:1.
+    const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
+    const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(underlay =>
+      dark ? compositeColor(`${foreground}12`, underlay) : compositeColor(surfaceRaised, underlay))
+    root.style.setProperty('--color-nav-current-text', readableAcrossBackgrounds({
+      color: theme.tokens.accent,
+      backgrounds: currentFills,
+      underlay: pageBackground,
+      fallbacks: [foreground],
+    }))
   } else {
     root.style.removeProperty('--color-switch-off-track')
     root.style.removeProperty('--color-toggle-switch-off-track')
     root.style.removeProperty('--color-switch-off-thumb')
+    root.style.removeProperty('--color-nav-current-text')
   }
 
   for (const role of syntaxTokenNames) {
