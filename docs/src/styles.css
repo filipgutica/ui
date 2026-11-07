@@ -124,9 +124,9 @@ pre,
   text-decoration: none;
   transition: background-color var(--duration-fast) ease;
 }
-.docs-button--secondary { border-color: var(--color-border); color: var(--color-text); background: var(--color-surface-raised); }
+.docs-button--secondary { border-color: transparent; color: var(--color-text); background: var(--color-surface-muted); }
 .docs-button:hover { background: var(--color-button-hover); }
-.docs-button--secondary:hover { background: var(--color-row-hover); }
+.docs-button--secondary:hover { background: color-mix(in srgb, var(--color-text) 8%, var(--color-surface-muted)); }
 .docs-button:active { opacity: 0.9; }
 .docs-link {
   display: inline-flex;
@@ -150,13 +150,15 @@ pre,
   gap: var(--space-5) var(--space-4);
   min-width: 0;
   padding: var(--space-5);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid transparent;
   border-radius: var(--radius-panel);
   background: var(--color-surface-raised);
+  box-shadow: var(--shadow-raise);
 }
 .home-preview > div { display: grid; min-width: 0; align-content: start; gap: var(--space-2); }
 .home-preview__field { flex: 0 1 12rem; }
-.home-preview__alert { flex: 1 1 8rem; }
+/* Let the alert use the remaining row width as status badges gain their leading dots. */
+.home-preview__alert { flex: 1 1 min-content; }
 .home-preview__caption { color: var(--color-muted); font-family: var(--font-mono); font-size: var(--text-sm); text-decoration: none; }
 .home-preview__caption:hover { color: var(--color-text); text-decoration: underline; }
 .home-preview__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }

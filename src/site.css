@@ -207,7 +207,7 @@
     min-height: var(--row);
     align-items: center;
     padding-inline: var(--space-3);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-inline);
     color: var(--color-muted);
     font-family: var(--font-mono);
     font-size: var(--text-sm);

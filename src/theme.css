@@ -78,15 +78,17 @@
   --color-warning-surface: #e7e2de;
   --color-success-surface: #d9e5e1;
   --color-info-surface: #d9e3f2;
-  --radius-inline: 3px;
-  --radius-control: 4px;
-  --radius-panel: 6px;
+  --radius-inline: 6px;
+  --radius-control: 999px;
+  --radius-panel: 16px;
   --radius-pill: 999px;
   --duration-fast: 120ms;
   --duration: 180ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow-control: none;
   --shadow-dialog: 0 8px 24px rgb(16 16 24 / 12%), 0 0 0 1px var(--color-border-subtle);
+  --shadow-raise: 2px 2px 6px rgb(130 142 158 / 35%), -2px -2px 6px rgb(255 255 255 / 80%);
+  --shadow-sink: inset 1.2px 1.2px 3.6px rgb(130 142 158 / 35%), inset -1.2px -1.2px 3.6px rgb(255 255 255 / 80%);
 
   --color-project: #4b45d1;
   --color-accent-text: var(--color-bg);
@@ -144,6 +146,8 @@
   --color-shadow: rgb(0 0 0 / 32%);
   --color-overlay: rgb(0 0 0 / 62%);
   --shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-subtle);
+  --shadow-raise: 2px 2px 6px rgb(0 0 0 / 50%), -2px -2px 6px rgb(255 255 255 / 5%);
+  --shadow-sink: inset 1.2px 1.2px 3.6px rgb(0 0 0 / 50%), inset -1.2px -1.2px 3.6px rgb(255 255 255 / 5%);
 
   --color-project: #a5a1ff;
   --color-accent-text: var(--color-bg);

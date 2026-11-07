@@ -239,12 +239,15 @@
   }
 
   .fg-button[data-variant="secondary"] {
-    border-color: var(--color-border);
     color: var(--color-text);
-    background: transparent;
+    background: var(--color-surface-muted);
   }
 
-  .fg-button[data-variant="secondary"]:hover:not(:disabled),
+  .fg-button[data-variant="secondary"]:hover:not(:disabled) {
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-text) 8%, var(--color-surface-muted));
+  }
+
   .fg-button[data-variant="ghost"]:hover:not(:disabled) {
     color: var(--color-text);
     background: var(--color-row-hover);
@@ -288,10 +291,9 @@
   .fg-input,
   .fg-select {
     width: 100%;
-    border-color: var(--color-input-border);
     color: var(--color-input-text);
-    background: var(--color-input-bg);
-    box-shadow: none;
+    background: var(--color-surface-muted);
+    box-shadow: var(--shadow-sink);
     line-height: 1.35;
   }
 
@@ -348,7 +350,7 @@
       min-height: var(--control-sm);
       gap: var(--space-2);
       padding: var(--space-2) var(--space-3);
-      border-radius: var(--radius-control);
+      border-radius: calc(var(--radius-panel) - var(--space-1));
       color: var(--color-text);
       background: transparent;
       cursor: pointer;
@@ -419,7 +421,7 @@
     margin-top: 0.1rem;
     place-items: center;
     border: 1px solid var(--color-input-border);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-inline);
     color: var(--color-button-text);
     background: var(--color-input-bg);
     box-shadow: var(--shadow-control);
@@ -494,25 +496,24 @@
     min-width: 0;
     padding: var(--space-3);
     overflow: hidden;
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid transparent;
     border-radius: var(--radius-panel);
     color: var(--color-text);
     background: var(--color-surface-raised);
-    box-shadow: none;
+    box-shadow: var(--shadow-raise);
     text-align: left;
     cursor: pointer;
     transition: transform var(--duration-fast) var(--ease-out);
   }
 
-  .fg-radio-card:hover:not([data-disabled]) {
-    border-color: var(--color-border);
+  .fg-radio-card:hover:not([data-disabled], [data-state="checked"]) {
+    background: color-mix(in srgb, var(--color-surface-muted) 45%, var(--color-surface-raised));
   }
 
-  /* Checked choices use the accent, as the checkbox does; blue stays for links and focus. */
+  /* Depth and a check badge distinguish the choice without an accent ring. */
   .fg-radio-card[data-state="checked"] {
-    border-color: var(--color-accent);
-    outline: 1px solid var(--color-accent);
-    outline-offset: -2px;
+    background: var(--color-surface-muted);
+    box-shadow: var(--shadow-sink);
   }
 
   .fg-radio-card[data-disabled] {
@@ -541,14 +542,26 @@
   }
 
   .fg-radio-card[data-state="checked"] .fg-radio-card__indicator {
-    border: 0.3rem solid var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-text);
+    background: var(--color-accent);
+  }
+
+  .fg-radio-card[data-state="checked"] .fg-radio-card__indicator::after {
+    content: "";
+    position: absolute;
+    inset: 2px 4px 4px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
   }
 
   .fg-badge {
     display: inline-flex;
     align-items: center;
     width: fit-content;
-    border: 1px solid var(--color-border-subtle);
+    gap: 6px;
+    border: 1px solid transparent;
     border-radius: var(--radius-pill);
     padding: 0.18rem 0.56rem;
     color: var(--color-muted);
@@ -558,14 +571,27 @@
     line-height: 1.25;
   }
 
-  /* A tone badge is a tinted pill whose text carries the status colour, darkened toward the text
-   * colour so it reads at small sizes on the tint. */
-  .fg-badge[data-tone]:not([data-tone="neutral"]) { border-color: transparent; }
-  .fg-badge[data-tone="info"] { color: color-mix(in srgb, var(--color-info) 80%, var(--color-text)); background: var(--color-info-surface); }
-  .fg-badge[data-tone="success"] { color: color-mix(in srgb, var(--color-success) 80%, var(--color-text)); background: var(--color-success-surface); }
-  .fg-badge[data-tone="warning"] { color: color-mix(in srgb, var(--color-warning) 80%, var(--color-text)); background: var(--color-warning-surface); }
+  /* Status tint and text use the same hue; neutral metadata has no status dot. */
+  .fg-badge[data-tone]:not([data-tone="neutral"]) {
+    color: color-mix(in srgb, var(--fg-badge-tone) 75%, var(--color-text));
+    background: color-mix(in srgb, var(--fg-badge-tone) 22%, var(--color-surface-raised));
+  }
+  :root.dark .fg-badge[data-tone]:not([data-tone="neutral"]) {
+    color: color-mix(in srgb, var(--fg-badge-tone) 85%, var(--color-text));
+  }
+  .fg-badge[data-tone]:not([data-tone="neutral"])::before {
+    content: "";
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .fg-badge[data-tone="info"] { --fg-badge-tone: var(--color-info); }
+  .fg-badge[data-tone="success"] { --fg-badge-tone: var(--color-success); }
+  .fg-badge[data-tone="warning"] { --fg-badge-tone: var(--color-warning); }
   .fg-badge[data-tone="danger"],
-  .fg-badge[data-tone="error"] { color: color-mix(in srgb, var(--color-error) 80%, var(--color-text)); background: var(--color-error-surface); }
+  .fg-badge[data-tone="error"] { --fg-badge-tone: var(--color-error); }
 
   .fg-alert {
     display: flex;
@@ -589,10 +615,10 @@
   }
 
   .fg-surface {
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid transparent;
     border-radius: var(--radius-panel);
     background: var(--color-surface-raised);
-    box-shadow: none;
+    box-shadow: var(--shadow-raise);
   }
 
   .fg-surface[data-padding="compact"] { padding: var(--space-3); }
@@ -601,11 +627,11 @@
   .fg-card {
     min-width: 0;
     overflow: hidden;
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid transparent;
     border-radius: var(--radius-panel);
     color: var(--color-text);
     background: var(--color-surface-raised);
-    box-shadow: none;
+    box-shadow: var(--shadow-raise);
   }
 
   .fg-card__header {
@@ -725,14 +751,14 @@
   /* Segmented control: one pressed choice on a muted track, so it reads as a raised thumb in both themes. */
   .fg-segmented {
     --fg-segmented-item: var(--control-md);
-    /* The thumb is lighter than the track in both themes; the dark raised surface is darker than the track. */
-    --fg-segmented-thumb: light-dark(var(--color-row-selected), color-mix(in srgb, var(--color-text) 10%, var(--color-surface-muted)));
+    --fg-segmented-thumb: var(--color-surface-raised);
     display: inline-flex;
     flex: none;
     /* The fill alone marks the track. The transparent border keeps its size, and forced colors draw it. */
     border: 1px solid transparent;
     border-radius: var(--radius-control);
     background: var(--color-surface-muted);
+    box-shadow: var(--shadow-sink);
   }
   .fg-segmented[data-size="sm"] { --fg-segmented-item: var(--control-sm); font-size: var(--text-sm); }
   .fg-segmented[data-size="lg"] { --fg-segmented-item: var(--control-lg); font-size: var(--text-lg); }
@@ -754,16 +780,15 @@
   }
   .fg-segmented[data-icon-only="true"] .fg-segmented__item { width: var(--fg-segmented-item); padding: 0; }
   /* The thumb is inset inside each full-size button, so it floats on the track and the hit target keeps its size. */
-  .fg-segmented__item::before { content: ""; position: absolute; inset: 2px; z-index: -1; border-radius: var(--radius-inline); }
+  .fg-segmented__item::before { content: ""; position: absolute; inset: 2px; z-index: -1; border-radius: var(--radius-control); }
   .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }
   .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"])::before { background: color-mix(in srgb, var(--fg-segmented-thumb) 45%, transparent); }
-  /* The ring gives the pressed choice 3:1 against the track in both themes (WCAG 1.4.11). */
-  .fg-segmented__item[aria-pressed="true"] { color: var(--color-text); }
+  /* The accent label or icon marks the pressed choice at 3:1 against its thumb. */
+  .fg-segmented__item[aria-pressed="true"] { color: var(--color-accent); }
   /* Drawn inside the button, the ring hugs the thumb instead of reaching the next choice. */
   .fg-segmented .fg-segmented__item:focus-visible { outline-offset: -2px; }
   .fg-segmented__item[aria-pressed="true"]::before {
     background: var(--fg-segmented-thumb);
-    box-shadow: inset 0 0 0 1px var(--color-border);
   }
 
   .fg-switch { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
@@ -802,6 +827,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
     background: var(--color-surface-muted);
+    box-shadow: var(--shadow-sink);
     transition: background-color var(--duration) var(--ease-out), border-color var(--duration) var(--ease-out);
   }
 
@@ -814,6 +840,7 @@
     height: 0.625rem;
     border-radius: var(--radius-pill);
     background: var(--color-border);
+    box-shadow: 1px 1px 3px rgb(0 0 0 / 35%);
     content: "";
     transition: transform var(--duration) var(--ease-out), background-color var(--duration) var(--ease-out);
   }
@@ -990,8 +1017,22 @@
   .fg-toggle-button:focus-visible,
   .fg-segmented__item:focus-visible,
   .fg-switch__control:focus-visible .fg-switch__track {
-    outline: 2px solid var(--color-focus);
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 80%, transparent);
     outline-offset: 2px;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  .fg-input:focus-visible,
+  .fg-select:focus-visible,
+  .fg-radio-card[data-state="checked"]:focus-visible,
+  .fg-switch__control:focus-visible .fg-switch__track {
+    box-shadow: var(--shadow-sink), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+  .fg-dialog__content:focus-visible {
+    box-shadow: var(--shadow-dialog), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+  .fg-radio-card:not([data-state="checked"]):focus-visible {
+    box-shadow: var(--shadow-raise), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
   }
 
   /* The control is a larger transparent hit area, so the ring follows the visible track instead. */
@@ -1025,6 +1066,12 @@
   }
 
   @media (forced-colors: active) {
+    .fg-radio-card[data-state="checked"] .fg-radio-card__indicator {
+      forced-color-adjust: none;
+      border-color: Highlight;
+      color: HighlightText;
+      background: Highlight;
+    }
     /* Forced colors drop the fill and the ring, so the pressed choice takes the system highlight. */
     .fg-segmented__item[aria-pressed="true"] { forced-color-adjust: none; color: HighlightText; }
     .fg-segmented__item[aria-pressed="true"]::before { forced-color-adjust: none; background: Highlight; }

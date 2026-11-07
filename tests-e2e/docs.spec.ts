@@ -386,7 +386,16 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     const style = getComputedStyle(element, '::picker(select)')
     return { background: style.backgroundColor, radius: style.borderRadius }
   })
-  expect(picker.background).toBe(await select.evaluate(element => getComputedStyle(element).backgroundColor))
+  // The picker remains raised while the closed control is a muted well.
+  const raisedFill = await select.evaluate(element => {
+    const probe = document.createElement('span')
+    probe.style.backgroundColor = 'var(--color-input-bg)'
+    element.after(probe)
+    const fill = getComputedStyle(probe).backgroundColor
+    probe.remove()
+    return fill
+  })
+  expect(picker.background).toBe(raisedFill)
   // The picker is a floating layer, so it takes the panel radius.
   expect(picker.radius).toBe(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--radius-panel').trim()))
   await page.keyboard.press('ArrowDown')
@@ -407,11 +416,41 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
 test('marks checked radio cards and checkboxes with the accent', async ({ page }) => {
   const accent = 'rgb(75, 69, 209)'
   await page.goto('/#/sandbox/radio-card-group')
-  await expect(page.locator('.playground-stage .fg-radio-card[data-state="checked"]')).toHaveCSS('border-color', accent)
+  const selected = page.locator('.playground-stage .fg-radio-card[data-state="checked"]')
+  await expect(selected.locator('.fg-radio-card__indicator')).toHaveCSS('background-color', accent)
+  expect(await selected.locator('.fg-radio-card__indicator').evaluate(element => getComputedStyle(element, '::after').content)).not.toBe('none')
   await page.goto('/#/sandbox/checkbox')
   const checkbox = page.locator('.playground-stage .fg-checkbox__control')
   if (await checkbox.getAttribute('data-state') !== 'checked') await checkbox.click()
   await expect(checkbox).toHaveCSS('background-color', accent)
+})
+
+test('keeps borderless controls edged and focus visible in forced colors', async ({ page }) => {
+  for (const { slug, selector } of [
+    { slug: 'input', selector: '.playground-stage > .fg-input' },
+    { slug: 'select', selector: '.playground-stage > .fg-select' },
+    { slug: 'segmented-control', selector: '.playground-stage .fg-segmented' },
+    { slug: 'radio-card-group', selector: '.playground-stage .fg-radio-card' },
+    { slug: 'button', selector: '.playground-stage .fg-button' },
+  ]) {
+    await page.emulateMedia({ forcedColors: 'none' })
+    await page.goto(`/#/sandbox/${slug}`)
+    const control = page.locator(selector).first()
+    await expect(control).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
+    await page.emulateMedia({ forcedColors: 'active' })
+    await expect(control).toHaveCSS('border-style', 'solid')
+    await expect(control).toHaveCSS('border-width', '1px')
+    const edge = await control.evaluate(element => {
+      const style = getComputedStyle(element)
+      return { border: style.borderColor, fill: style.backgroundColor }
+    })
+    expect(edge.border).not.toBe(edge.fill)
+    expect(edge.border).not.toBe('rgba(0, 0, 0, 0)')
+    const focusTarget = slug === 'segmented-control' ? control.getByRole('button').first() : control
+    await focusTarget.focus()
+    await expect(focusTarget).toHaveCSS('outline-style', 'solid')
+    await expect(focusTarget).toHaveCSS('outline-width', '2px')
+  }
 })
 
 test('renders usable slider tracks in documentation examples', async ({ page }) => {
