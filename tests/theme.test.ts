@@ -72,6 +72,23 @@ describe('VS Code theme parsing and normalization', () => {
       }),
     }) })
     expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
+
+    // A white accent tints a mid-grey dark page to #7d7d7d, where white body text drops to 4.12:1.
+    const grey = document.createElement('div')
+    applySemanticTheme({ root: grey, theme: parseVsCodeTheme({
+      fileName: 'grey-dark.json',
+      source: JSON.stringify({ type: 'dark', colors: { 'editor.background': '#686868', 'editor.foreground': '#FFFFFF', focusBorder: '#FFFFFF' } }),
+    }) })
+    expect(contrast(grey.style.getPropertyValue('--color-nav-current-text'), '#7d7d7d')).toBeGreaterThanOrEqual(4.5)
+
+    // color-mix keeps a translucent accent's alpha: #282828cc 8% into #b8b8b8 over #808080 renders #aeaeae,
+    // where the accent itself reaches only 4.46:1.
+    const alphaMix = document.createElement('div')
+    applySemanticTheme({ root: alphaMix, theme: parseVsCodeTheme({
+      fileName: 'alpha-mix.json',
+      source: JSON.stringify({ type: 'light', colors: { 'editor.background': '#808080', 'editor.foreground': '#000000', 'panel.background': '#b8b8b8ff', focusBorder: '#282828cc' } }),
+    }) })
+    expect(alphaMix.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
   })
 
   it('applies and clears every normalized color through the public CSS-variable contract', () => {
