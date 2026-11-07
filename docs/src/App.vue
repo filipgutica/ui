@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core'
-import { DialogClose, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, DialogTrigger } from 'reka-ui'
 import { computed, nextTick, onBeforeUnmount, provide, ref, watch } from 'vue'
 
 import { componentDocBySlug } from './component-docs.js'
@@ -12,6 +11,7 @@ import ThemesPage from './components/ThemesPage.vue'
 import { createDocsTheme, docsThemeKey } from './docs-theme.js'
 import { parseDocsHash } from './router.js'
 import { UiSiteAppearancePicker, UiSiteHeader } from '../../src/site/index.js'
+import { UiButton, UiDrawer } from '../../src/index.js'
 
 const docsTheme = createDocsTheme()
 provide(docsThemeKey, docsTheme)
@@ -89,62 +89,37 @@ watch(route, async () => {
     </aside>
 
     <div class="docs-mobilebar">
-      <DialogRoot v-model:open="navigationOpen">
-        <DialogTrigger
-          class="fg-button navigation-trigger"
-          data-variant="secondary"
-          data-size="md"
-          :aria-label="`Browse components: ${currentPageLabel}`"
-        >
-          <svg
-            viewBox="0 0 16 16"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            aria-hidden="true"
+      <UiDrawer
+        v-model:open="navigationOpen"
+        title="Browse components"
+        @close-auto-focus="onDrawerCloseAutoFocus"
+      >
+        <template #trigger>
+          <UiButton
+            class="navigation-trigger"
+            variant="secondary"
+            size="md"
+            :aria-label="`Browse components: ${currentPageLabel}`"
           >
-            <path d="M2.5 4h11M2.5 8h11M2.5 12h11" />
-          </svg>
-          {{ currentPageLabel }}
-        </DialogTrigger>
-        <DialogPortal>
-          <DialogOverlay class="navigation-overlay" />
-          <DialogContent
-            class="navigation-drawer"
-            @close-auto-focus="onDrawerCloseAutoFocus"
-          >
-            <div class="navigation-drawer-heading">
-              <DialogTitle>Browse components</DialogTitle>
-              <DialogClose
-                class="fg-button navigation-close"
-                data-variant="ghost"
-                data-size="md"
-                aria-label="Close navigation"
-              >
-                <svg
-                  viewBox="0 0 16 16"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="m4 4 8 8M12 4l-8 8" />
-                </svg>
-              </DialogClose>
-            </div>
-            <DialogDescription class="sr-only">
-              Choose a component to view its documentation.
-            </DialogDescription>
-            <DocsNavigation
-              :route="route"
-              @click="onNavigationClick"
-            />
-          </DialogContent>
-        </DialogPortal>
-      </DialogRoot>
+            <svg
+              viewBox="0 0 16 16"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              aria-hidden="true"
+            >
+              <path d="M2.5 4h11M2.5 8h11M2.5 12h11" />
+            </svg>
+            {{ currentPageLabel }}
+          </UiButton>
+        </template>
+        <DocsNavigation
+          :route="route"
+          @click="onNavigationClick"
+        />
+      </UiDrawer>
     </div>
     <main
       id="main-content"

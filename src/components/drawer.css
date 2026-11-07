@@ -93,8 +93,9 @@
     border-color: var(--color-border);
   }
 
+  /* Match the [data-state] specificity of the open and close animations, or they still run. */
   @media (prefers-reduced-motion: reduce) {
-    .fg-drawer__overlay,
-    .fg-drawer__content { animation: none; }
+    .fg-drawer__overlay[data-state],
+    .fg-drawer__content[data-state] { animation: none; }
   }
 }
