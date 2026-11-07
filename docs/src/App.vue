@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core'
 import { DialogClose, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, DialogTrigger } from 'reka-ui'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, provide, ref, watch } from 'vue'
 
 import { componentDocBySlug } from './component-docs.js'
 import DocsNavigation from './components/DocsNavigation.vue'
 import ComponentPage from './components/ComponentPage.vue'
 import HomePage from './components/HomePage.vue'
 import SandboxPage from './components/SandboxPage.vue'
-import ThemePicker from './components/ThemePicker.vue'
+import ThemesPage from './components/ThemesPage.vue'
+import { createDocsTheme, docsThemeKey } from './docs-theme.js'
 import { parseDocsHash } from './router.js'
-import { UiSiteHeader } from '../../src/site/index.js'
+import { UiSiteAppearancePicker, UiSiteHeader } from '../../src/site/index.js'
+
+const docsTheme = createDocsTheme()
+provide(docsThemeKey, docsTheme)
+const { activeInstalledTheme, schemeChoice, select } = docsTheme
 
 const projectLinks = [
   { label: 'GitHub', href: 'https://github.com/filipgutica/ui' },
@@ -30,7 +35,7 @@ const selectedComponent = computed(() =>
     ? componentDocBySlug(route.value.slug)
     : undefined)
 
-const currentPageLabel = computed(() => selectedComponent.value?.title ?? (route.value.name === 'home' ? 'Introduction' : 'Page not found'))
+const currentPageLabel = computed(() => selectedComponent.value?.title ?? (route.value.name === 'home' ? 'Introduction' : route.value.name === 'themes' ? 'Themes' : 'Page not found'))
 const navigationOpen = ref(false)
 const narrowViewport = useMediaQuery('(max-width: 900px)')
 let navigationSelected = false
@@ -69,7 +74,10 @@ watch(route, async () => {
     project="ui"
     :links="projectLinks"
   >
-    <ThemePicker />
+    <UiSiteAppearancePicker
+      :model-value="activeInstalledTheme ? undefined : schemeChoice"
+      @update:model-value="select"
+    />
   </UiSiteHeader>
 
   <div class="docs-shell">
@@ -139,6 +147,7 @@ watch(route, async () => {
       class="main-content fg-site-prose"
     >
       <HomePage v-if="route.name === 'home'" />
+      <ThemesPage v-else-if="route.name === 'themes'" />
       <ComponentPage
         v-else-if="route.name === 'component' && selectedComponent"
         :key="selectedComponent.slug"

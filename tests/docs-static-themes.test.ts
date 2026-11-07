@@ -4,7 +4,10 @@ import { flushPromises, mount } from '@vue/test-utils'
 import JSZip from 'jszip'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import ThemePicker from '../docs/src/components/ThemePicker.vue'
+import { defineComponent, h, provide } from 'vue'
+
+import ThemesPage from '../docs/src/components/ThemesPage.vue'
+import { createDocsTheme, docsThemeKey } from '../docs/src/docs-theme.js'
 
 afterEach(() => {
   vi.useRealTimers()
@@ -52,12 +55,15 @@ it('searches and installs an Open VSX theme on static Pages without a local API'
   })
   vi.stubGlobal('fetch', fetchMock)
 
-  const wrapper = mount(ThemePicker, { attachTo: document.body })
+  const wrapper = mount(defineComponent({
+    setup() {
+      provide(docsThemeKey, createDocsTheme())
+      return () => h(ThemesPage)
+    },
+  }), { attachTo: document.body })
   try {
-    await wrapper.get('button').trigger('click')
     const button = (label: string) => [...document.querySelectorAll<HTMLButtonElement>('button')]
       .find(button => button.textContent?.trim().includes(label))!
-    button('Add theme').click()
     await flushPromises()
     const input = document.querySelector<HTMLInputElement>('#open-vsx-query')
     expect(input).not.toBeNull()
@@ -68,7 +74,7 @@ it('searches and installs an Open VSX theme on static Pages without a local API'
     await vi.waitFor(() => expect(document.querySelector('.theme-results')?.textContent).toContain('Nord'))
     button('Install').click()
     // ZIP decoding and Web Crypto complete asynchronously outside Vue's update queue.
-    await vi.waitFor(() => expect(wrapper.get('button').text()).toContain('Theme: Nord'))
+    await vi.waitFor(() => expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Nord'))
     expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#2e3440')
     expect(JSON.parse(localStorage.getItem('filipgutica-ui-installed-themes')!)[0].id).toBe('example.nord')
     expect(fetchMock.mock.calls.every(([url]) => String(url).startsWith('https://'))).toBe(true)

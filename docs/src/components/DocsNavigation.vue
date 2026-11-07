@@ -19,6 +19,12 @@ const isCurrentComponent = (slug: string): boolean =>
     >
       Introduction
     </a>
+    <a
+      href="#/themes"
+      :aria-current="route.name === 'themes' ? 'page' : undefined"
+    >
+      Themes
+    </a>
     <section
       v-for="group in componentGroups"
       :key="group.category"
