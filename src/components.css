@@ -16,7 +16,8 @@
     min-width: 0;
     max-width: 100%;
     overflow: hidden;
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid transparent;
+    box-shadow: var(--shadow-raise);
     border-radius: var(--radius-panel);
     background: var(--color-code);
     color: var(--color-code-text);
@@ -292,7 +293,7 @@
   .fg-select {
     width: 100%;
     color: var(--color-input-text);
-    background: var(--color-surface-muted);
+    background: var(--color-well);
     box-shadow: var(--shadow-sink);
     line-height: 1.35;
   }
@@ -512,7 +513,7 @@
 
   /* Depth and a check badge distinguish the choice without an accent ring. */
   .fg-radio-card[data-state="checked"] {
-    background: var(--color-surface-muted);
+    background: var(--color-well);
     box-shadow: var(--shadow-sink);
   }
 
@@ -598,18 +599,17 @@
     align-items: flex-start;
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border-subtle);
+    border: 1px solid transparent;
     border-radius: var(--radius-panel);
     color: var(--color-text);
     background: var(--color-surface);
   }
 
-  .fg-alert[data-tone="info"] { border-color: color-mix(in srgb, var(--color-info) 35%, var(--color-border-subtle)); background: var(--color-info-surface); }
-  .fg-alert[data-tone="success"] { border-color: color-mix(in srgb, var(--color-success) 35%, var(--color-border-subtle)); background: var(--color-success-surface); }
-  .fg-alert[data-tone="warning"] { border-color: color-mix(in srgb, var(--color-warning) 35%, var(--color-border-subtle)); background: var(--color-warning-surface); }
+  .fg-alert[data-tone="info"] { background: var(--color-info-surface); }
+  .fg-alert[data-tone="success"] { background: var(--color-success-surface); }
+  .fg-alert[data-tone="warning"] { background: var(--color-warning-surface); }
   .fg-alert[data-tone="danger"],
   .fg-alert[data-tone="error"] {
-    border-color: color-mix(in srgb, var(--color-error) 35%, var(--color-border-subtle));
     color: var(--color-status-text, var(--color-error));
     background: var(--color-error-surface);
   }
@@ -757,9 +757,10 @@
     /* The fill alone marks the track. The transparent border keeps its size, and forced colors draw it. */
     border: 1px solid transparent;
     border-radius: var(--radius-control);
-    background: var(--color-surface-muted);
+    background: var(--color-well);
     box-shadow: var(--shadow-sink);
   }
+  :root.dark .fg-segmented { --fg-segmented-thumb: color-mix(in srgb, var(--color-surface-raised) 88%, white); }
   .fg-segmented[data-size="sm"] { --fg-segmented-item: var(--control-sm); font-size: var(--text-sm); }
   .fg-segmented[data-size="lg"] { --fg-segmented-item: var(--control-lg); font-size: var(--text-lg); }
   .fg-segmented__item {
@@ -789,6 +790,7 @@
   .fg-segmented .fg-segmented__item:focus-visible { outline-offset: -2px; }
   .fg-segmented__item[aria-pressed="true"]::before {
     background: var(--fg-segmented-thumb);
+    box-shadow: var(--shadow-raise);
   }
 
   .fg-switch { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
@@ -826,7 +828,7 @@
     height: 1rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-pill);
-    background: var(--color-surface-muted);
+    background: var(--color-well);
     box-shadow: var(--shadow-sink);
     transition: background-color var(--duration) var(--ease-out), border-color var(--duration) var(--ease-out);
   }
@@ -839,8 +841,8 @@
     width: 0.625rem;
     height: 0.625rem;
     border-radius: var(--radius-pill);
-    background: var(--color-border);
-    box-shadow: 1px 1px 3px rgb(0 0 0 / 35%);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-raise);
     content: "";
     transition: transform var(--duration) var(--ease-out), background-color var(--duration) var(--ease-out);
   }
