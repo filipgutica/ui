@@ -157,8 +157,9 @@
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
   }
-  .fg-quiet-action:hover:not(:disabled) { color: var(--color-text); background: color-mix(in srgb, currentColor 12%, transparent); }
-  .fg-quiet-action:active:not(:disabled) { background: color-mix(in srgb, currentColor 18%, transparent); }
+  /* :where keeps hover and press at their old weight, so component colour rules still win. */
+  .fg-quiet-action:hover:where(:not(:disabled)) { color: var(--color-text); background: color-mix(in srgb, currentColor 12%, transparent); }
+  .fg-quiet-action:active:where(:not(:disabled)) { background: color-mix(in srgb, currentColor 18%, transparent); }
 
   .fg-button {
     --fg-button-shadow: var(--shadow-raise);
