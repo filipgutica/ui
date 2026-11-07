@@ -245,6 +245,35 @@ describe('VS Code theme parsing and normalization', () => {
     expect(theme.tokens.buttonForeground).toBe('#11111B')
   })
 
+  it('keeps a focused field on its resting fill when its text would not read on the lift', () => {
+    const fieldFocusFill = (type: string, colors: Record<string, string>) => {
+      const root = document.createElement('div')
+      applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: `${type}.json`, source: JSON.stringify({ type, colors }) }) })
+      return root.style.getPropertyValue('--color-field-focus-bg')
+    }
+
+    // Grey text on a black well, under a lighter raised surface.
+    expect(fieldFocusFill('dark', {
+      'editor.background': '#000000',
+      'editor.foreground': '#EEEEEE',
+      'panel.background': '#343434',
+      'input.background': '#000000',
+      'input.foreground': '#777777',
+      'input.placeholderForeground': '#777777',
+    })).toBe('var(--color-well)')
+    // White text on a black well in a white light theme.
+    expect(fieldFocusFill('light', {
+      'editor.background': '#FFFFFF',
+      'editor.foreground': '#000000',
+      'panel.background': '#FFFFFF',
+      'input.background': '#000000',
+      'input.foreground': '#FFFFFF',
+      'input.placeholderForeground': '#FFFFFF',
+    })).toBe('var(--color-well)')
+    // Readable on the lift: the field lifts.
+    expect(fieldFocusFill('dark', { 'editor.background': '#101010', 'editor.foreground': '#F0F0F0' })).toBe('')
+  })
+
   it('keeps muted text and links readable across page and surface backgrounds', () => {
     const theme = parseVsCodeTheme({
       fileName: 'split-surfaces.json',

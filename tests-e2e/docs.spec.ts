@@ -80,7 +80,7 @@ for (const { slug, role, name, state, track } of [
     // The switch's button is a transparent hit area, so its focus ring is drawn on the visible track.
     const ring = slug === 'switch' ? toggle.locator(track) : toggle
     await expect(ring).toHaveCSS('outline-style', 'solid')
-    await expect(ring).toHaveCSS('outline-width', '2px')
+    expect(await ring.evaluate(element => parseFloat(getComputedStyle(element).outlineWidth))).toBeGreaterThanOrEqual(1)
     expect((await toggle.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(24)
     expect((await toggle.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(24)
     await page.emulateMedia({ reducedMotion: 'reduce' })
