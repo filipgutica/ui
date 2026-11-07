@@ -15,7 +15,7 @@ const { selection, installedThemes, preferredAppearance, select, saveAndSelectTh
           Themes
         </h1>
         <p class="lede">
-          The header's System, Light and Dark choice is shared with the other project sites; this page adds community VS Code themes, which apply to these docs only.
+          Try a community VS Code theme on these docs. The System, Light and Dark choice in the header is shared with the other project sites; community themes apply here only.
         </p>
       </div>
     </header>
@@ -26,9 +26,9 @@ const { selection, installedThemes, preferredAppearance, select, saveAndSelectTh
       @update:model-value="select"
     >
       <section aria-labelledby="color-scheme-heading">
-        <h3 id="color-scheme-heading">
+        <h2 id="color-scheme-heading">
           Color scheme
-        </h3>
+        </h2>
         <div class="theme-scheme-grid">
           <UiRadioCard value="system">
             <ThemePreview appearance="system" />
@@ -46,16 +46,14 @@ const { selection, installedThemes, preferredAppearance, select, saveAndSelectTh
       </section>
 
       <section aria-labelledby="installed-themes-heading">
-        <div class="theme-section-heading">
-          <div>
-            <h3 id="installed-themes-heading">
-              Themes
-            </h3>
-            <p v-if="installedThemes.length === 0">
-              Add a community theme or import a theme file.
-            </p>
-          </div>
-        </div>
+        <header class="theme-section-heading">
+          <h2 id="installed-themes-heading">
+            Installed themes
+          </h2>
+          <p v-if="installedThemes.length === 0">
+            Add a community theme or import a theme file.
+          </p>
+        </header>
         <div
           v-if="installedThemes.length"
           class="theme-installed-grid"

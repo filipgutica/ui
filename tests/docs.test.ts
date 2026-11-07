@@ -219,7 +219,7 @@ describe('docs themes', () => {
     expect(choices.map(choice => choice.textContent?.trim())).toEqual(['System', 'Light', 'Dark'])
     expect(document.body.textContent).toContain('Color scheme')
     expect(document.body.textContent).toContain('Themes')
-    expect(wrapper.get('h2').text()).toBe('Add a theme')
+    expect(wrapper.findAll('h2').map(heading => heading.text())).toEqual(['Color scheme', 'Installed themes', 'Add a theme'])
     expect(wrapper.find('#open-vsx-query').exists()).toBe(true)
 
     choices[0]?.focus()

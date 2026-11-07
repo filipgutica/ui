@@ -286,8 +286,7 @@ pre,
 .fg-radio-card__content > span { color: var(--color-muted); font-size: var(--text-sm); }
 
 .theme-picker { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
-.theme-picker h3 { margin: 0; }
-.theme-picker section + section { padding-top: var(--space-6); border-top: 1px solid var(--color-border-subtle); }
+.theme-picker h2 { margin: 0; }
 .theme-scheme-grid,
 .theme-installed-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-3); }
 .theme-scheme-grid .fg-radio-card,
@@ -320,7 +319,6 @@ pre,
 .theme-preview__editor span:last-child { width: 52%; }
 .theme-preview__panel span:first-child { color: var(--preview-accent); }
 .theme-card-label { display: block; padding: var(--space-3); overflow: hidden; font-weight: var(--weight-medium); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
-.theme-section-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
 .theme-section-heading p { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--text-sm); }
 .add-theme-panel { display: grid; gap: var(--space-4); }
 .add-theme-panel__intro h3 { margin: 0; }
@@ -422,7 +420,6 @@ pre,
   .theme-installed-grid,
   .theme-results { grid-template-columns: 1fr; }
   .theme-picker { gap: var(--space-4); }
-  .theme-picker section + section { padding-top: var(--space-4); }
   .theme-preview { height: 5.5rem; }
   .theme-search-toolbar,
   .theme-drop-zone { align-items: flex-start; flex-direction: column; }
