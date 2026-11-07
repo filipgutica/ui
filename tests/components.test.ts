@@ -15,6 +15,7 @@ import {
   UiRadioCard,
   UiRadioCardGroup,
   UiScore,
+  UiSegmentedControl,
   UiSelect,
   UiSlider,
   UiSurface,
@@ -32,6 +33,7 @@ describe('application primitives', () => {
       mount(UiSwitch, { props: { label: 'Email notifications' } }),
       mount(UiSlider, { props: { label: 'Value' } }),
       mount(UiToggleButton).get('button'),
+      mount(UiSegmentedControl, { props: { label: 'View', items: [] } }),
     ]
 
     for (const control of controls) {
@@ -48,6 +50,7 @@ describe('application primitives', () => {
       mount(UiSwitch, { props: { label: 'Email notifications', size } }),
       mount(UiSlider, { props: { label: 'Value', size } }),
       mount(UiToggleButton, { props: { size } }).get('button'),
+      mount(UiSegmentedControl, { props: { label: 'View', items: [], size } }),
     ]
 
     for (const control of controls) {
@@ -252,6 +255,29 @@ describe('application primitives', () => {
     await button.trigger('click')
     expect(button.attributes('disabled')).toBe('')
     expect(wrapper.emitted('update:pressed')).toHaveLength(2)
+  })
+
+  it('presses one segmented option at a time and skips disabled options', async () => {
+    const wrapper = mount(UiSegmentedControl, {
+      props: {
+        label: 'View',
+        modelValue: 'list',
+        items: [
+          { value: 'list', label: 'List' },
+          { value: 'board', label: 'Board' },
+          { value: 'timeline', label: 'Timeline', disabled: true },
+        ],
+      },
+    })
+    expect(wrapper.attributes()).toMatchObject({ role: 'group', 'aria-label': 'View' })
+    const buttons = wrapper.findAll('button')
+    expect(buttons.map(button => button.text())).toEqual(['List', 'Board', 'Timeline'])
+    expect(buttons.map(button => button.attributes('aria-pressed'))).toEqual(['true', 'false', 'false'])
+    expect(buttons[0]!.attributes('aria-label')).toBeUndefined()
+
+    await buttons[1]!.trigger('click')
+    await buttons[2]!.trigger('click')
+    expect(wrapper.emitted('update:modelValue')).toEqual([['board']])
   })
 
   it('renders toggle-button description text inside the button', () => {

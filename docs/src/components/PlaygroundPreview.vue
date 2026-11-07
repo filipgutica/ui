@@ -19,6 +19,7 @@ import {
   UiRadioCard,
   UiRadioCardGroup,
   UiScore,
+  UiSegmentedControl,
   UiSelect,
   UiSlider,
   UiSwitch,
@@ -72,6 +73,12 @@ const singleRadioCardValue = computed({
   },
 })
 
+const segmentItems = [
+  { value: 'list', label: 'List' },
+  { value: 'board', label: 'Board' },
+  { value: 'timeline', label: 'Timeline' },
+]
+const segmentValue = ref('list')
 const figureProps = computed((): UiFigureProps => compact || numbered ? { number: 1 } : {})
 const dialogOpen = ref(false)
 const drawerOpen = ref(false)
@@ -365,6 +372,15 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
         />
         <span>{{ compact ? 64 : progressValue }}% complete</span>
       </div>
+
+      <UiSegmentedControl
+        v-else-if="slug === 'segmented-control'"
+        v-model="segmentValue"
+        label="View"
+        :items="segmentItems"
+        :disabled="disabled"
+        :size="controlSize"
+      />
 
       <UiSelect
         v-else-if="slug === 'select'"

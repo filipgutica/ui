@@ -224,48 +224,15 @@
   .fg-site-nav a[aria-current="location"] { box-shadow: inset 2px 0 0 var(--color-project); color: var(--color-text); font-weight: var(--weight-medium); }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
 
-  .fg-site-appearance {
-    display: inline-flex;
-    flex: none;
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-control);
-    /* A muted track, so the pressed choice reads as a raised thumb in both themes. */
-    background: var(--color-surface-muted);
-  }
-  .fg-site-appearance__choice {
-    display: inline-flex;
-    width: var(--control-lg);
-    min-height: var(--control-lg);
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 0;
-    color: var(--color-muted);
-    background: transparent;
-    font: inherit;
-    cursor: pointer;
-  }
-  .fg-site-appearance__choice + .fg-site-appearance__choice { border-left: 1px solid var(--color-border-subtle); }
-  .fg-site-appearance__choice:first-child { border-radius: var(--radius-control) 0 0 var(--radius-control); }
-  .fg-site-appearance__choice:last-child { border-radius: 0 var(--radius-control) var(--radius-control) 0; }
-  .fg-site-appearance__choice:hover { color: var(--color-text); background: var(--color-row-hover); }
-  /* The ring gives the pressed choice 3:1 against the track in both themes (WCAG 1.4.11). */
-  .fg-site-appearance__choice[aria-pressed="true"] {
-    color: var(--color-text);
-    background: var(--color-row-selected);
-    box-shadow: inset 0 0 0 1px var(--color-border);
-  }
-  /* Forced colors drop the fill and the ring, so the pressed choice takes the system highlight. */
+  /* Forced colors drop the inset marker, so the current link takes a system border. */
   @media (forced-colors: active) {
     .fg-site-nav a[aria-current] { border-inline-start: 2px solid Highlight; }
-    .fg-site-appearance__choice[aria-pressed="true"] { forced-color-adjust: none; color: HighlightText; background: Highlight; }
   }
 
   /* Focus is a 2px outline outside the control, which forced-colors mode keeps. An
    * inset ring is used only where a scrolling ancestor would clip an outer one. */
   .fg-site-header a:focus-visible,
-  .fg-site-projects__trigger:focus-visible,
-  .fg-site-appearance__choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-site-projects__trigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
   /* Inset: the desktop rail and the phone drawer scroll. */
   .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 

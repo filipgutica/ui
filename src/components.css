@@ -5,7 +5,7 @@
   /* Package-owned typography keeps controls consistent across consuming apps. */
   .fg-button, .fg-input, .fg-select, .fg-checkbox, .fg-field,
   .fg-radio-card, .fg-badge, .fg-alert, .fg-surface, .fg-card,
-  .fg-dialog__content, .fg-code-block, .fg-toggle-button, .fg-switch {
+  .fg-dialog__content, .fg-code-block, .fg-toggle-button, .fg-switch, .fg-segmented {
     font-family: var(--font-ui);
     font-size: var(--text-md);
     font-weight: var(--weight-regular);
@@ -172,7 +172,8 @@
   .fg-select:disabled,
   .fg-checkbox[data-disabled="true"],
   .fg-switch[data-disabled="true"],
-  .fg-toggle-button:disabled {
+  .fg-toggle-button:disabled,
+  .fg-segmented__item:disabled {
     cursor: not-allowed;
     opacity: 0.58;
   }
@@ -721,6 +722,49 @@
   .fg-toggle-button:hover:not(:disabled, [aria-pressed="true"]) { border-color: var(--color-border); }
   .fg-toggle-button[aria-pressed="true"] { border-color: var(--color-accent); }
 
+  /* Segmented control: one pressed choice on a muted track, so it reads as a raised thumb in both themes. */
+  .fg-segmented {
+    --fg-segmented-item: var(--control-md);
+    /* The thumb is lighter than the track in both themes; the dark raised surface is darker than the track. */
+    --fg-segmented-thumb: light-dark(var(--color-row-selected), color-mix(in srgb, var(--color-text) 10%, var(--color-surface-muted)));
+    display: inline-flex;
+    flex: none;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-muted);
+  }
+  .fg-segmented[data-size="sm"] { --fg-segmented-item: var(--control-sm); font-size: var(--text-sm); }
+  .fg-segmented[data-size="lg"] { --fg-segmented-item: var(--control-lg); font-size: var(--text-lg); }
+  .fg-segmented__item {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    gap: var(--space-2);
+    min-height: var(--fg-segmented-item);
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--radius-control);
+    color: var(--color-muted);
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+  }
+  .fg-segmented[data-icon-only="true"] .fg-segmented__item { width: var(--fg-segmented-item); padding: 0; }
+  /* The thumb is inset inside each full-size button, so it floats on the track and the hit target keeps its size. */
+  .fg-segmented__item::before { content: ""; position: absolute; inset: 2px; z-index: -1; border-radius: var(--radius-inline); }
+  .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }
+  .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"])::before { background: color-mix(in srgb, var(--fg-segmented-thumb) 45%, transparent); }
+  /* The ring gives the pressed choice 3:1 against the track in both themes (WCAG 1.4.11). */
+  .fg-segmented__item[aria-pressed="true"] { color: var(--color-text); }
+  /* Drawn inside the button, the ring hugs the thumb instead of reaching the next choice. */
+  .fg-segmented .fg-segmented__item:focus-visible { outline-offset: -2px; }
+  .fg-segmented__item[aria-pressed="true"]::before {
+    background: var(--fg-segmented-thumb);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+
   .fg-switch { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
   .fg-switch__control {
     display: inline-flex;
@@ -943,6 +987,7 @@
   .fg-dialog__close:focus-visible,
   .fg-dialog__content:focus-visible,
   .fg-toggle-button:focus-visible,
+  .fg-segmented__item:focus-visible,
   .fg-switch__control:focus-visible .fg-switch__track {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
@@ -979,6 +1024,9 @@
   }
 
   @media (forced-colors: active) {
+    /* Forced colors drop the fill and the ring, so the pressed choice takes the system highlight. */
+    .fg-segmented__item[aria-pressed="true"] { forced-color-adjust: none; color: HighlightText; }
+    .fg-segmented__item[aria-pressed="true"]::before { forced-color-adjust: none; background: Highlight; }
     .fg-switch__track { border-color: ButtonText; background: Canvas; }
     .fg-switch__track::after { background: ButtonText; }
     .fg-switch__control[aria-checked="true"] .fg-switch__track { border-color: Highlight; background: Highlight; forced-color-adjust: none; }

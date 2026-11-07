@@ -378,6 +378,38 @@ export const componentDocs: ComponentDoc[] = [
   },
   {
     category: 'Forms',
+    slug: 'segmented-control',
+    name: 'UiSegmentedControl',
+    title: 'Segmented control',
+    summary: 'Picks one of two to five short options that apply at once, such as a view mode or color theme.',
+    usage: [
+      'Use a segmented control when every option fits in one row and choosing one takes effect immediately.',
+      'For longer or unknown lists, use UiSelect. For choices that need descriptions, use UiRadioCardGroup.',
+      'Each option is a button with aria-pressed inside a group named by label, and each button is a Tab stop.',
+      'With iconOnly, pass an icon through the icon slot; each item label becomes the button name and tooltip.',
+    ],
+    props: [
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Disables every option. An item can also set disabled on its own.' },
+      { name: 'iconOnly', required: false, type: 'boolean', default: 'false', description: 'Hides the visible labels and uses them as each button\'s accessible name and tooltip.' },
+      { name: 'items', required: true, type: 'readonly { value: string; label: string; disabled?: boolean }[]', description: 'The options, in display order.' },
+      { name: 'label', required: true, type: 'string', description: 'Accessible name for the group.' },
+      { name: 'modelValue', required: false, type: 'string', description: 'The pressed option\'s value, bound through v-model.' },
+      { name: 'size', required: false, type: "'sm' | 'md' | 'lg'", default: "'md'", description: 'Sets the shared control density.' },
+    ],
+    slots: [
+      { name: 'icon', type: '{ item: UiSegmentedItem; pressed: boolean }', description: 'Icon shown before each label, or alone with iconOnly. Mark it aria-hidden.' },
+    ],
+    events: [
+      { name: 'update:modelValue', type: 'string', description: 'Emitted with an option\'s value when it is clicked.' },
+    ],
+    example: {
+      title: 'View mode',
+      description: 'The pressed option shows the current view.',
+      code: `<UiSegmentedControl\n  v-model="view"\n  label="View"\n  :items="[\n    { value: 'list', label: 'List' },\n    { value: 'board', label: 'Board' },\n    { value: 'timeline', label: 'Timeline' },\n  ]"\n/>`,
+    },
+  },
+  {
+    category: 'Forms',
     slug: 'select',
     name: 'UiSelect',
     title: 'Select',
