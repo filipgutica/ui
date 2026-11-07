@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url'
 
 import { expect, test } from '@playwright/test'
 
+import { contrast } from '../tests/contrast.js'
+
 // The docs dev server serves this fixture through Vite's /@fs/ route, so it uses the real components.
 const fixture = `/@fs${fileURLToPath(new URL('./fixtures/site.html', import.meta.url))}`
 
@@ -430,4 +432,53 @@ test('reveals the selected tab again when the viewport narrows', async ({ page }
     const tab = await last.boundingBox()
     return (tab?.x ?? 0) + (tab?.width ?? Infinity) <= (bounds?.x ?? 0) + (bounds?.width ?? 0) + 1
   }, 'Dry run in view after narrowing to 320px').toBe(true)
+})
+
+
+test('keeps selected tabs lifted, readable, and stable on docs and terminal surfaces', async ({ page }) => {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme, forcedColors: 'none', reducedMotion: 'reduce' })
+    for (const url of ['/#/sandbox/tabs', fixture]) {
+      await page.goto(url)
+      const tabs = page.locator('.fg-tabs__list').first()
+      const selected = tabs.getByRole('tab').nth(0)
+      const other = tabs.getByRole('tab').nth(1)
+      await expect(selected).toBeVisible()
+      await page.evaluate(theme => document.documentElement.classList.toggle('dark', theme === 'dark'), colorScheme)
+      const colors = await selected.evaluate(element => {
+        const style = getComputedStyle(element)
+        const context = document.createElement('canvas').getContext('2d')!
+        const hex = (color: string, underlay: string) => {
+          context.clearRect(0, 0, 1, 1)
+          context.fillStyle = underlay
+          context.fillRect(0, 0, 1, 1)
+          context.fillStyle = color
+          context.fillRect(0, 0, 1, 1)
+          return '#' + [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(channel => channel.toString(16).padStart(2, '0')).join('')
+        }
+        const ancestors: Element[] = []
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) ancestors.unshift(parent)
+        const surface = ancestors.reduce((underlay, ancestor) => hex(getComputedStyle(ancestor).backgroundColor, underlay), '#ffffff')
+        const background = hex(style.backgroundColor, surface)
+        return { background, foreground: hex(style.color, background), fill: style.backgroundColor, surface }
+      })
+      expect(colors.background, `${colorScheme} ${url} selected fill`).not.toBe(colors.surface)
+      expect(contrast(colors.foreground, colors.background), `${colorScheme} ${url} text contrast`).toBeGreaterThanOrEqual(4.5)
+      await expect(other).not.toHaveCSS('background-color', colors.fill)
+      await expect(selected).not.toHaveCSS('box-shadow', 'none')
+      await expect(selected).toHaveCSS('border-bottom-width', '0px')
+      await expect(selected).toHaveCSS('border-radius', '10px')
+      const bounds = await other.boundingBox()
+      await selected.hover()
+      await expect(selected).toHaveCSS('background-color', colors.fill)
+      await other.click()
+      expect(await other.boundingBox()).toEqual(bounds)
+      await expect(other).toHaveCSS('background-color', colors.fill)
+      await page.emulateMedia({ forcedColors: 'active' })
+      await expect(other).toHaveCSS('border-top-style', 'solid')
+      await expect(other).toHaveCSS('border-top-width', '2px')
+      await expect(selected).toHaveCSS('border-top-width', '0px')
+      await page.emulateMedia({ forcedColors: 'none' })
+    }
+  }
 })
