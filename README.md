@@ -33,7 +33,7 @@ Import the styles from your application stylesheet:
 ```
 
 The third import adds Graphite Indigo's site typography and layout roles. Both
-the base theme and Graphite Indigo use neutral surfaces, ink primary buttons,
+the base theme and Graphite Indigo use neutral surfaces, project-hue primary buttons,
 and the ui project hue for checked and selected states.
 
 `theme.css` loads the package's own IBM Plex Sans and IBM Plex Mono latin woff2
@@ -202,7 +202,9 @@ breakpoint.
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
 Set `--color-project-dark` to the dark variant in both appearances, so prompts
 and capture tab underlines stay readable on terminal plates. The default hue
-belongs to ui. Primary buttons stay ink on paper in both appearances.
+belongs to ui. Primary buttons use `--color-accent` with `--color-accent-text` in both appearances.
+Command plates use `--color-command-bg` and `--color-command-border`, derived from the
+project hue. Terminal captures keep the neutral `--color-terminal` palette.
 
 Compact shell or plain-text `UiCodeBlock` rows and untitled shell blocks are
 terminal commands. Their CSS prompt stays out of copied and accessible text.

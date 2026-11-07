@@ -22,7 +22,7 @@
     background: var(--color-code);
     color: var(--color-code-text);
   }
-  /* Terminal commands always use the dark palette, independent of the page theme. */
+  /* Commands stay dark and carry the project hue; captures use the neutral terminal tokens. */
   .fg-code-block[data-command="true"] {
     --color-code-text: var(--color-terminal-text);
     --color-muted: var(--color-terminal-caption-text);
@@ -38,10 +38,10 @@
     --color-syntax-punctuation: var(--color-terminal-text);
     --color-syntax-tag: var(--color-terminal-text);
     --color-syntax-attribute: var(--color-terminal-text);
-    border-color: var(--color-terminal-border);
-    background: var(--color-terminal);
+    border-color: var(--color-command-border, var(--color-terminal-border));
+    background: var(--color-command-bg, var(--color-terminal));
   }
-  .fg-code-block[data-command="true"] .fg-code-block__header { background: transparent; border-color: var(--color-terminal-border); }
+  .fg-code-block[data-command="true"] .fg-code-block__header { background: transparent; border-color: var(--color-command-border, var(--color-terminal-border)); }
   .fg-code-block[data-command="true"] .fg-code-block__line::before {
     content: '$ ' / '';
     flex: none;

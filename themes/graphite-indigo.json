@@ -43,7 +43,7 @@
       }
     },
     {
-      "comment": "Project hue for selection; ink primary actions; links and focus stay separate.",
+      "comment": "Project hue for primary actions and selection; links and focus stay separate.",
       "tokens": {
         "project": [
           "#4b45d1",
@@ -57,7 +57,8 @@
           "#0b5f7c",
           "#67c1df"
         ],
-        "focus": "{link}"
+        "focus": "{link}",
+        "button-hover": "color-mix(in srgb, {accent} 85%, {text})"
       }
     },
     {
@@ -100,6 +101,14 @@
     {
       "comment": "Code",
       "tokens": {
+        "command-bg": [
+          "color-mix(in srgb, {project} 25%, #101010)",
+          "color-mix(in srgb, {project} 16%, black)"
+        ],
+        "command-border": [
+          "transparent",
+          "color-mix(in srgb, {project} 28%, black)"
+        ],
         "terminal": "#0a0c0e",
         "terminal-text": "#e6e9eb",
         "terminal-border": "#2a3036",
@@ -218,12 +227,13 @@
       "--color-muted": "text-muted",
       "--color-link": "link",
       "--color-accent": "accent",
+      "--color-accent-text": "accent-text",
       "--color-focus": "focus",
       "--color-border": "border",
       "--color-border-subtle": "border-subtle",
-      "--color-button-bg": "text",
-      "--color-button-text": "bg",
-      "--color-button-hover": "text-muted",
+      "--color-button-bg": "accent",
+      "--color-button-text": "accent-text",
+      "--color-button-hover": "button-hover",
       "--color-input-bg": "surface-raised",
       "--color-input-text": "text",
       "--color-input-border": "border",
@@ -260,8 +270,9 @@
       "--color-terminal-border": "terminal-border",
       "--color-terminal-caption": "terminal-caption",
       "--color-terminal-caption-text": "terminal-caption-text",
-      "--color-accent-text": "accent-text",
-      "--color-accent-hover": "accent-hover"
+      "--color-accent-hover": "accent-hover",
+      "--color-command-bg": "command-bg",
+      "--color-command-border": "command-border"
     },
     "aliases": {
       "font-sans": "--font-ui",

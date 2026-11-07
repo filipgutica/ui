@@ -17,7 +17,7 @@
   color-scheme: light;
 
   /* Neutral paper and graphite surfaces. */
-  --bg: #f4f5f6; /* ui: --color-bg, --color-button-text */
+  --bg: #f4f5f6; /* ui: --color-bg */
   --surface: #e9ebed; /* ui: --color-surface */
   --surface-raised: #fbfbfc; /* ui: --color-surface-raised, --color-input-bg */
   --surface-hover: #e2e5e8; /* ui: --color-surface-muted */
@@ -25,17 +25,18 @@
   --row-selected: var(--surface-raised); /* ui: --color-row-selected */
   --border-subtle: #d3d8dd; /* ui: --color-border-subtle */
   --border: #6d747b; /* ui: --color-border, --color-input-border */
-  --text: #101315; /* ui: --color-text, --color-button-bg, --color-input-text, --color-row-selected-text, --color-status-text */
-  --text-muted: #50575e; /* ui: --color-muted, --color-button-hover, --color-input-placeholder, --color-syntax-operator, --color-syntax-punctuation */
+  --text: #101315; /* ui: --color-text, --color-input-text, --color-row-selected-text, --color-status-text */
+  --text-muted: #50575e; /* ui: --color-muted, --color-input-placeholder, --color-syntax-operator, --color-syntax-punctuation */
 
-  /* Project hue for selection; ink primary actions; links and focus stay separate. */
+  /* Project hue for primary actions and selection; links and focus stay separate. */
   --project: #4b45d1; /* ui: --color-project */
   --project-dark: #a5a1ff; /* ui: --color-project-dark */
-  --accent: var(--project); /* ui: --color-accent, --color-progress */
-  --accent-text: var(--bg); /* ui: --color-accent-text */
+  --accent: var(--project); /* ui: --color-accent, --color-button-bg, --color-progress */
+  --accent-text: var(--bg); /* ui: --color-accent-text, --color-button-text */
   --accent-hover: var(--text); /* ui: --color-accent-hover */
   --link: #0b5f7c; /* ui: --color-link */
   --focus: var(--link); /* ui: --color-focus */
+  --button-hover: color-mix(in srgb, var(--accent) 85%, var(--text)); /* ui: --color-button-hover */
 
   /* Status: only for state, never for decoration. */
   --success: #157249; /* ui: --color-success */
@@ -48,6 +49,8 @@
   --info-soft: #d9e3f2; /* ui: --color-info-surface */
 
   /* Code */
+  --command-bg: color-mix(in srgb, var(--project) 25%, #101010); /* ui: --color-command-bg */
+  --command-border: transparent; /* ui: --color-command-border */
   --terminal: #0a0c0e; /* ui: --color-terminal */
   --terminal-text: #e6e9eb; /* ui: --color-terminal-text */
   --terminal-border: #2a3036; /* ui: --color-terminal-border */
@@ -142,6 +145,8 @@
     --warning-soft: #2f281b;
     --danger-soft: #312020;
     --info-soft: #202938;
+    --command-bg: color-mix(in srgb, var(--project) 16%, black);
+    --command-border: color-mix(in srgb, var(--project) 28%, black);
     --code-key: #d8c2a5;
     --code-string: #a8bd9c;
     --code-number: #d5b98c;
@@ -171,6 +176,8 @@
   --warning-soft: #2f281b;
   --danger-soft: #312020;
   --info-soft: #202938;
+  --command-bg: color-mix(in srgb, var(--project) 16%, black);
+  --command-border: color-mix(in srgb, var(--project) 28%, black);
   --code-key: #d8c2a5;
   --code-string: #a8bd9c;
   --code-number: #d5b98c;

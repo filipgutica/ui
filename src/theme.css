@@ -49,9 +49,9 @@
   --color-border: #6d747b;
   --color-border-subtle: #d3d8dd;
   --color-field-edge: transparent;
-  --color-button-bg: #101315;
-  --color-button-text: #f4f5f6;
-  --color-button-hover: #50575e;
+  --color-button-bg: var(--color-accent);
+  --color-button-text: var(--color-accent-text);
+  --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
   --color-input-bg: #fbfbfc;
   --color-input-text: #101315;
   --color-input-border: #6d747b;
@@ -101,6 +101,9 @@
   --color-accent-hover: var(--color-text);
   --color-project-dark: #a5a1ff;
   --color-status-text: #101315;
+  /* Commands carry the project hue; terminal captures keep their neutral palette. */
+  --color-command-bg: color-mix(in srgb, var(--color-project) 25%, #101010);
+  --color-command-border: transparent;
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
@@ -127,9 +130,9 @@
   --color-border-subtle: #262d33;
   /* The dark well sits within 1.1:1 of the canvas and panels, so a faint edge outlines fields. */
   --color-field-edge: var(--color-border-subtle);
-  --color-button-bg: #e6e9eb;
-  --color-button-text: #0d1012;
-  --color-button-hover: #9aa3ab;
+  --color-button-bg: var(--color-accent);
+  --color-button-text: var(--color-accent-text);
+  --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
   --color-input-bg: #181d21;
   --color-input-text: #e6e9eb;
   --color-input-border: #78818a;
@@ -170,6 +173,8 @@
   --color-success-surface: #172d25;
   --color-info-surface: #202938;
   --color-status-text: #e6e9eb;
+  --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
+  --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
