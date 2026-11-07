@@ -164,6 +164,11 @@
     cursor: pointer;
   }
 
+  /* A link that looks like an action uses the same class, with data-variant and data-size. */
+  a.fg-button {
+    text-decoration: none;
+  }
+
   .fg-button:hover:not(:disabled) {
     background: var(--color-button-hover);
   }
@@ -267,18 +272,18 @@
     box-shadow: none;
   }
 
+  /* Danger rises, hovers, and sinks like the other filled variants. Its text mixes the error hue
+   * toward body text, as status badges do, so it stays readable on the tinted fill. */
   .fg-button[data-variant="danger"] {
-    --fg-button-shadow: 0 0 0 0 transparent;
-    color: var(--color-status-text, var(--color-error));
+    color: color-mix(in srgb, var(--color-error) 75%, var(--color-text));
     background: var(--color-error-surface);
-    box-shadow: none;
+  }
+  :root.dark .fg-button[data-variant="danger"] {
+    color: color-mix(in srgb, var(--color-error) 85%, var(--color-text));
   }
 
   .fg-button[data-variant="danger"]:hover:not(:disabled) {
-    border-color: var(--color-error);
-    color: var(--color-status-text, var(--color-error));
-    background: var(--color-error-surface);
-    box-shadow: none;
+    background: color-mix(in srgb, var(--color-error) 10%, var(--color-error-surface));
   }
 
   .fg-button[data-variant="text"] {
@@ -298,12 +303,16 @@
     background: transparent;
   }
 
-  /* Keep press specificity level with focus so its halo can wrap the sink shadow. */
-  .fg-button:where(:not([data-variant="danger"], [data-variant="text"])):is(:active, [aria-pressed="true"]):not(:disabled) {
+  /* A press sinks the button 1px into the page and darkens its fill, so the click reads at a glance. */
+  .fg-button:where(:not([data-variant="text"])):is(:active, [aria-pressed="true"]):not(:disabled) {
     --fg-button-shadow: var(--shadow-sink);
     box-shadow: var(--fg-button-shadow);
+    transform: translateY(1px);
   }
-  .fg-button[data-variant="secondary"]:is(:active, [aria-pressed="true"]):not(:disabled) { background: var(--color-well); }
+  .fg-button:where([data-variant="secondary"], [data-variant="ghost"]):is(:active, [aria-pressed="true"]):not(:disabled) { background: var(--color-well); }
+  .fg-button[data-variant="danger"]:is(:active, [aria-pressed="true"]):not(:disabled) {
+    background: color-mix(in srgb, var(--color-error) 16%, var(--color-error-surface));
+  }
   .fg-button:disabled { box-shadow: none; }
 
   .fg-input,
@@ -1075,8 +1084,8 @@
     to { transform: rotate(360deg); }
   }
 
-  /* One quiet ring for controls: a 1.5px accent outline with a 2px gap, no glow, over the
-   * control's own raise or sink shadow. */
+  /* One ring for controls: a 2px accent outline with a 2px gap, no glow, over the control's own
+   * raise or sink shadow. It matches the 2px focus outline on links, navigation, and tabs. */
   .fg-button:focus-visible,
   .fg-checkbox__control:focus-visible,
   .fg-radio-card:focus-visible,
@@ -1086,7 +1095,7 @@
   .fg-toggle-button:focus-visible,
   .fg-segmented__item:focus-visible,
   .fg-switch__control:focus-visible .fg-switch__track {
-    outline: 1.5px solid var(--color-accent);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
 
@@ -1135,16 +1144,6 @@
   }
 
   @media (forced-colors: active) {
-    /* System colors flatten fills and shadows, so focus keeps a full 2px ring here. */
-    .fg-button:focus-visible,
-    .fg-checkbox__control:focus-visible,
-    .fg-radio-card:focus-visible,
-    .fg-slider__thumb:focus-visible,
-    .fg-dialog__close:focus-visible,
-    .fg-dialog__content:focus-visible,
-    .fg-toggle-button:focus-visible,
-    .fg-segmented__item:focus-visible,
-    .fg-switch__control:focus-visible .fg-switch__track { outline-width: 2px; }
     .fg-radio-card[data-state="checked"] .fg-radio-card__indicator {
       forced-color-adjust: none;
       border-color: Highlight;

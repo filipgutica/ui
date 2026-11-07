@@ -726,7 +726,8 @@ test('keeps the project menu current state distinct and restores keyboard focus'
 
 test('keeps status labels readable on their colored fills in both appearances', async ({ page }) => {
   for (const colorScheme of ['light', 'dark'] as const) {
-    await page.emulateMedia({ colorScheme })
+    // Reduced motion settles each fill at once, so contrast is read from the final colors.
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
     for (const slug of ['badge', 'alert', 'button']) {
       await page.goto(`/#/sandbox/${slug}`)
       const statuses = page.locator(`.playground-stage .fg-${slug}`)
