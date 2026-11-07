@@ -195,5 +195,6 @@
   --color-ui-info: var(--color-info);
   --radius-ui-inline: var(--radius-inline);
   --radius-ui-control: var(--radius-control);
+  --radius-ui-field: var(--radius-field);
   --radius-ui-panel: var(--radius-panel);
 }

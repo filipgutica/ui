@@ -305,6 +305,7 @@
   .fg-input,
   .fg-select {
     width: 100%;
+    border-radius: var(--radius-field);
     color: var(--color-input-text);
     border-color: var(--color-field-edge);
     background: var(--color-well);
@@ -836,10 +837,18 @@
   .fg-switch[data-size="sm"] .fg-switch__control { min-height: var(--control-sm); }
   .fg-switch[data-size="lg"] { font-size: var(--text-lg); }
   .fg-switch[data-size="lg"] .fg-switch__control { min-height: var(--control-lg); }
-  /* The visible track scales with size; the thumb travels the track width minus its height. */
-  .fg-switch { --fg-switch-width: 2.25rem; --fg-switch-height: 1.25rem; }
-  .fg-switch[data-size="sm"] { --fg-switch-width: 1.75rem; --fg-switch-height: 1rem; }
-  .fg-switch[data-size="lg"] { --fg-switch-width: 2.75rem; --fg-switch-height: 1.5rem; }
+  /* Match Kongponents' 44 × 22px default track and 18px thumb; scale both toggle controls together. */
+  .fg-switch,
+  .fg-toggle-button {
+    --fg-switch-scale: 1;
+    --fg-switch-width: calc(2.75rem * var(--fg-switch-scale));
+    --fg-switch-height: calc(1.375rem * var(--fg-switch-scale));
+    --fg-switch-inset: calc(0.125rem * var(--fg-switch-scale));
+  }
+  .fg-switch[data-size="sm"],
+  .fg-toggle-button[data-size="sm"] { --fg-switch-scale: 0.8; }
+  .fg-switch[data-size="lg"],
+  .fg-toggle-button[data-size="lg"] { --fg-switch-scale: 1.2; }
   .fg-switch__text { display: grid; min-width: 0; overflow-wrap: anywhere; }
   .fg-switch__text label { cursor: pointer; }
   .fg-switch[data-disabled="true"] :is(button, label) { cursor: not-allowed; }
@@ -850,24 +859,31 @@
   .fg-switch__track {
     position: relative;
     flex: none;
-    width: 1.75rem;
-    height: 1rem;
-    border: 1px solid var(--color-border);
+    box-sizing: border-box;
+    width: var(--fg-switch-width);
+    height: var(--fg-switch-height);
+    /* Preserve the edge for forced colors; the off track fill supplies the normal state cue. */
+    border: 1px solid transparent;
     border-radius: var(--radius-pill);
-    background: var(--color-well);
+    background: var(--color-switch-off-track, color-mix(in srgb, var(--color-border) 90%, var(--color-well)));
     box-shadow: var(--shadow-sink);
     transition: background-color var(--duration) var(--ease-out), border-color var(--duration) var(--ease-out);
+  }
+
+  /* Imported themes validate this track against the toggle button's own fill instead of the canvas. */
+  .fg-toggle-button__switch {
+    background: var(--color-toggle-switch-off-track, var(--color-switch-off-track, color-mix(in srgb, var(--color-border) 90%, var(--color-well))));
   }
 
   .fg-toggle-button__switch::after,
   .fg-switch__track::after {
     position: absolute;
-    top: 0.125rem;
-    left: 0.125rem;
-    width: 0.625rem;
-    height: 0.625rem;
+    top: calc(var(--fg-switch-inset) - 1px);
+    left: calc(var(--fg-switch-inset) - 1px);
+    width: calc(var(--fg-switch-height) - 2 * var(--fg-switch-inset));
+    height: calc(var(--fg-switch-height) - 2 * var(--fg-switch-inset));
     border-radius: var(--radius-pill);
-    background: var(--color-surface-raised);
+    background: var(--color-switch-off-thumb, var(--color-surface-raised));
     box-shadow: var(--shadow-raise);
     content: "";
     transition: transform var(--duration) var(--ease-out), background-color var(--duration) var(--ease-out);
@@ -882,12 +898,6 @@
   .fg-toggle-button[aria-pressed="true"] .fg-toggle-button__switch::after,
   .fg-switch__control[aria-checked="true"] .fg-switch__track::after {
     background: var(--color-accent-text);
-    transform: translateX(0.75rem);
-  }
-
-  .fg-switch__track { box-sizing: border-box; width: var(--fg-switch-width); height: var(--fg-switch-height); }
-  .fg-switch__track::after { width: calc(var(--fg-switch-height) - 0.375rem); height: calc(var(--fg-switch-height) - 0.375rem); }
-  .fg-switch__control[aria-checked="true"] .fg-switch__track::after {
     transform: translateX(calc(var(--fg-switch-width) - var(--fg-switch-height)));
   }
 
@@ -1107,9 +1117,13 @@
     /* Forced colors drop the fill and the ring, so the pressed choice takes the system highlight. */
     .fg-segmented__item[aria-pressed="true"] { forced-color-adjust: none; color: HighlightText; }
     .fg-segmented__item[aria-pressed="true"]::before { forced-color-adjust: none; background: Highlight; }
+    .fg-toggle-button__switch,
     .fg-switch__track { border-color: ButtonText; background: Canvas; }
+    .fg-toggle-button__switch::after,
     .fg-switch__track::after { background: ButtonText; }
+    .fg-toggle-button[aria-pressed="true"] .fg-toggle-button__switch,
     .fg-switch__control[aria-checked="true"] .fg-switch__track { border-color: Highlight; background: Highlight; forced-color-adjust: none; }
+    .fg-toggle-button[aria-pressed="true"] .fg-toggle-button__switch::after,
     .fg-switch__control[aria-checked="true"] .fg-switch__track::after { background: HighlightText; }
   }
 

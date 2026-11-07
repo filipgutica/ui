@@ -53,6 +53,20 @@ for (const { slug, role, name, state, track } of [
     await page.goto(`/#/sandbox/${slug}`)
     const toggle = page.locator('.playground-stage').getByRole(role, { name, exact: true })
     await expect(toggle).toHaveAttribute(state, 'false')
+    for (const [size, scale] of [['sm', 0.8], ['md', 1], ['lg', 1.2]] as const) {
+      await page.getByLabel('Size', { exact: true }).selectOption(size)
+      const dimensions = await toggle.locator(track).evaluate(element => {
+        const bounds = element.getBoundingClientRect()
+        const thumb = getComputedStyle(element, '::after')
+        return { width: bounds.width, height: bounds.height, thumbWidth: Number.parseFloat(thumb.width), thumbHeight: Number.parseFloat(thumb.height) }
+      })
+      expect(dimensions.width).toBeCloseTo(44 * scale, 1)
+      expect(dimensions.height).toBeCloseTo(22 * scale, 1)
+      expect(dimensions.thumbWidth).toBeCloseTo(18 * scale, 1)
+      expect(dimensions.thumbHeight).toBeCloseTo(18 * scale, 1)
+    }
+    await page.getByLabel('Size', { exact: true }).selectOption('md')
+    expect((await toggle.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(36)
     await toggle.focus()
     await toggle.press('Space')
     await expect(toggle).toHaveAttribute(state, 'true')
@@ -75,43 +89,105 @@ for (const { slug, role, name, state, track } of [
   })
 }
 
-test('keeps switch boundaries and thumb positions distinct in both themes and forced colors', async ({ page }) => {
-  for (const colorScheme of ['light', 'dark'] as const) {
-    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
-    await page.goto('/#/sandbox/switch')
-    const toggle = page.getByRole('switch', { name: 'Email notifications', exact: true })
-    const track = toggle.locator('.fg-switch__track')
-    const background = await page.locator('.playground-stage').evaluate(element => {
-      const channels = getComputedStyle(element).backgroundColor.match(/\d+/g)!
-      return `#${channels.slice(0, 3).map(channel => Number(channel).toString(16).padStart(2, '0')).join('')}`
-    })
-    for (const checked of [false, true]) {
-      if (checked) await toggle.click()
-      const border = await track.evaluate(element => {
-        const channels = getComputedStyle(element).borderColor.match(/\d+/g)!
-        return `#${channels.slice(0, 3).map(channel => Number(channel).toString(16).padStart(2, '0')).join('')}`
-      })
-      expect(contrast(border, background)).toBeGreaterThanOrEqual(3)
+test('keeps borderless switch cues visible on canvas and panels in both themes and forced colors', async ({ page }) => {
+  for (const { slug, role, name, state, selector } of [
+    { slug: 'switch', role: 'switch', name: 'Email notifications', state: 'aria-checked', selector: '.fg-switch__track' },
+    { slug: 'toggle-button', role: 'button', name: 'Tests with signal Pillar 3', state: 'aria-pressed', selector: '.fg-toggle-button__switch' },
+  ] as const) {
+    for (const { colorScheme, palette, checkedStates } of [
+      { colorScheme: 'light', palette: null, checkedStates: [false, true] },
+      { colorScheme: 'dark', palette: null, checkedStates: [false, true] },
+      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#ffffff', border: '#929292' }, checkedStates: [false, true] },
+      { colorScheme: 'dark', palette: { background: '#202020', raised: '#202020', border: '#707070' }, checkedStates: [false, true] },
+      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000066', border: '#000000' }, checkedStates: [false] },
+      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000055', border: '#00000080' }, checkedStates: [false] },
+      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000080', border: '#000000' }, checkedStates: [false] },
+    ] as const) {
+      await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
+      await page.goto('/#/themes')
+      if (palette) {
+        const name = `Switch ${colorScheme} ${palette.raised}`
+        const fileChooser = page.waitForEvent('filechooser')
+        await page.getByRole('button', { name: 'Choose file', exact: true }).click()
+        await (await fileChooser).setFiles({
+          name: `${name}.json`,
+          mimeType: 'application/json',
+          buffer: Buffer.from(JSON.stringify({
+            name,
+            type: colorScheme,
+            colors: {
+              'editor.background': palette.background,
+              'editor.foreground': colorScheme === 'light' ? '#000000' : '#ffffff',
+              'sideBar.background': palette.background,
+              'panel.background': palette.raised,
+              'panel.border': palette.border,
+            },
+          })),
+        })
+        await expect(page.getByRole('radio', { name, exact: true })).toBeChecked()
+      } else {
+        await page.getByRole('radio', { name: colorScheme === 'light' ? 'Light' : 'Dark', exact: true }).click()
+      }
+      await page.goto(`/#/sandbox/${slug}`)
+      const stage = page.locator('.playground-stage')
+      const toggle = stage.getByRole(role, { name, exact: true })
+      const track = toggle.locator(selector)
+      // The stage is transparent by default. Paint each real host surface rather than reading it as black.
+      for (const surface of ['--color-bg', '--color-surface-raised']) {
+        await stage.evaluate((element, token) => { element.style.background = `var(${token})` }, surface)
+        for (const checked of checkedStates) {
+          if (await toggle.getAttribute(state) !== String(checked)) await toggle.click()
+          const colors = await track.evaluate(element => {
+            const context = document.createElement('canvas').getContext('2d')!
+            // Resolve alpha independently over the surface each color actually sits on.
+            const hex = (color: string, underlay: string) => {
+              context.fillStyle = underlay
+              context.fillRect(0, 0, 1, 1)
+              context.fillStyle = color
+              context.fillRect(0, 0, 1, 1)
+              return '#' + [...context.getImageData(0, 0, 1, 1).data].slice(0, 3)
+                .map(channel => channel.toString(16).padStart(2, '0')).join('')
+            }
+            const canvas = getComputedStyle(document.documentElement).getPropertyValue('--color-bg')
+            const ancestors: Element[] = []
+            for (let parent = element.parentElement; parent; parent = parent.parentElement) ancestors.unshift(parent)
+            const surface = ancestors.reduce((underlay, ancestor) => hex(getComputedStyle(ancestor).backgroundColor, underlay), canvas)
+            const track = hex(getComputedStyle(element).backgroundColor, surface)
+            return {
+              track,
+              thumb: hex(getComputedStyle(element, '::after').backgroundColor, track),
+              surface,
+            }
+          })
+          expect(contrast(colors.track, colors.surface), `${slug} ${colorScheme} imported=${!!palette} ${surface} checked=${checked}`).toBeGreaterThanOrEqual(3)
+          expect(contrast(colors.thumb, colors.track)).toBeGreaterThanOrEqual(3)
+          if (!checked) await expect(track).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
+        }
+      }
+      if (await toggle.getAttribute(state) !== 'true') await toggle.click()
+      await page.emulateMedia({ forcedColors: 'active' })
+      await toggle.focus()
+      await toggle.press('Space')
+      const ring = slug === 'switch' ? track : toggle
+      await expect(ring).toHaveCSS('outline-style', 'solid')
+      await expect(ring).toHaveCSS('outline-width', '2px')
+      const off = await track.evaluate(element => ({
+        fill: getComputedStyle(element).backgroundColor,
+        border: getComputedStyle(element).borderColor,
+        thumb: getComputedStyle(element, '::after').transform,
+      }))
+      expect(off.border).not.toBe(off.fill)
+      await toggle.press('Space')
+      const on = await track.evaluate(element => ({
+        fill: getComputedStyle(element).backgroundColor,
+        thumb: getComputedStyle(element, '::after').transform,
+        thumbFill: getComputedStyle(element, '::after').backgroundColor,
+      }))
+      expect(on.thumb).not.toBe(off.thumb)
+      expect(on.fill).not.toBe(off.fill)
+      expect(on.thumbFill).not.toBe(on.fill)
+      await page.emulateMedia({ forcedColors: 'none' })
     }
-    await page.emulateMedia({ forcedColors: 'active' })
-    await toggle.focus()
-    await toggle.press('Space')
-    await expect(track).toHaveCSS('outline-style', 'solid')
-    await expect(track).toHaveCSS('outline-width', '2px')
-    const off = await track.evaluate(element => ({
-      fill: getComputedStyle(element).backgroundColor,
-      thumb: getComputedStyle(element, '::after').transform,
-    }))
-    await toggle.press('Space')
-    const on = await track.evaluate(element => ({
-      fill: getComputedStyle(element).backgroundColor,
-      thumb: getComputedStyle(element, '::after').transform,
-      thumbFill: getComputedStyle(element, '::after').backgroundColor,
-    }))
-    expect(on.thumb).not.toBe(off.thumb)
-    expect(on.fill).not.toBe(off.fill)
-    expect(on.thumbFill).not.toBe(on.fill)
-    await page.emulateMedia({ forcedColors: 'none' })
   }
 })
 
@@ -361,6 +437,12 @@ test('gives full-width controls a usable preview width', async ({ page }) => {
     await page.goto(`/#/sandbox/${slug}`)
     const box = await page.locator(selector).boundingBox()
     expect(box?.width ?? 0, `${slug} preview width`).toBeGreaterThan(240)
+    if (slug === 'input' || slug === 'select') {
+      for (const size of ['sm', 'md', 'lg']) {
+        await page.getByLabel('Size', { exact: true }).selectOption(size)
+        await expect(page.locator(selector)).toHaveCSS('border-radius', '10px')
+      }
+    }
   }
 })
 
