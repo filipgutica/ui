@@ -49,7 +49,7 @@ const emit = defineEmits<{
             </DialogDescription>
           </div>
           <DialogClose
-            class="fg-dialog__close"
+            class="fg-dialog__close fg-quiet-action"
             aria-label="Close dialog"
           >
             ×

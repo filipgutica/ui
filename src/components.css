@@ -70,17 +70,14 @@
     min-width: var(--control-lg);
     min-height: var(--control-lg);
     padding: var(--space-1) 0.4rem;
-    border: 0;
-    border-radius: var(--radius-inline);
-    background: transparent;
     color: inherit;
-    font: inherit;
-    cursor: pointer;
   }
-  .fg-code-block__copy:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+  /* The code block has its own palette, so its Copy keeps the plate's text colour on hover. */
+  .fg-code-block .fg-code-block__copy:hover { color: inherit; }
   .fg-code-block__copy svg { width: 1rem; height: 1rem; }
   /* Inset: the code block clips its content. */
-  .fg-code-block__copy:focus-visible, .fg-code-block__pre:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-code-block__pre:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-code-block .fg-code-block__copy:focus-visible { outline-offset: -2px; }
   .fg-figure__plate:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
   .fg-code-block__pre { margin: 0; padding: var(--space-4); overflow: auto; max-height: 32rem; tab-size: 2; }
   .fg-code-block__pre, .fg-code-block__pre code { font-family: var(--font-mono); font-size: var(--text-code); line-height: 1.65; }
@@ -140,13 +137,25 @@
   }
   .fg-button,
   .fg-input,
-  .fg-select,
-  .fg-dialog__close {
+  .fg-select {
     border: 1px solid transparent;
     border-radius: var(--radius-control);
     font-family: var(--font-ui);
-    transition: transform var(--duration-fast) var(--ease-out);
   }
+
+  /* A quiet action is an icon or short text action that sits inside a component: Copy, Full size,
+   * a dialog or drawer close, a menu trigger. One recipe gives each the same hover, press, edge, and
+   * focus. The tint mixes currentColor, so it reads on a light panel and on a dark plate. */
+  .fg-quiet-action {
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  }
+  .fg-quiet-action:hover { color: var(--color-text); background: color-mix(in srgb, currentColor 12%, transparent); }
+  .fg-quiet-action:active { background: color-mix(in srgb, currentColor 18%, transparent); }
 
   .fg-button {
     --fg-button-shadow: var(--shadow-raise);
@@ -546,7 +555,6 @@
     box-shadow: var(--shadow-raise);
     text-align: left;
     cursor: pointer;
-    transition: transform var(--duration-fast) var(--ease-out);
   }
 
   .fg-radio-card:hover:not([data-disabled], [data-state="checked"]) {
@@ -837,8 +845,9 @@
   .fg-segmented__item::before { content: ""; position: absolute; inset: 2px; z-index: -2; border-radius: var(--radius-control); pointer-events: none; }
   .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }
   .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"])::before { background: color-mix(in srgb, var(--fg-segmented-thumb) 45%, transparent); }
-  /* The accent label or icon marks the pressed choice at 3:1 against its thumb. */
-  .fg-segmented__item[aria-pressed="true"] { color: var(--color-accent); }
+  /* The accent label marks the pressed choice: 4.5:1 for text and 3:1 for an icon on its thumb.
+   * An imported theme whose accent falls short sets --color-segmented-current-text. */
+  .fg-segmented__item[aria-pressed="true"] { color: var(--color-segmented-current-text, var(--color-accent)); }
   /* Drawn inside the button, the ring hugs the thumb instead of reaching the next choice. */
   .fg-segmented .fg-segmented__item:focus-visible { outline-offset: -2px; }
   .fg-segmented__item[aria-pressed="true"]::before {
@@ -963,7 +972,7 @@
     height: 100%;
     border-radius: inherit;
     background: var(--color-progress);
-    transition: transform var(--duration-fast) ease-out;
+    transition: transform var(--duration-fast) var(--ease-out);
   }
 
   .fg-slider {
@@ -1074,12 +1083,8 @@
     padding: 0;
     place-items: center;
     color: var(--color-muted);
-    background: transparent;
     font-size: 1.35rem;
-    cursor: pointer;
   }
-
-  .fg-dialog__close:hover { color: var(--color-text); background: var(--color-row-hover); }
 
   @keyframes fg-button-spin {
     to { transform: rotate(360deg); }
@@ -1091,8 +1096,9 @@
   .fg-checkbox__control:focus-visible,
   .fg-radio-card:focus-visible,
   .fg-slider__thumb:focus-visible,
-  .fg-dialog__close:focus-visible,
+  .fg-quiet-action:focus-visible,
   .fg-dialog__content:focus-visible,
+  .fg-drawer__content:focus-visible,
   .fg-toggle-button:focus-visible,
   .fg-segmented__item:focus-visible,
   .fg-switch__control:focus-visible .fg-switch__track {
@@ -1145,6 +1151,13 @@
   }
 
   @media (forced-colors: active) {
+    /* The checkbox is a custom-drawn button, so its checked fill redraws in the system highlight. */
+    .fg-checkbox__control[data-state="checked"] {
+      forced-color-adjust: none;
+      border-color: Highlight;
+      color: HighlightText;
+      background: Highlight;
+    }
     .fg-radio-card[data-state="checked"] .fg-radio-card__indicator {
       forced-color-adjust: none;
       border-color: Highlight;
@@ -1170,7 +1183,7 @@
     .fg-select,
     .fg-radio-card,
     .fg-slider__range,
-    .fg-dialog__close,
+    .fg-quiet-action,
     .fg-progress__indicator,
     .fg-toggle-button__switch,
     .fg-toggle-button__switch::after,

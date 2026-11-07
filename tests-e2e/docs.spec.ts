@@ -216,6 +216,34 @@ test('contains drawer focus, dismisses it, and restores the trigger in both moti
   }
 })
 
+test('rings quiet actions in the accent, like every control that acts', async ({ page }) => {
+  const accent = () => page.evaluate(() => {
+    const probe = document.body.appendChild(document.createElement('i'))
+    probe.style.color = 'var(--color-accent)'
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  })
+  await page.goto('/#/sandbox/code-block')
+  const block = page.locator('.playground-stage .fg-code-block')
+  // A keyboard step into the control, so it shows :focus-visible.
+  const copy = block.getByRole('button', { name: 'Copy code' })
+  await copy.focus()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
+  await expect(copy).toBeFocused()
+  await expect(copy).toHaveCSS('outline-color', await accent())
+
+  await page.goto('/#/sandbox/drawer')
+  await page.locator('.playground-stage').getByRole('button', { name: 'Open drawer' }).click()
+  const drawer = page.getByRole('dialog')
+  await drawer.getByRole('link').focus()
+  await page.keyboard.press('Tab')
+  const close = drawer.getByRole('button', { name: 'Close drawer' })
+  await expect(close).toBeFocused()
+  await expect(close).toHaveCSS('outline-color', await accent())
+})
+
 test('owns compact component typography independently of host styles', async ({ page }) => {
   for (const slug of ['button', 'card', 'alert', 'radio-card']) {
     await page.goto(`/#/sandbox/${slug}`)

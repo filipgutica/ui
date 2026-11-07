@@ -58,8 +58,11 @@ describe('VS Code theme parsing and normalization', () => {
       })
       applySemanticTheme({ root, theme })
       expect(contrast(root.style.getPropertyValue('--color-nav-current-text'), fill(page))).toBeGreaterThanOrEqual(4.5)
+      // The pressed segmented option sits on the raised thumb, where the same accent also falls short.
+      expect(root.style.getPropertyValue('--color-segmented-current-text').toUpperCase()).toBe(text)
       applySemanticTheme({ root, theme: null })
       expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('')
+      expect(root.style.getPropertyValue('--color-segmented-current-text')).toBe('')
     }
 
     // A translucent accent renders over the fill, not the page: #00000099 on #B4B4B4 is #484848, 4.41:1.

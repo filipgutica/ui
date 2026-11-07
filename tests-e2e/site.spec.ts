@@ -257,9 +257,18 @@ test('shows a stored appearance choice without moving the picker on load', async
 test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' })
   await page.goto(fixture)
-  const location = page.locator('.fg-site-nav a[aria-current="location"]')
-  await expect(location).toHaveCSS('border-inline-start-width', '2px')
-  await expect(location).toHaveCSS('border-inline-start-style', 'solid')
+  // The section in view keeps its pip, redrawn in Highlight; only the current page takes the leading edge.
+  const location = page.locator('.fg-site-nav a[aria-current="location"]').first()
+  await expect(location).toHaveCSS('border-inline-start-width', '0px')
+  const pip = await location.evaluate(element => {
+    const style = getComputedStyle(element, '::before')
+    return { adjust: style.forcedColorAdjust, background: style.backgroundColor }
+  })
+  expect(pip.adjust).toBe('none')
+  expect(pip.background).not.toBe('rgba(0, 0, 0, 0)')
+  const current = page.getByLabel('Projects').locator('a[aria-current="page"]')
+  await expect(current).toHaveCSS('border-inline-start-width', '2px')
+  await expect(current).toHaveCSS('border-inline-start-style', 'solid')
   const pressed = page.locator('.fg-site-appearance .fg-segmented__item[aria-pressed="true"]')
   const other = page.locator('.fg-site-appearance .fg-segmented__item[aria-pressed="false"]').first()
   // Forced colors drop fills and rings, so the pressed choice needs its own system colors.

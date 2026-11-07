@@ -90,7 +90,7 @@ const copyCommand = (command: string): Promise<void> => {
             <button
               v-if="mounted"
               type="button"
-              class="fg-command-list__copy"
+              class="fg-command-list__copy fg-quiet-action"
               :disabled="pending"
               :aria-label="`Copy ${item.command}`"
               :title="`Copy ${item.command}`"

@@ -820,6 +820,14 @@ export const applySemanticTheme = ({
     const candidates = [theme.tokens.accent, foreground, '#000000', '#FFFFFF']
     root.style.setProperty('--color-nav-current-text', candidates.find(reads)
       ?? candidates.reduce((best, candidate) => minimumContrast(candidate) > minimumContrast(best) ? candidate : best))
+    // The pressed segmented option puts accent text on its thumb: the raised surface, mixed 88% with
+    // white in dark mode. Pick the first of the same candidates that reads at 4.5:1 on that thumb.
+    const segmentedThumbs = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(host =>
+      dark ? mixColors(surfaceRaised, 0.88, '#FFFFFF', host) : compositeColor(surfaceRaised, host))
+    const segmentedReads = (text: string) => segmentedThumbs.every(fill => contrastRatio(text, fill, fill) >= 4.5)
+    const segmentedMinimum = (text: string) => Math.min(...segmentedThumbs.map(fill => contrastRatio(text, fill, fill)))
+    root.style.setProperty('--color-segmented-current-text', candidates.find(segmentedReads)
+      ?? candidates.reduce((best, candidate) => segmentedMinimum(candidate) > segmentedMinimum(best) ? candidate : best))
     // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white
     // in dark mode. If the theme's field text would not read there, the field keeps its resting fill.
     const { inputForeground, inputPlaceholder, surface } = theme.tokens
@@ -851,6 +859,7 @@ export const applySemanticTheme = ({
     root.style.removeProperty('--color-toggle-switch-off-track')
     root.style.removeProperty('--color-switch-off-thumb')
     root.style.removeProperty('--color-nav-current-text')
+    root.style.removeProperty('--color-segmented-current-text')
     root.style.removeProperty('--color-field-focus-bg')
     root.style.removeProperty('--color-danger-button-text')
   }

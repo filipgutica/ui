@@ -54,7 +54,7 @@ defineSlots<{
             {{ title }}
           </DialogTitle>
           <DialogClose
-            class="fg-drawer__close"
+            class="fg-drawer__close fg-quiet-action"
             aria-label="Close drawer"
           >
             ×
