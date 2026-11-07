@@ -726,7 +726,8 @@ test('keeps the project menu current state distinct and restores keyboard focus'
 
 test('keeps status labels readable on their colored fills in both appearances', async ({ page }) => {
   for (const colorScheme of ['light', 'dark'] as const) {
-    await page.emulateMedia({ colorScheme })
+    // Reduced motion settles each fill at once, so contrast is read from the final colors.
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
     for (const slug of ['badge', 'alert', 'button']) {
       await page.goto(`/#/sandbox/${slug}`)
       const statuses = page.locator(`.playground-stage .fg-${slug}`)
@@ -738,9 +739,10 @@ test('keeps status labels readable on their colored fills in both appearances', 
       for (const variant of variants) {
         await page.getByLabel(slug === 'button' ? 'Variant' : 'Tone', { exact: true }).selectOption(variant)
         await expect(statuses.first()).toHaveAttribute(slug === 'button' ? 'data-variant' : 'data-tone', variant)
-        for (const hovered of [false, true]) {
+        for (const [hovered, pressed] of [[false, false], [true, false], [false, true]]) {
           if (hovered) await statuses.first().hover()
           else await page.locator('h1').hover()
+          if (slug === 'button') await statuses.first().evaluate((element, on) => on ? element.setAttribute('aria-pressed', 'true') : element.removeAttribute('aria-pressed'), pressed)
           const colors = await statuses.evaluateAll(elements => {
             const canvas = document.createElement('canvas')
             canvas.width = canvas.height = 1
@@ -758,7 +760,7 @@ test('keeps status labels readable on their colored fills in both appearances', 
             })
           })
           for (const { tone, foreground, background } of colors)
-            expect(contrast(foreground, background), `${colorScheme} ${slug} ${tone ?? variant} hover=${hovered}`).toBeGreaterThanOrEqual(4.5)
+            expect(contrast(foreground, background), `${colorScheme} ${slug} ${tone ?? variant} hover=${hovered} pressed=${pressed}`).toBeGreaterThanOrEqual(4.5)
         }
       }
     }

@@ -150,7 +150,7 @@ export const componentDocs: ComponentDoc[] = [
       'Use one primary button for the main action in a region.',
       'For supporting actions, use secondary or ghost.',
       'Reserve danger for destructive actions.',
-      'For navigation, use a link.',
+      'For navigation, use a link. When the link should look like a button, give the <a> class="fg-button" with data-variant and data-size, as UiButton sets them.',
     ],
     props: [
       { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'When true, sets native disabled to prevent activation.' },

@@ -91,7 +91,9 @@ watch(route, async () => {
     <div class="docs-mobilebar">
       <DialogRoot v-model:open="navigationOpen">
         <DialogTrigger
-          class="navigation-trigger"
+          class="fg-button navigation-trigger"
+          data-variant="secondary"
+          data-size="md"
           :aria-label="`Browse components: ${currentPageLabel}`"
         >
           <svg
@@ -116,7 +118,9 @@ watch(route, async () => {
             <div class="navigation-drawer-heading">
               <DialogTitle>Browse components</DialogTitle>
               <DialogClose
-                class="navigation-trigger"
+                class="fg-button navigation-close"
+                data-variant="ghost"
+                data-size="md"
                 aria-label="Close navigation"
               >
                 <svg
@@ -167,7 +171,9 @@ watch(route, async () => {
         </h1>
         <p>The requested component or sandbox does not exist.</p>
         <a
-          class="docs-button"
+          class="fg-button"
+          data-variant="primary"
+          data-size="md"
           href="#/"
         >Return home</a>
       </article>

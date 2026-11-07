@@ -91,6 +91,19 @@ describe('VS Code theme parsing and normalization', () => {
     expect(alphaMix.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
   })
 
+  it('keeps the danger button label readable on its rest, hover, and pressed fills', () => {
+    const danger = (name: string, colors: Record<string, string>) => {
+      const root = document.createElement('div')
+      applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: `${name}.json`, source: JSON.stringify({ type: 'light', colors }) }) })
+      return root.style.getPropertyValue('--color-danger-button-text')
+    }
+    // #dd3333 mixed 75% toward #333333 drops to 3.97:1 on the pressed fill, #dd3333 16% into #efe4e4 (#ecc8c8).
+    const red = danger('bright-red', { 'editor.background': '#FFFFFF', 'editor.foreground': '#333333', errorForeground: '#dd3333' })
+    expect(contrast(red, '#ecc8c8')).toBeGreaterThanOrEqual(4.5)
+    // A deep red keeps its own tinted label.
+    expect(danger('deep-red', { 'editor.background': '#FFFFFF', 'editor.foreground': '#101315', errorForeground: '#bd342b' })).toBe('')
+  })
+
   it('applies and clears every normalized color through the public CSS-variable contract', () => {
     const root = document.createElement('div')
     const theme = parseVsCodeTheme({

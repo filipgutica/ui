@@ -33,7 +33,7 @@ test('raises action buttons, sinks presses, and keeps depth with keyboard focus'
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#/sandbox/button')
   const button = page.locator('.playground-stage .fg-button').first()
-  for (const variant of ['primary', 'secondary', 'ghost']) {
+  for (const variant of ['primary', 'secondary', 'ghost', 'danger']) {
     await page.getByLabel('Variant', { exact: true }).selectOption(variant)
     await page.locator('h1').click()
     const shadow = () => button.evaluate(element => getComputedStyle(element).boxShadow)
@@ -47,13 +47,28 @@ test('raises action buttons, sinks presses, and keeps depth with keyboard focus'
     await page.keyboard.press('Tab')
     await button.focus()
     await expect(button).toHaveCSS('outline-style', 'solid')
-    expect(await button.evaluate(element => parseFloat(getComputedStyle(element).outlineWidth))).toBeGreaterThanOrEqual(1)
+    await expect(button).toHaveCSS('outline-width', '2px')
     if (variant !== 'ghost') expect(await shadow()).toContain(restingShadow)
     await page.keyboard.down('Space')
     expect(await shadow()).toContain('inset')
     expect(await shadow()).not.toMatch(/0px 0px 0px 6px/)
-    if (variant !== 'ghost') expect(await button.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(fill)
+    await expect(button).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
+    expect(await button.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(fill)
     await page.keyboard.up('Space')
+    // A pointer press stays hovered, so the pressed fill has to win over the hover fill.
+    if (variant === 'secondary' || variant === 'ghost') {
+      const well = await page.evaluate(() => {
+        const probe = document.body.appendChild(document.createElement('span'))
+        probe.style.background = 'var(--color-well)'
+        const color = getComputedStyle(probe).backgroundColor
+        probe.remove()
+        return color
+      })
+      await button.hover()
+      await page.mouse.down()
+      await expect(button).toHaveCSS('background-color', well)
+      await page.mouse.up()
+    }
     await button.evaluate(element => { element.setAttribute('disabled', '') })
     expect(await shadow()).toBe('none')
     await button.evaluate(element => { element.removeAttribute('disabled') })
@@ -110,4 +125,25 @@ test('marks a pressed toggle card with its switch and a faint hairline, on squar
   })
   expect(fills.pressed).not.toBe(fills.raised)
   expect(fills.current).not.toBe(fills.raised)
+})
+
+// A local copy of the button drifts from the library's raise, hover, and press.
+test('docs actions with the button fill are library buttons', async ({ page }) => {
+  for (const route of ['/#/', '/#/components/button', '/#/sandbox/button', '/#/missing']) {
+    await page.goto('/')
+    await page.goto(route)
+    await page.locator('main h1').waitFor()
+    const strays = await page.evaluate(() => {
+      const probe = document.body.appendChild(document.createElement('span'))
+      probe.style.background = 'var(--color-button-bg)'
+      const fill = getComputedStyle(probe).backgroundColor
+      probe.remove()
+      return [...document.querySelectorAll('main a, main button')]
+        .filter(element => getComputedStyle(element).backgroundColor === fill && !element.closest('.fg-button, .playground-stage'))
+        .map(element => element.outerHTML.slice(0, 80))
+    })
+    expect(strays, route).toEqual([])
+    const action = page.locator('main a.fg-button').first()
+    if (await action.count()) expect(await action.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none')
+  }
 })

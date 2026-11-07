@@ -26,7 +26,9 @@ const principles = [
       </p>
       <div class="button-row">
         <a
-          class="docs-button"
+          class="fg-button"
+          data-variant="primary"
+          data-size="md"
           href="#/components/button"
         >Browse components</a>
         <a
