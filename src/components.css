@@ -27,6 +27,8 @@
     --color-code-text: var(--color-terminal-text);
     --color-muted: var(--color-terminal-caption-text);
     --color-focus: var(--color-project-dark);
+    /* Copy is a quiet action and rings the accent, so the plate scopes it with the focus colour. */
+    --color-accent: var(--color-project-dark);
     --color-syntax-comment: var(--color-terminal-caption-text);
     --color-syntax-keyword: var(--color-terminal-text);
     --color-syntax-string: var(--color-terminal-text);
