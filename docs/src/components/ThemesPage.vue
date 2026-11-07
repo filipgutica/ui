@@ -15,7 +15,7 @@ const { selection, installedThemes, preferredAppearance, select, saveAndSelectTh
           Themes
         </h1>
         <p class="lede">
-          Try a community VS Code theme on these docs. The System, Light and Dark choice in the header is shared with the other project sites; community themes apply here only.
+          Try community VS Code themes here. The header’s System, Light and Dark choice is shared across project sites; community themes apply only here.
         </p>
       </div>
     </header>
