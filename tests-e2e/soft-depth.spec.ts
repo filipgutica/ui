@@ -55,6 +55,20 @@ test('raises action buttons, sinks presses, and keeps depth with keyboard focus'
     await expect(button).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
     expect(await button.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(fill)
     await page.keyboard.up('Space')
+    // A pointer press stays hovered, so the pressed fill has to win over the hover fill.
+    if (variant === 'secondary' || variant === 'ghost') {
+      const well = await page.evaluate(() => {
+        const probe = document.body.appendChild(document.createElement('span'))
+        probe.style.background = 'var(--color-well)'
+        const color = getComputedStyle(probe).backgroundColor
+        probe.remove()
+        return color
+      })
+      await button.hover()
+      await page.mouse.down()
+      await expect(button).toHaveCSS('background-color', well)
+      await page.mouse.up()
+    }
     await button.evaluate(element => { element.setAttribute('disabled', '') })
     expect(await shadow()).toBe('none')
     await button.evaluate(element => { element.removeAttribute('disabled') })

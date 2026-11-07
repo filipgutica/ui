@@ -831,12 +831,28 @@ export const applySemanticTheme = ({
       [inputForeground, inputPlaceholder].every(text => contrastRatio(text, fill, fill) >= 4.5))
     if (liftReads) root.style.removeProperty('--color-field-focus-bg')
     else root.style.setProperty('--color-field-focus-bg', 'var(--color-well)')
+    // The danger button mixes its label from the error hue toward body text (75% in light, 85% in
+    // dark) on --color-error-surface, which an imported theme keeps from theme.css, deepened by the
+    // error hue 10% on hover and 16% when pressed. If that label falls below 4.5:1 on any of the
+    // three fills, use the first of body text, black, or white that reads on all of them.
+    const errorSurface = dark ? '#312020' : '#efe4e4'
+    const dangerFills = [0, 0.1, 0.16].map(weight =>
+      weight ? mixColors(theme.tokens.error, weight, errorSurface, errorSurface) : errorSurface)
+    const dangerLabelReads = dangerFills.every(fill =>
+      contrastRatio(mixColors(theme.tokens.error, dark ? 0.85 : 0.75, textPrimary, fill), fill, fill) >= 4.5)
+    const dangerReads = (text: string) => dangerFills.every(fill => contrastRatio(text, fill, fill) >= 4.5)
+    const dangerMinimum = (text: string) => Math.min(...dangerFills.map(fill => contrastRatio(text, fill, fill)))
+    const dangerCandidates = [foreground, '#000000', '#FFFFFF']
+    if (dangerLabelReads) root.style.removeProperty('--color-danger-button-text')
+    else root.style.setProperty('--color-danger-button-text', dangerCandidates.find(dangerReads)
+      ?? dangerCandidates.reduce((best, candidate) => dangerMinimum(candidate) > dangerMinimum(best) ? candidate : best))
   } else {
     root.style.removeProperty('--color-switch-off-track')
     root.style.removeProperty('--color-toggle-switch-off-track')
     root.style.removeProperty('--color-switch-off-thumb')
     root.style.removeProperty('--color-nav-current-text')
     root.style.removeProperty('--color-field-focus-bg')
+    root.style.removeProperty('--color-danger-button-text')
   }
 
   for (const role of syntaxTokenNames) {

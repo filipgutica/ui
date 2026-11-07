@@ -275,11 +275,11 @@
   /* Danger rises, hovers, and sinks like the other filled variants. Its text mixes the error hue
    * toward body text, as status badges do, so it stays readable on the tinted fill. */
   .fg-button[data-variant="danger"] {
-    color: color-mix(in srgb, var(--color-error) 75%, var(--color-text));
+    color: var(--color-danger-button-text, color-mix(in srgb, var(--color-error) 75%, var(--color-text)));
     background: var(--color-error-surface);
   }
   :root.dark .fg-button[data-variant="danger"] {
-    color: color-mix(in srgb, var(--color-error) 85%, var(--color-text));
+    color: var(--color-danger-button-text, color-mix(in srgb, var(--color-error) 85%, var(--color-text)));
   }
 
   .fg-button[data-variant="danger"]:hover:not(:disabled) {
@@ -309,7 +309,8 @@
     box-shadow: var(--fg-button-shadow);
     transform: translateY(1px);
   }
-  .fg-button:where([data-variant="secondary"], [data-variant="ghost"]):is(:active, [aria-pressed="true"]):not(:disabled) { background: var(--color-well); }
+  /* :is() keeps this above the variant hover rules, so a pointer press shows the well, not the hover fill. */
+  .fg-button:is([data-variant="secondary"], [data-variant="ghost"]):is(:active, [aria-pressed="true"]):not(:disabled) { background: var(--color-well); }
   .fg-button[data-variant="danger"]:is(:active, [aria-pressed="true"]):not(:disabled) {
     background: color-mix(in srgb, var(--color-error) 16%, var(--color-error-surface));
   }
