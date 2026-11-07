@@ -6,7 +6,7 @@
  * order first (Tailwind's import does, or write @layer base, components, utilities;).
  * Pages without .fg-site-docs get none of them. */
 @layer base {
-  html:has(.fg-site-docs) { scroll-padding-top: var(--space-6); }
+  html:has(.fg-site-docs) { scroll-padding-top: var(--space-6); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body:has(.fg-site-docs) {
     margin: 0;
     background: var(--color-bg);
