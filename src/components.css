@@ -306,6 +306,7 @@
   .fg-select {
     width: 100%;
     color: var(--color-input-text);
+    border-color: var(--color-field-edge);
     background: var(--color-well);
     box-shadow: var(--shadow-sink);
     line-height: 1.35;

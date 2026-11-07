@@ -437,6 +437,12 @@ test('keeps borderless controls edged and focus visible in forced colors', async
     await page.goto(`/#/sandbox/${slug}`)
     const control = page.locator(selector).first()
     await expect(control).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
+    // The dark well sits within 1.1:1 of its host, so fields alone keep a faint edge there.
+    if (slug === 'input' || slug === 'select') {
+      await page.emulateMedia({ colorScheme: 'dark' })
+      await expect(control).toHaveCSS('border-color', 'rgb(38, 45, 51)')
+      await page.emulateMedia({ colorScheme: 'light' })
+    }
     await page.emulateMedia({ forcedColors: 'active' })
     await expect(control).toHaveCSS('border-style', 'solid')
     await expect(control).toHaveCSS('border-width', '1px')
