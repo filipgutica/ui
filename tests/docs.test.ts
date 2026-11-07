@@ -1,11 +1,13 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { nextTick } from 'vue'
+import { defineComponent, h, nextTick, provide } from 'vue'
 
 import ComponentPage from '../docs/src/components/ComponentPage.vue'
 import HomePage from '../docs/src/components/HomePage.vue'
 import ApiTable from '../docs/src/components/ApiTable.vue'
-import ThemePicker from '../docs/src/components/ThemePicker.vue'
+import ThemesPage from '../docs/src/components/ThemesPage.vue'
+import App from '../docs/src/App.vue'
+import { createDocsTheme, docsThemeKey } from '../docs/src/docs-theme.js'
 import { openVsxApi } from '../docs/open-vsx-plugin.js'
 import { componentDocs } from '../docs/src/component-docs.js'
 import { handleOpenVsxRequest } from '../docs/open-vsx-api.js'
@@ -13,6 +15,13 @@ import { parseDocsHash } from '../docs/src/router.js'
 import { MAX_THEME_FILE_BYTES, parseThemeFile } from '../docs/src/theme-file.js'
 import { parseVsCodeTheme } from '../src/theme/index.js'
 import * as libraryComponents from '../src/index.js'
+
+const mountThemesPage = () => mount(defineComponent({
+  setup() {
+    provide(docsThemeKey, createDocsTheme())
+    return () => h(ThemesPage)
+  },
+}), { attachTo: document.body })
 
 const exportedComponents = [
   'UiAlert',
@@ -167,6 +176,7 @@ describe('docs introduction', () => {
 describe('docs routing', () => {
   it.each([
     ['', { name: 'home' }],
+    ['#/themes', { name: 'themes' }],
     ['#/components/button', { name: 'component', slug: 'button' }],
     ['#/sandbox/dialog', { name: 'sandbox', slug: 'dialog' }],
     ['#/components/surface', { name: 'component', slug: 'card' }],
@@ -186,9 +196,10 @@ describe('docs preview', () => {
   })
 })
 
-describe('theme picker', () => {
+describe('docs themes', () => {
   beforeEach(() => {
     localStorage.clear()
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ status: 'success', themes: [] }))))
   })
 
   afterEach(() => {
@@ -200,23 +211,22 @@ describe('theme picker', () => {
     delete document.documentElement.dataset.theme
   })
 
-  it('separates color-scheme selection from adding themes', async () => {
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
-    await wrapper.get('button').trigger('click')
+  it('shows scheme selection and theme installation together', async () => {
+    const wrapper = mountThemesPage()
     await flushPromises()
 
     const choices = [...document.querySelectorAll<HTMLElement>('[role="radio"]')]
     expect(choices.map(choice => choice.textContent?.trim())).toEqual(['System', 'Light', 'Dark'])
     expect(document.body.textContent).toContain('Color scheme')
     expect(document.body.textContent).toContain('Themes')
-    expect([...document.querySelectorAll('button')].some(button => button.textContent?.includes('Add theme'))).toBe(true)
+    expect(wrapper.findAll('h2').map(heading => heading.text())).toEqual(['Color scheme', 'Installed themes', 'Add a theme'])
+    expect(wrapper.find('#open-vsx-query').exists()).toBe(true)
 
     choices[0]?.focus()
     choices[0]?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
     await vi.waitFor(() => {
       expect(choices[1]?.getAttribute('aria-checked')).toBe('true')
     })
-    expect(document.querySelector('[role="dialog"]')).not.toBeNull()
 
     wrapper.unmount()
   })
@@ -225,8 +235,7 @@ describe('theme picker', () => {
     document.documentElement.style.setProperty('--color-bg', '#101218')
     document.documentElement.classList.add('dark')
 
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
-    await wrapper.get('button').trigger('click')
+    const wrapper = mountThemesPage()
     await flushPromises()
 
     const lightButton = [...document.querySelectorAll<HTMLButtonElement>('[role="radio"]')]
@@ -237,14 +246,8 @@ describe('theme picker', () => {
 
     expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('')
     expect(document.documentElement.classList.contains('dark')).toBe(false)
-    expect(wrapper.text()).toContain('Theme: Light')
-    expect(document.querySelector('[role="dialog"]')).not.toBeNull()
+    expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Light')
 
-    const doneButton = [...document.querySelectorAll<HTMLButtonElement>('button')]
-      .find(button => button.textContent?.trim() === 'Done')
-    doneButton?.click()
-    await flushPromises()
-    expect(document.querySelector('[role="dialog"]')).toBeNull()
     wrapper.unmount()
   })
 
@@ -282,11 +285,7 @@ describe('theme picker', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
-    await wrapper.get('button').trigger('click')
-    const addThemeButton = [...document.querySelectorAll<HTMLButtonElement>('button')]
-      .find(button => button.textContent?.includes('Add theme'))
-    addThemeButton?.click()
+    const wrapper = mountThemesPage()
     await flushPromises()
 
     const input = document.querySelector<HTMLInputElement>('#open-vsx-query')
@@ -308,7 +307,7 @@ describe('theme picker', () => {
     expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/api/open-vsx/import'))).toBe(true)
     expect(fetchMock.mock.calls.some(([url]) => String(url).includes('appearance=dark'))).toBe(true)
     expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#101218')
-    expect(wrapper.text()).toContain('Theme: Test Dark')
+    expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Test Dark')
     wrapper.unmount()
   })
 
@@ -329,10 +328,10 @@ describe('theme picker', () => {
       { id: 'saved.theme', theme },
     ]))
 
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    const wrapper = mountThemesPage()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Theme: Persisted Theme')
+    expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Persisted Theme')
     expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#12141a')
     wrapper.unmount()
   })
@@ -369,11 +368,8 @@ describe('theme picker', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
-    await wrapper.get('button').trigger('click')
-    const addThemeButton = [...document.querySelectorAll<HTMLButtonElement>('button')]
-      .find(button => button.textContent?.includes('Add theme'))
-    addThemeButton?.click()
+    window.location.hash = '#/themes'
+    const wrapper = mount(App, { attachTo: document.body })
     await flushPromises()
     const input = document.querySelector<HTMLInputElement>('#open-vsx-query')!
     input.value = 'Busy'
@@ -394,21 +390,21 @@ describe('theme picker', () => {
       .find(button => button.textContent?.includes('Choose file'))
     expect(chooseFileButton?.disabled).toBe(true)
 
-    const backButton = [...document.querySelectorAll<HTMLButtonElement>('button')]
-      .find(button => button.textContent?.trim() === 'Back to themes')
-    backButton?.click()
-    await nextTick()
+    window.location.hash = '#/'
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+    await flushPromises()
+    expect(wrapper.get('h1').text()).toBe('Component library')
 
     resolveImport?.(new Response(JSON.stringify({ status: 'success', theme })))
     await flushPromises()
     expect(JSON.parse(localStorage.getItem('filipgutica-ui-installed-themes') ?? '[]')).toEqual([])
-    expect(wrapper.text()).toContain('Theme: System')
-    expect(document.body.textContent).toContain('Color scheme')
+    expect(localStorage.getItem('filipgutica-ui-active-theme')).toBe('system')
+    expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('')
     wrapper.unmount()
   })
 })
 
-describe('theme picker shared appearance', () => {
+describe('docs themes shared appearance', () => {
   const sharedKey = 'tool-site-theme'
   const galleryKey = 'filipgutica-ui-active-theme'
   const root = document.documentElement
@@ -433,16 +429,13 @@ describe('theme picker shared appearance', () => {
     await flushPromises()
   }
 
-  const openPicker = async (wrapper: ReturnType<typeof mount>): Promise<void> => {
-    await wrapper.get('button').trigger('click')
-    await flushPromises()
-  }
-
   beforeEach(() => {
     localStorage.clear()
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ status: 'success', themes: [] }))))
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
     document.body.innerHTML = ''
     root.removeAttribute('style')
     root.classList.remove('dark', 'high-contrast')
@@ -452,7 +445,7 @@ describe('theme picker shared appearance', () => {
   it('keeps an installed theme active when the shared appearance changes elsewhere', async () => {
     installTheme()
     localStorage.setItem(galleryKey, 'saved.theme')
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    const wrapper = mountThemesPage()
     await flushPromises()
     expect(root.style.getPropertyValue('--color-bg')).toBe('#12141a')
 
@@ -463,16 +456,34 @@ describe('theme picker shared appearance', () => {
     expect(root.style.getPropertyValue('--color-bg')).toBe('#12141a')
     expect(root.classList.contains('dark')).toBe(true)
     expect(localStorage.getItem(galleryKey)).toBe('saved.theme')
-    expect(wrapper.text()).toContain('Theme: Precedence')
+    expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Precedence')
+    wrapper.unmount()
+  })
+
+  it('leaves the header choices unpressed for an installed theme and switches to Dark', async () => {
+    installTheme()
+    localStorage.setItem(galleryKey, 'saved.theme')
+    const wrapper = mount(App, { attachTo: document.body })
+    await flushPromises()
+
+    const picker = wrapper.get('[role="group"][aria-label="Color theme"]')
+    expect(picker.find('[aria-pressed="true"]').exists()).toBe(false)
+    expect(root.style.getPropertyValue('--color-bg')).toBe('#12141a')
+    await picker.get('button[aria-label="Dark theme"]').trigger('click')
+    await flushPromises()
+
+    expect(localStorage.getItem(sharedKey)).toBe('dark')
+    expect(localStorage.getItem(galleryKey)).toBe('system')
+    expect(root.style.getPropertyValue('--color-bg')).toBe('')
+    expect(picker.get('button[aria-label="Dark theme"]').attributes('aria-pressed')).toBe('true')
     wrapper.unmount()
   })
 
   it('clears an installed theme and writes the shared appearance when a built-in scheme is chosen', async () => {
     installTheme()
     localStorage.setItem(galleryKey, 'saved.theme')
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    const wrapper = mountThemesPage()
     await flushPromises()
-    await openPicker(wrapper)
 
     await choose('Light')
 
@@ -481,41 +492,40 @@ describe('theme picker shared appearance', () => {
     expect(root.style.getPropertyValue('--color-bg')).toBe('')
     expect(root.classList.contains('dark')).toBe(false)
     expect(root.dataset.theme).toBe('light')
-    expect(wrapper.text()).toContain('Theme: Light')
+    expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Light')
     wrapper.unmount()
   })
 
   it('leaves the shared appearance alone when an installed theme is chosen', async () => {
     installTheme()
     localStorage.setItem(sharedKey, 'light')
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    const wrapper = mountThemesPage()
     await flushPromises()
-    await openPicker(wrapper)
 
     await choose('Precedence')
 
     expect(localStorage.getItem(sharedKey)).toBe('light')
     expect(localStorage.getItem(galleryKey)).toBe('saved.theme')
     expect(root.style.getPropertyValue('--color-bg')).toBe('#12141a')
-    expect(wrapper.text()).toContain('Theme: Precedence')
+    expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Precedence')
     wrapper.unmount()
   })
 
   it('falls back to the shared appearance when the installed theme no longer resolves', async () => {
     localStorage.setItem(galleryKey, 'removed.theme')
     localStorage.setItem(sharedKey, 'dark')
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    const wrapper = mountThemesPage()
     await flushPromises()
 
     expect(localStorage.getItem(galleryKey)).toBe('system')
     expect(root.classList.contains('dark')).toBe(true)
-    expect(wrapper.text()).toContain('Theme: Dark')
+    expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Dark')
     wrapper.unmount()
   })
 
   it('moves a legacy built-in choice to the shared key once', async () => {
     localStorage.setItem(galleryKey, 'dark')
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    const wrapper = mountThemesPage()
     await flushPromises()
 
     expect(localStorage.getItem(sharedKey)).toBe('dark')
@@ -527,7 +537,7 @@ describe('theme picker shared appearance', () => {
   it('keeps an existing shared choice over a legacy gallery choice', async () => {
     localStorage.setItem(galleryKey, 'dark')
     localStorage.setItem(sharedKey, 'light')
-    const wrapper = mount(ThemePicker, { attachTo: document.body })
+    const wrapper = mountThemesPage()
     await flushPromises()
 
     expect(localStorage.getItem(sharedKey)).toBe('light')

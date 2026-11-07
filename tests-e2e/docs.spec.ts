@@ -247,8 +247,7 @@ test('highlights the selected language with imported theme colors and restores t
   const block = page.locator('.playground-stage .fg-code-block')
   const keyword = block.locator('code span').filter({ hasText: /^const$/ }).last()
   await expect(keyword).toBeVisible()
-  await page.getByRole('button', { name: /^Theme:/ }).click()
-  await page.getByRole('button', { name: /Add theme/ }).click()
+  await page.goto('/#/themes')
   const fileChooser = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: 'Choose file', exact: true }).click()
   await (await fileChooser).setFiles({
@@ -264,15 +263,17 @@ test('highlights the selected language with imported theme colors and restores t
       ],
     })),
   })
-  await expect(page.getByRole('button', { name: 'Theme: Syntax fixture', exact: true })).toBeVisible()
-  await expect(page.getByRole('dialog')).not.toBeVisible()
+  await expect(page.getByRole('radio', { name: 'Syntax fixture', exact: true })).toBeChecked()
+  await page.goto('/#/sandbox/code-block')
+  await page.getByLabel('Language', { exact: true }).selectOption('typescript')
   await expect(keyword).toHaveCSS('color', 'rgb(255, 136, 221)')
   await page.reload()
   await page.getByLabel('Language', { exact: true }).selectOption('typescript')
   await expect(keyword).toHaveCSS('color', 'rgb(255, 136, 221)')
-  await page.getByRole('button', { name: 'Theme: Syntax fixture', exact: true }).click()
+  await page.goto('/#/themes')
   await page.getByRole('radio', { name: 'Light', exact: true }).click()
-  await page.getByRole('button', { name: 'Done', exact: true }).click()
+  await page.goto('/#/sandbox/code-block')
+  await page.getByLabel('Language', { exact: true }).selectOption('typescript')
   await expect(keyword).not.toHaveCSS('color', 'rgb(255, 136, 221)')
   await page.getByLabel('Language', { exact: true }).selectOption('text')
   await expect(block.locator('code')).toHaveText(/.+/)
@@ -288,9 +289,7 @@ test('previews themed components on the introduction and keeps setup compact and
   await expect(preview.getByRole('searchbox')).toHaveValue('Catppuccin')
 
   for (const choice of ['Light', 'Dark']) {
-    await page.getByRole('button', { name: /^Theme:/ }).click()
-    await page.getByRole('radio', { name: choice, exact: true }).click()
-    await page.getByRole('button', { name: 'Done', exact: true }).click()
+    await page.getByRole('button', { name: `${choice} theme`, exact: true }).click()
     await expect(primary).toHaveCSS('background-color', choice === 'Dark' ? 'rgb(230, 233, 235)' : 'rgb(16, 19, 21)')
     await expect(preview.getByRole('searchbox')).toHaveValue('Catppuccin')
     for (const width of [320, 390, 768, 1280]) {
@@ -451,23 +450,19 @@ test('operates the slider with pointer and keyboard input', async ({ page }) => 
   await expect(thumb).toHaveAttribute('aria-valuenow', disabledValue ?? '')
 })
 
-test('keeps the theme picker compact on a mobile viewport', async ({ page }) => {
+test('keeps theme cards compact on a mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/#/components/button')
-  await page.getByRole('button', { name: /^Theme:/ }).click()
+  await page.goto('/#/themes')
 
-  await expect(page.getByRole('dialog', { name: 'Choose a theme' })).toBeVisible()
-  const addTheme = page.getByRole('button', { name: /Add theme/ })
-  const addThemeBox = await addTheme.boundingBox()
-  expect(addThemeBox?.height ?? 0).toBeLessThanOrEqual(40)
+  await expect(page.getByRole('heading', { name: 'Themes', exact: true, level: 1 })).toBeVisible()
+  await expect(page.getByRole('searchbox', { name: 'Search themes' })).toBeVisible()
 
   const cardBox = await page.getByRole('radio', { name: /System/ }).boundingBox()
   expect(cardBox?.height ?? 0).toBeLessThanOrEqual(140)
 })
 
-test('supports keyboard selection in the theme picker', async ({ page }) => {
-  await page.goto('/#/components/button')
-  await page.getByRole('button', { name: /^Theme:/ }).click()
+test('supports keyboard selection on the themes page', async ({ page }) => {
+  await page.goto('/#/themes')
 
   const system = page.getByRole('radio', { name: /System/ })
   const light = page.getByRole('radio', { name: /Light/ })
@@ -496,6 +491,12 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
   await expect(page.locator('h1')).toHaveText('Button')
   await expect(page.locator('h1')).toBeFocused()
   await trigger.click()
+  await drawer.getByRole('link', { name: 'Themes', exact: true }).click()
+  await expect(page).toHaveURL(/#\/themes$/)
+  await expect(page.locator('h1')).toHaveText('Themes')
+  await expect(trigger).toHaveText('Themes')
+  await trigger.click()
+  await expect(drawer.getByRole('link', { name: 'Themes', exact: true })).toHaveAttribute('aria-current', 'page')
   await page.setViewportSize({ width: 1280, height: 844 })
   await expect(drawer).not.toBeVisible()
   await expect(trigger).not.toBeVisible()

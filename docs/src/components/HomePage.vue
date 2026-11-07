@@ -175,8 +175,8 @@ const principles = [
         </li>
       </ol>
       <p>
-        To try community themes in this gallery, open Theme → Add theme.
-        The gallery's search-and-install dialog is docs-only.
+        To try community themes in this gallery, visit the <a href="#/themes">Themes page</a>.
+        The gallery's search and import controls are docs-only.
         The library exports the service and theme helpers for your own picker.
       </p>
     </section>

@@ -43,7 +43,8 @@ export interface UiSegmentedControlProps<T extends string = string> {
   /** Names the group for assistive technology. */
   label: string
   items: readonly UiSegmentedItem<T>[]
-  modelValue?: T
+  /** The pressed option. Undefined leaves every option unpressed. */
+  modelValue?: T | undefined
   /** Shows only the icon slot; each label becomes the button's accessible name and tooltip. */
   iconOnly?: boolean
   disabled?: boolean

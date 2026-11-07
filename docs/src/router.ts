@@ -1,5 +1,6 @@
 export type DocsRoute =
   | { name: 'home' }
+  | { name: 'themes' }
   | { name: 'component', slug: string }
   | { name: 'sandbox', slug: string }
   | { name: 'not-found' }
@@ -9,6 +10,7 @@ const normalizeComponentSlug = (slug: string): string => slug === 'surface' ? 'c
 export const parseDocsHash = (hash: string): DocsRoute => {
   const path = hash.replace(/^#/, '').replace(/\/+$/, '') || '/'
   if (path === '/') return { name: 'home' }
+  if (path === '/themes') return { name: 'themes' }
 
   const componentMatch = /^\/components\/([a-z-]+)$/.exec(path)
   if (componentMatch?.[1]) return { name: 'component', slug: normalizeComponentSlug(componentMatch[1]) }
