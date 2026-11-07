@@ -418,7 +418,7 @@
   .fg-capture-viewer .fg-capture__screen {
     max-height: calc(100dvh - var(--space-16) * 3);
     overflow: auto;
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-inline);
   }
 
   /* Command table (UiCommandList). Wide commands scroll inside it on larger
