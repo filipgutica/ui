@@ -1,5 +1,7 @@
 export { default as UiSiteHeader } from './UiSiteHeader.vue'
 export type { UiSiteHeaderProps, UiSiteLink } from './UiSiteHeader.vue'
+export { default as UiSiteAppearancePicker } from './UiSiteAppearancePicker.vue'
+export type { UiSiteAppearancePickerProps } from './UiSiteAppearancePicker.vue'
 export { default as UiSiteNav } from './UiSiteNav.vue'
 export type { UiSiteNavGroup, UiSiteNavItem, UiSiteNavProps } from './UiSiteNav.vue'
 export { default as UiCapture } from './UiCapture.vue'
