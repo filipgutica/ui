@@ -100,6 +100,7 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
       { colorScheme: 'light', palette: { background: '#ffffff', raised: '#ffffff', border: '#929292' }, checkedStates: [false, true] },
       { colorScheme: 'dark', palette: { background: '#202020', raised: '#202020', border: '#707070' }, checkedStates: [false, true] },
       { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000066', border: '#000000' }, checkedStates: [false] },
+      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000055', border: '#00000080' }, checkedStates: [false] },
     ] as const) {
       await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
       await page.goto('/#/themes')
