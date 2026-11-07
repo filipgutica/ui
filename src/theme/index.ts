@@ -790,14 +790,15 @@ export const applySemanticTheme = ({
     // Freeze alpha over the canvas before validation, then render these same opaque colors on the switch.
     const thumb = compositeColor(surfaceRaised, pageBackground)
     const foreground = compositeColor(textPrimary, pageBackground)
-    // The toggle button paints its own raised fill, so on a raised panel its switch sits on two layers.
-    const toggleHost = compositeColor(surfaceRaised, thumb)
     const raisedCue = visibleIndicator({ color: compositeColor(border, thumb), against: thumb, fallback: foreground })
-    const canvasCue = visibleIndicator({ color: raisedCue, against: pageBackground, fallback: foreground })
-    root.style.setProperty('--color-switch-off-track', visibleIndicator({ color: canvasCue, against: toggleHost, fallback: foreground }))
+    root.style.setProperty('--color-switch-off-track', visibleIndicator({ color: raisedCue, against: pageBackground, fallback: foreground }))
+    // The toggle button paints its own raised fill, so on a raised panel its switch sits on two layers, never on the canvas.
+    const toggleHost = compositeColor(surfaceRaised, thumb)
+    root.style.setProperty('--color-toggle-switch-off-track', visibleIndicator({ color: raisedCue, against: toggleHost, fallback: foreground }))
     root.style.setProperty('--color-switch-off-thumb', thumb)
   } else {
     root.style.removeProperty('--color-switch-off-track')
+    root.style.removeProperty('--color-toggle-switch-off-track')
     root.style.removeProperty('--color-switch-off-thumb')
   }
 

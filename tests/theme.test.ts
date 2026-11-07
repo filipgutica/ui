@@ -60,6 +60,7 @@ describe('VS Code theme parsing and normalization', () => {
     expect(contrast(offTrack, theme.tokens.pageBackground)).toBeGreaterThanOrEqual(3)
     expect(contrast(offTrack, theme.tokens.surfaceRaised)).toBeGreaterThanOrEqual(3)
     expect(contrast(root.style.getPropertyValue('--color-switch-off-thumb'), offTrack)).toBeGreaterThanOrEqual(3)
+    expect(contrast(root.style.getPropertyValue('--color-toggle-switch-off-track'), theme.tokens.surfaceRaised)).toBeGreaterThanOrEqual(3)
     expect(root.classList.contains('dark')).toBe(true)
     expect(root.classList.contains('high-contrast')).toBe(false)
 
@@ -68,6 +69,7 @@ describe('VS Code theme parsing and normalization', () => {
     expect(root.style.getPropertyValue('--color-text')).toBe('')
     expect(root.style.getPropertyValue('--color-switch-off-track')).toBe('')
     expect(root.style.getPropertyValue('--color-switch-off-thumb')).toBe('')
+    expect(root.style.getPropertyValue('--color-toggle-switch-off-track')).toBe('')
     expect(root.classList.contains('dark')).toBe(false)
     expect(root.classList.contains('high-contrast')).toBe(false)
   })

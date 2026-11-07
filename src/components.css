@@ -869,6 +869,11 @@
     transition: background-color var(--duration) var(--ease-out), border-color var(--duration) var(--ease-out);
   }
 
+  /* Imported themes validate this track against the toggle button's own fill instead of the canvas. */
+  .fg-toggle-button__switch {
+    background: var(--color-toggle-switch-off-track, var(--color-switch-off-track, color-mix(in srgb, var(--color-border) 90%, var(--color-well))));
+  }
+
   .fg-toggle-button__switch::after,
   .fg-switch__track::after {
     position: absolute;
