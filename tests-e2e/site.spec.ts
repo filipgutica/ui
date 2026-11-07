@@ -28,8 +28,6 @@ test('keeps inline code, links, and surrounding step text beside the number', as
       return {
         lines,
         right: element.getBoundingClientRect().right,
-        height: element.getBoundingClientRect().height,
-        lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
       }
     })
     expect(layout.lines.length).toBeGreaterThan(0)
@@ -37,8 +35,20 @@ test('keeps inline code, links, and surrounding step text beside the number', as
       expect(line.left, `step text starts after the gutter at ${width}px`).toBeGreaterThanOrEqual(contentStart - 1)
       expect(line.right, `step text fits at ${width}px`).toBeLessThanOrEqual(layout.right + 1)
     }
-    expect(layout.height, `step stays within five lines at ${width}px`).toBeLessThanOrEqual(5 * layout.lineHeight)
   }
+})
+
+test('keeps a wrapped step title the same height with its number', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 })
+  await page.goto(fixture)
+  await page.addStyleTag({ content: 'html { font-size: 200%; }' })
+  const titles = page.locator('.fg-site-steps > li > h3:first-child')
+  const heights = () => titles.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().height))
+  const withNumbers = await heights()
+  await page.addStyleTag({ content: '.fg-site-steps > li > h3:first-child::before { content: none !important; }' })
+  const withoutNumbers = await heights()
+  expect(withNumbers.length).toBeGreaterThan(0)
+  expect(withNumbers).toEqual(withoutNumbers)
 })
 
 test('keeps every capture tab clear of the Full size button', async ({ page }) => {

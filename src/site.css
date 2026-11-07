@@ -507,6 +507,8 @@
     display: inline-block;
     width: var(--space-8);
     margin-inline-start: calc(-1 * var(--space-8));
+    /* A unit line height keeps the number from making a wrapped title's line boxes taller. */
+    line-height: 1;
   }
   .fg-site-steps > li:not(:last-child)::after {
     content: '';
