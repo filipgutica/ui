@@ -20,6 +20,9 @@ export default defineConfig({
       transformIndexHtml: () => [{ tag: 'script', children: siteThemeBootScript, injectTo: 'head-prepend' }],
     },
   ],
+  // Listed up front so the e2e hydration fixture, which renders server markup in the
+  // browser, shares one Vue copy instead of triggering a second optimizer pass.
+  optimizeDeps: { include: ['vue/server-renderer'] },
   build: {
     outDir: fileURLToPath(new URL('../docs-dist', import.meta.url)),
     emptyOutDir: true,

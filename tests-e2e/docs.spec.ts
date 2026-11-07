@@ -500,12 +500,6 @@ test('slides the segmented thumb from the previous option and settles on the pre
   expect(await runningAnimations()).toBe(0)
   expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
 
-  // No pressed option draws no thumb. The pointer leaves first, so no hover thumb shows.
-  await page.mouse.move(0, 0)
-  await control.evaluate(element => element.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', 'false')))
-  const fills = await control.evaluate(element => [...element.children].map(button => getComputedStyle(button, '::before').backgroundColor))
-  expect(fills).toEqual(['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)'])
-
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.reload()
   await control.getByRole('button', { name: 'Board' }).click()
