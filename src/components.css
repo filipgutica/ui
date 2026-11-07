@@ -1094,17 +1094,20 @@
   .fg-switch__control:focus-visible .fg-switch__track {
     box-shadow: var(--shadow-sink), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
   }
-  /* Fields focus inside their own edge: the border turns accent (3:1 against the well) with a
-   * soft halo and no offset ring. The transparent outline still shows in forced colors. */
+  /* A focused field lifts out of its well onto the raised control surface, with a faint accent
+   * hairline. The 2px accent underline is the cue that meets 3:1, and the transparent outline
+   * still shows in forced colors. */
   .fg-input:focus-visible,
   .fg-select:focus-visible {
+    --fg-field-focus: var(--color-accent);
     outline: 2px solid transparent;
     outline-offset: 0;
-    border-color: var(--color-accent);
-    box-shadow: var(--shadow-sink), 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+    border-color: color-mix(in srgb, var(--fg-field-focus) 35%, transparent);
+    background-color: var(--color-control-thumb);
+    box-shadow: var(--shadow-raise), inset 0 -2px 0 var(--fg-field-focus);
   }
   .fg-input[aria-invalid="true"]:focus-visible,
-  .fg-select[aria-invalid="true"]:focus-visible { border-color: var(--color-error); }
+  .fg-select[aria-invalid="true"]:focus-visible { --fg-field-focus: var(--color-error); }
   .fg-dialog__content:focus-visible {
     box-shadow: var(--shadow-dialog), 0 0 0 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
   }

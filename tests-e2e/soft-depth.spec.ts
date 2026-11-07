@@ -59,13 +59,12 @@ test('raises action buttons, sinks presses, and keeps depth with keyboard focus'
   }
 })
 
-test('focuses fields inside their own edge instead of an offset ring', async ({ page }) => {
+test('lifts a focused field out of its well with an accent underline instead of an offset ring', async ({ page }) => {
   await page.goto('/#/sandbox/input')
   const input = page.locator('.playground-stage > .fg-input')
+  const restFill = await input.evaluate(element => getComputedStyle(element).backgroundColor)
   await input.focus()
-  const accent = await input.evaluate(element => getComputedStyle(element).getPropertyValue('--color-accent').trim())
-  const accentRgb = await page.evaluate(color => { const probe = document.createElement('i'); probe.style.color = color; document.body.append(probe); const value = getComputedStyle(probe).color; probe.remove(); return value }, accent)
-  await expect(input).toHaveCSS('border-color', accentRgb)
   await expect(input).toHaveCSS('outline-offset', '0px')
-  expect(await input.evaluate(element => getComputedStyle(element).boxShadow)).toMatch(/0px 0px 0px 3px/)
+  expect(await input.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(restFill)
+  expect(await input.evaluate(element => getComputedStyle(element).boxShadow)).toMatch(/0px -2px 0px 0px inset/)
 })
