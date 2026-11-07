@@ -453,6 +453,67 @@ test('keeps borderless controls edged and focus visible in forced colors', async
   }
 })
 
+test('slides the segmented thumb from the previous option and settles on the pressed one', async ({ page }) => {
+  await page.goto('/#/sandbox/segmented-control')
+  const control = page.locator('.playground-stage .fg-segmented')
+  // The thumb's page edges, and the edges of the CSS thumb inset inside a button.
+  const thumbEdges = (index: number) => control.evaluate((element, index) => {
+    const button = element.children[index]!
+    const rect = button.getBoundingClientRect()
+    const thumb = getComputedStyle(button, '::before')
+    return { left: rect.left + parseFloat(thumb.left), right: rect.right - parseFloat(thumb.right), inset: [thumb.left, thumb.right] }
+  }, index)
+  const runningAnimations = () => control.evaluate(element => element.getAnimations({ subtree: true }).length)
+  await expect(control.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true')
+  expect(await runningAnimations(), 'no animation on first paint').toBe(0)
+
+  await control.getByRole('button', { name: 'Timeline' }).click()
+  await control.evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => {
+    animation.pause()
+    animation.currentTime = 0
+  }))
+  const start = await thumbEdges(2)
+  const previous = await thumbEdges(0)
+  // The thumb leaves from the option that was pressed, not from the new one or the track's start.
+  expect(start.left).toBeCloseTo(previous.left, 0)
+  expect(start.right).toBeCloseTo(previous.right, 0)
+
+  // A new choice mid-slide leaves from where the thumb is, without a jump.
+  await control.evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => { animation.currentTime = 60 }))
+  const midway = await thumbEdges(2)
+  await control.getByRole('button', { name: 'Board' }).click()
+  await control.evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => {
+    animation.pause()
+    animation.currentTime = 0
+  }))
+  const restart = await thumbEdges(1)
+  expect(restart.left).toBeCloseTo(midway.left, 0)
+  expect(restart.right).toBeCloseTo(midway.right, 0)
+
+  await control.evaluate(element => element.getAnimations({ subtree: true }).forEach(animation => animation.finish()))
+  await expect.poll(runningAnimations).toBe(0)
+  expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
+
+  // Resizing moves no thumb and leaves it inside the pressed button.
+  await page.setViewportSize({ width: 390, height: 800 })
+  await control.evaluate(element => { element.style.fontSize = '20px' })
+  expect(await runningAnimations()).toBe(0)
+  expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
+
+  // No pressed option draws no thumb. The pointer leaves first, so no hover thumb shows.
+  await page.mouse.move(0, 0)
+  await control.evaluate(element => element.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', 'false')))
+  const fills = await control.evaluate(element => [...element.children].map(button => getComputedStyle(button, '::before').backgroundColor))
+  expect(fills).toEqual(['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)'])
+
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.reload()
+  await control.getByRole('button', { name: 'Board' }).click()
+  await expect(control.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true')
+  expect(await runningAnimations(), 'reduced motion changes the choice at once').toBe(0)
+  expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
+})
+
 test('renders usable slider tracks in documentation examples', async ({ page }) => {
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 })

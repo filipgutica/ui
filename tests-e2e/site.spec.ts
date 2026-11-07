@@ -234,6 +234,24 @@ test('keeps header links on phones outside the docs shell, on a second row when 
   }
 })
 
+test('shows a stored appearance choice without moving the picker on load', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('tool-site-theme', 'dark')
+    const starts: string[] = []
+    Object.assign(window, { segmentedStarts: starts })
+    for (const type of ['animationstart', 'transitionstart']) {
+      document.addEventListener(type, (event) => {
+        if (event.target instanceof Element && event.target.closest('.fg-segmented')) starts.push(type)
+      }, true)
+    }
+  })
+  await page.goto(fixture)
+  await expect(page.getByRole('button', { name: 'Dark theme' })).toHaveAttribute('aria-pressed', 'true')
+  // Longer than one slide, so a slide that started on load would have reported.
+  await page.waitForTimeout(400)
+  expect(await page.evaluate(() => (window as unknown as { segmentedStarts: string[] }).segmentedStarts)).toEqual([])
+})
+
 test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' })
   await page.goto(fixture)
