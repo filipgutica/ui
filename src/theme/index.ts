@@ -287,16 +287,20 @@ const colorChannels = (color: string): [red: number, green: number, blue: number
   ]
 }
 
-const contrastRatio = (foreground: string, background: string, underlay: string): number => {
+const compositeChannels = (color: string, underlay: string): [number, number, number] => {
   const [underlayRed, underlayGreen, underlayBlue] = colorChannels(underlay)
-  const composite = (color: string): [number, number, number] => {
-    const [red, green, blue, alpha] = colorChannels(color)
-    return [
-      red * alpha + underlayRed * (1 - alpha),
-      green * alpha + underlayGreen * (1 - alpha),
-      blue * alpha + underlayBlue * (1 - alpha),
-    ]
-  }
+  const [red, green, blue, alpha] = colorChannels(color)
+  return [
+    red * alpha + underlayRed * (1 - alpha),
+    green * alpha + underlayGreen * (1 - alpha),
+    blue * alpha + underlayBlue * (1 - alpha),
+  ]
+}
+
+const compositeColor = (color: string, underlay: string): string =>
+  '#' + compositeChannels(color, underlay).map(channel => Math.round(channel).toString(16).padStart(2, '0')).join('')
+
+const contrastRatio = (foreground: string, background: string, underlay: string): number => {
   const luminance = ([red, green, blue]: [number, number, number]): number => {
     const linear = [red, green, blue].map(channel => {
       const normalized = channel / 255
@@ -306,8 +310,8 @@ const contrastRatio = (foreground: string, background: string, underlay: string)
     })
     return 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!
   }
-  const foregroundLuminance = luminance(composite(foreground))
-  const backgroundLuminance = luminance(composite(background))
+  const foregroundLuminance = luminance(compositeChannels(foreground, underlay))
+  const backgroundLuminance = luminance(compositeChannels(background, underlay))
   return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05)
     / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
 }
@@ -783,10 +787,16 @@ export const applySemanticTheme = ({
 
   if (theme) {
     const { border, pageBackground, surfaceRaised, textPrimary } = theme.tokens
-    // The normalized text fallback is readable on both hosts; keep the track opaque so its thumb sees the same color.
-    const raisedCue = visibleIndicator({ color: opaqueBackground(border, textPrimary), against: surfaceRaised, fallback: textPrimary })
-    root.style.setProperty('--color-switch-off-track', visibleIndicator({ color: raisedCue, against: pageBackground, fallback: textPrimary }))
-  } else root.style.removeProperty('--color-switch-off-track')
+    // Freeze alpha over the canvas before validation, then render these same opaque colors on the switch.
+    const thumb = compositeColor(surfaceRaised, pageBackground)
+    const foreground = compositeColor(textPrimary, pageBackground)
+    const raisedCue = visibleIndicator({ color: compositeColor(border, thumb), against: thumb, fallback: foreground })
+    root.style.setProperty('--color-switch-off-track', visibleIndicator({ color: raisedCue, against: pageBackground, fallback: foreground }))
+    root.style.setProperty('--color-switch-off-thumb', thumb)
+  } else {
+    root.style.removeProperty('--color-switch-off-track')
+    root.style.removeProperty('--color-switch-off-thumb')
+  }
 
   for (const role of syntaxTokenNames) {
     const variable = `--color-syntax-${role}`

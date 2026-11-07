@@ -94,16 +94,17 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
     { slug: 'switch', role: 'switch', name: 'Email notifications', state: 'aria-checked', selector: '.fg-switch__track' },
     { slug: 'toggle-button', role: 'button', name: 'Tests with signal Pillar 3', state: 'aria-pressed', selector: '.fg-toggle-button__switch' },
   ] as const) {
-    for (const { colorScheme, palette } of [
-      { colorScheme: 'light', palette: null },
-      { colorScheme: 'dark', palette: null },
-      { colorScheme: 'light', palette: { background: '#ffffff', border: '#929292' } },
-      { colorScheme: 'dark', palette: { background: '#202020', border: '#707070' } },
+    for (const { colorScheme, palette, checkedStates } of [
+      { colorScheme: 'light', palette: null, checkedStates: [false, true] },
+      { colorScheme: 'dark', palette: null, checkedStates: [false, true] },
+      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#ffffff', border: '#929292' }, checkedStates: [false, true] },
+      { colorScheme: 'dark', palette: { background: '#202020', raised: '#202020', border: '#707070' }, checkedStates: [false, true] },
+      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000066', border: '#000000' }, checkedStates: [false] },
     ] as const) {
       await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
       await page.goto('/#/themes')
       if (palette) {
-        const name = `S1 ${colorScheme}`
+        const name = `Switch ${colorScheme} ${palette.raised}`
         const fileChooser = page.waitForEvent('filechooser')
         await page.getByRole('button', { name: 'Choose file', exact: true }).click()
         await (await fileChooser).setFiles({
@@ -116,7 +117,7 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
               'editor.background': palette.background,
               'editor.foreground': colorScheme === 'light' ? '#000000' : '#ffffff',
               'sideBar.background': palette.background,
-              'panel.background': palette.background,
+              'panel.background': palette.raised,
               'panel.border': palette.border,
             },
           })),
@@ -132,20 +133,28 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
       // The stage is transparent by default. Paint each real host surface rather than reading it as black.
       for (const surface of ['--color-bg', '--color-surface-raised']) {
         await stage.evaluate((element, token) => { element.style.background = `var(${token})` }, surface)
-        for (const checked of [false, true]) {
+        for (const checked of checkedStates) {
           if (await toggle.getAttribute(state) !== String(checked)) await toggle.click()
           const colors = await track.evaluate(element => {
             const context = document.createElement('canvas').getContext('2d')!
-            const hex = (color: string) => {
+            // Resolve alpha independently over the surface each color actually sits on.
+            const hex = (color: string, underlay: string) => {
+              context.fillStyle = underlay
+              context.fillRect(0, 0, 1, 1)
               context.fillStyle = color
               context.fillRect(0, 0, 1, 1)
               return '#' + [...context.getImageData(0, 0, 1, 1).data].slice(0, 3)
                 .map(channel => channel.toString(16).padStart(2, '0')).join('')
             }
+            const canvas = getComputedStyle(document.documentElement).getPropertyValue('--color-bg')
+            const ancestors: Element[] = []
+            for (let parent = element.parentElement; parent; parent = parent.parentElement) ancestors.unshift(parent)
+            const surface = ancestors.reduce((underlay, ancestor) => hex(getComputedStyle(ancestor).backgroundColor, underlay), canvas)
+            const track = hex(getComputedStyle(element).backgroundColor, surface)
             return {
-              track: hex(getComputedStyle(element).backgroundColor),
-              thumb: hex(getComputedStyle(element, '::after').backgroundColor),
-              surface: hex(getComputedStyle(element.closest('.playground-stage')!).backgroundColor),
+              track,
+              thumb: hex(getComputedStyle(element, '::after').backgroundColor, track),
+              surface,
             }
           })
           expect(contrast(colors.track, colors.surface), `${slug} ${colorScheme} imported=${!!palette} ${surface} checked=${checked}`).toBeGreaterThanOrEqual(3)
@@ -153,6 +162,7 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
           if (!checked) await expect(track).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
         }
       }
+      if (await toggle.getAttribute(state) !== 'true') await toggle.click()
       await page.emulateMedia({ forcedColors: 'active' })
       await toggle.focus()
       await toggle.press('Space')

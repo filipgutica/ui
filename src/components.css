@@ -877,7 +877,7 @@
     width: calc(var(--fg-switch-height) - 2 * var(--fg-switch-inset));
     height: calc(var(--fg-switch-height) - 2 * var(--fg-switch-inset));
     border-radius: var(--radius-pill);
-    background: var(--color-surface-raised);
+    background: var(--color-switch-off-thumb, var(--color-surface-raised));
     box-shadow: var(--shadow-raise);
     content: "";
     transition: transform var(--duration) var(--ease-out), background-color var(--duration) var(--ease-out);
