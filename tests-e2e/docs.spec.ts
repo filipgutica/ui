@@ -478,6 +478,19 @@ test('slides the segmented thumb from the previous option and settles on the pre
   expect(start.left).toBeCloseTo(previous.left, 0)
   expect(start.right).toBeCloseTo(previous.right, 0)
 
+  // Mid-glide the leading edge is further along than the trailing edge, so the thumb stretches.
+  await control.evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => { animation.currentTime = 100 }))
+  const target = await control.evaluate((element) => {
+    const rect = element.children[2]!.getBoundingClientRect()
+    return { left: rect.left + 2, right: rect.right - 2 }
+  })
+  const glide = await thumbEdges(2)
+  const leading = (glide.right - start.right) / (target.right - start.right)
+  const trailing = (glide.left - start.left) / (target.left - start.left)
+  // A clear lead, not rounding: about 0.09 of the travel at 100ms.
+  expect(leading - trailing).toBeGreaterThan(0.04)
+  expect(trailing).toBeGreaterThan(0)
+
   // A new choice mid-slide leaves from where the thumb is, without a jump.
   await control.evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => { animation.currentTime = 60 }))
   const midway = await thumbEdges(2)

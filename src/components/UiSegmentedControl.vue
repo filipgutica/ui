@@ -6,7 +6,7 @@
     :aria-label="label"
     :data-size="size"
     :data-icon-only="iconOnly ? 'true' : undefined"
-    @animationend="$event.animationName === 'fg-segmented-slide' && clearSlide()"
+    @animationend="endSlide"
   >
     <button
       v-for="item in items"
@@ -79,6 +79,9 @@ const root = useTemplateRef<HTMLElement>('root')
 let canSlide = false
 onMounted(() => requestAnimationFrame(() => { canSlide = true }))
 
+// The trailing edge's animation ends last; the slide is over when it does.
+let trailingEdge = ''
+
 const clearSlide = (): void => {
   if (!root.value) return
   delete root.value.dataset.slide
@@ -86,10 +89,14 @@ const clearSlide = (): void => {
   root.value.style.removeProperty('--fg-segmented-slide-right')
 }
 
+const endSlide = (event: AnimationEvent): void => {
+  if (event.animationName === trailingEdge) clearSlide()
+}
+
 /*
  * Each pressed button draws its own thumb in CSS, which also covers server rendering
  * and resizes. A change of choice only starts the new thumb where the old one is, and
- * a CSS animation brings it home while the labels crossfade. The pre flush reads the
+ * CSS animations glide each edge home while the labels crossfade. The pre flush reads the
  * old thumb before the DOM changes, so no frame shows the thumb already moved.
  */
 watch(() => modelValue, (next, previous) => {
@@ -111,6 +118,8 @@ watch(() => modelValue, (next, previous) => {
   clearSlide()
   element.style.setProperty('--fg-segmented-slide-left', `${fromLeft - toRect.left}px`)
   element.style.setProperty('--fg-segmented-slide-right', `${toRect.right - fromRight}px`)
-  element.dataset.slide = ''
+  const direction = toRect.left + toRect.right > fromLeft + fromRight ? 'right' : 'left'
+  trailingEdge = direction === 'right' ? 'fg-segmented-left-edge' : 'fg-segmented-right-edge'
+  element.dataset.slide = direction
 }, { flush: 'pre' })
 </script>

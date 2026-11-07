@@ -10,7 +10,7 @@ const fixture = `/@fs${fileURLToPath(new URL('./fixtures/segmented.html', import
 const driven = (page: Page) => page.locator('#driven .fg-segmented')
 const runningAnimations = (page: Page) => driven(page).evaluate(element =>
   element.getAnimations({ subtree: true }).map(animation => (animation as CSSAnimation).animationName ?? (animation as CSSTransition).transitionProperty))
-const slides = async (page: Page) => (await runningAnimations(page)).filter(name => name === 'fg-segmented-slide')
+const slides = async (page: Page) => (await runningAnimations(page)).filter(name => name?.startsWith('fg-segmented-'))
 const setView = (page: Page, value: string | undefined) =>
   page.evaluate(value => (window as unknown as { setView: (value: string | undefined) => void }).setView(value), value)
 
@@ -49,7 +49,7 @@ test('drops the slide when the choice is cleared and draws no thumb', async ({ p
   await driven(page).getByRole('button', { name: 'Timeline' }).click()
   await page.mouse.move(0, 0)
   await driven(page).evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => {
-    if ((animation as CSSAnimation).animationName !== 'fg-segmented-slide') return
+    if (!(animation as CSSAnimation).animationName?.startsWith('fg-segmented-')) return
     animation.pause()
     animation.currentTime = 60
   }))
