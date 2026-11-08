@@ -192,8 +192,9 @@
     min-width: 14rem;
     margin-top: var(--space-1);
     padding: var(--space-1);
+    border: 1px solid transparent;
     border-radius: var(--radius-panel);
-    background: var(--color-surface);
+    background: var(--color-surface-raised);
     box-shadow: var(--shadow-dialog);
   }
 

@@ -95,6 +95,8 @@ test('lifts a focused field out of its well instead of drawing a ring', async ({
 })
 
 test('marks a pressed toggle card with its switch and a faint hairline, on square corners', async ({ page }) => {
+  // Inspect the final paint rather than a frame of the selection fade.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#/components/toggle-button')
   const card = page.locator('.fg-toggle-button').first()
   if ((await card.getAttribute('aria-pressed')) !== 'true') await card.click()
