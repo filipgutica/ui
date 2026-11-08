@@ -128,7 +128,7 @@ describe('UiCodeBlock', () => {
 
   it.each(['sh', 'text'])('shows embedded %s source without labels or a command prompt, with an icon-only Copy', async (language) => {
     vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
-    const wrapper = mount(UiCodeBlock, { props: { code: 'pnpm add @filipgutica/ui', language, title: 'Install', variant: 'embedded' } })
+    const wrapper = mount(UiCodeBlock, { props: { code: 'pnpm add @filipgutica/ui', language, variant: 'embedded' } })
     expect(wrapper.get('.fg-code-block').attributes('data-command')).toBeUndefined()
     expect(wrapper.find('.fg-code-block__title').exists()).toBe(false)
     expect(wrapper.find('.fg-code-block__language').exists()).toBe(false)

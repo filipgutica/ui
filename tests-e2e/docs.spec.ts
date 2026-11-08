@@ -404,6 +404,28 @@ test('shows each example as one frame: the live stage over its source, with Copy
   }
 })
 
+test('keeps both ends of a preview wider than the stage reachable', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 })
+  await page.goto('/#/components/card')
+  const stage = page.locator('section[aria-labelledby="example-heading"] .fg-example__stage')
+  await expect(stage.locator('.fg-card')).toBeVisible()
+  // A child wider than the stage, as a wide table would be. Centring it without `safe` pushes its start off the left edge.
+  const edges = () => stage.evaluate((element) => {
+    const stageBox = element.getBoundingClientRect()
+    const child = element.firstElementChild!.getBoundingClientRect()
+    return { left: child.left - stageBox.left, right: stageBox.right - child.right }
+  })
+  await stage.evaluate((element) => {
+    const wide = document.createElement('div')
+    wide.style.minWidth = '900px'
+    wide.style.height = '1rem'
+    element.replaceChildren(wide)
+  })
+  expect((await edges()).left, 'preview start is reachable').toBeGreaterThanOrEqual(0)
+  await stage.evaluate((element) => { element.scrollLeft = element.scrollWidth })
+  expect((await edges()).right, 'preview end is reachable').toBeGreaterThanOrEqual(0)
+})
+
 test('keeps documentation heading hierarchy without decorative preview chrome', async ({ page }) => {
   await page.goto('/#/components/button')
   const heading = page.locator('h1')
