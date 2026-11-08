@@ -17,7 +17,7 @@
     max-width: 100%;
     overflow: hidden;
     border: 1px solid transparent;
-    box-shadow: var(--shadow-raise);
+    box-shadow: var(--shadow-surface);
     border-radius: var(--radius-panel);
     background: var(--color-code);
     color: var(--color-code-text);
@@ -280,7 +280,7 @@
   }
 
   .fg-button[data-variant="ghost"] {
-    --fg-button-shadow: 0 0 0 0 transparent;
+    --fg-button-shadow: none;
     color: var(--color-muted);
     background: transparent;
     box-shadow: none;
@@ -301,7 +301,7 @@
   }
 
   .fg-button[data-variant="text"] {
-    --fg-button-shadow: 0 0 0 0 transparent;
+    --fg-button-shadow: none;
     height: auto;
     min-height: auto;
     padding: var(--space-1);
@@ -674,7 +674,7 @@
     border: 1px solid transparent;
     border-radius: var(--radius-panel);
     background: var(--color-surface-raised);
-    box-shadow: var(--shadow-raise);
+    box-shadow: var(--shadow-surface);
   }
 
   .fg-surface[data-padding="compact"] { padding: var(--space-3); }
@@ -687,7 +687,7 @@
     border-radius: var(--radius-panel);
     color: var(--color-text);
     background: var(--color-surface-raised);
-    box-shadow: var(--shadow-raise);
+    box-shadow: var(--shadow-surface);
   }
 
   .fg-card__header {
