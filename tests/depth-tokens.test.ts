@@ -56,7 +56,7 @@ const styleBlock = /<style[^>]*>([\s\S]*?)<\/style>/g
 const vueStyles = (source: string): string => [...source.matchAll(styleBlock)].map(([, css]) => css).join('\n')
 
 // Templates must not reach around the stylesheets: no inline box-shadow and no Tailwind shadow utility in a class or style binding.
-const bindingValue = /(?:^|\s):?(?:class|style)\s*=\s*("[^"]*"|'[^']*')/g
+const bindingValue = /(?:^|\s)(?::|v-bind:)?(?:class|style)\s*=\s*("[^"]*"|'[^']*')/g
 const bindingShadow = /box-shadow|boxShadow|(?<![\w-])(?:[\w-]+:)*(?:drop-|inset-)?shadow(?:-[\w/[\]().%-]+)?(?![\w-])/g
 const markupShadows = (source: string): string[] => [...source.replace(styleBlock, '').matchAll(bindingValue)]
   .flatMap(([, value]) => value!.match(bindingShadow) ?? [])
@@ -89,6 +89,7 @@ describe('depth tokens', () => {
   it('flags inline shadows and Tailwind shadow utilities in markup', () => {
     expect(markupShadows('<div style="box-shadow: 0 8px 20px black" />')).toHaveLength(1)
     expect(markupShadows('<div :style="{ boxShadow: lift }" />')).toHaveLength(1)
+    expect(markupShadows(`<div v-bind:style="{ boxShadow: '0 8px 20px black' }" v-bind:class="'dark:shadow-2xl'" />`)).toHaveLength(2)
     expect(markupShadows('<div class="p-2 shadow-xl dark:shadow-2xl hover:shadow" />')).toHaveLength(3)
     expect(markupShadows('<p>Raise uses one tight shadow.</p><div class="fg-card" /><style>.fg-card { box-shadow: var(--shadow-surface) }</style>')).toEqual([])
   })
