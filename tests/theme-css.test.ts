@@ -7,14 +7,19 @@ import { contrast } from './contrast.js'
 
 const source = readFileSync(resolve(process.cwd(), 'src/theme.css'), 'utf8')
 
-const tokensFor = (selector: ':root' | ':root.dark'): Record<string, string> => {
+const blockFor = (selector: ':root' | ':root.dark'): Record<string, string> => {
   const escapedSelector = selector.replace('.', String.raw`\.`)
   const match = new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`).exec(source)
   if (!match?.[1]) throw new Error(`Missing ${selector} token block`)
-  const declarations = Object.fromEntries(
+  return Object.fromEntries(
     [...match[1].matchAll(/(--[\w-]+):\s*([^;]+);/g)]
       .map(([, name, value]) => [name!, value!.trim()]),
   )
+}
+
+const tokensFor = (selector: ':root' | ':root.dark'): Record<string, string> => {
+  // :root.dark also matches :root, so dark tokens can reference values defined only in :root.
+  const declarations = selector === ':root' ? blockFor(':root') : { ...blockFor(':root'), ...blockFor(':root.dark') }
   const resolveColor = (name: string): string => declarations[name]!.replace(/var\((--[\w-]+)\)/g, (_, target: string) => resolveColor(target))
   return Object.fromEntries(Object.keys(declarations).map(name => [name, resolveColor(name)]))
 }
