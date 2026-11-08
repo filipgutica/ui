@@ -25,6 +25,74 @@ const componentSlugs = [
   'toggle-button',
 ]
 
+for (const { slug, selector } of [
+  { slug: 'progress', selector: '.fg-progress__indicator' },
+  { slug: 'score', selector: '.fg-score__pip[data-filled="true"]' },
+  { slug: 'slider', selector: '.fg-slider__range' },
+]) {
+  test(`redraws the ${slug} value in Highlight in forced colors`, async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' })
+    await page.goto(`/#/sandbox/${slug}`)
+    const mark = page.locator(`.playground-stage ${selector}`).first()
+    await expect(mark).toBeVisible()
+    const colors = await mark.evaluate(element => {
+      const probe = document.createElement('span')
+      probe.style.cssText = 'forced-color-adjust: none; background: Highlight; color: Canvas'
+      element.after(probe)
+      const style = getComputedStyle(probe)
+      const colors = { highlight: style.backgroundColor, canvas: style.color }
+      probe.remove()
+      return colors
+    })
+    await expect(mark).toHaveCSS('background-color', colors.highlight)
+    expect(await mark.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(colors.canvas)
+  })
+}
+
+test('rings the focused pressed segmented option in HighlightText in forced colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/sandbox/segmented-control')
+  const pressed = page.locator('.playground-stage .fg-segmented__item[aria-pressed="true"]')
+  await pressed.focus()
+  await expect(pressed).toBeFocused()
+  const colors = await pressed.evaluate(element => {
+    const probe = document.createElement('span')
+    probe.style.cssText = 'forced-color-adjust: none; color: HighlightText; background: var(--color-accent)'
+    element.after(probe)
+    const style = getComputedStyle(probe)
+    const colors = { text: style.color, accent: style.backgroundColor }
+    probe.remove()
+    return colors
+  })
+  await expect(pressed).toHaveCSS('outline-style', 'solid')
+  await expect(pressed).toHaveCSS('outline-color', colors.text)
+  expect(colors.text).not.toBe(colors.accent)
+})
+
+test('lets the dialog shadow draw its edge over a transparent border', async ({ page }) => {
+  await page.goto('/#/sandbox/dialog')
+  await page.locator('.playground-stage').getByRole('button', { name: 'Open dialog' }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
+  await expect(dialog).toHaveCSS('border-width', '1px')
+})
+
+for (const { slug, selector, properties } of [
+  { slug: 'toggle-button', selector: '.fg-toggle-button', properties: ['background-color', 'border-color'] },
+  { slug: 'radio-card-group', selector: '.fg-radio-card', properties: ['background-color'] },
+]) {
+  test(`fades the ${slug} fill and stops under reduced motion`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto(`/#/sandbox/${slug}`)
+    const card = page.locator(`.playground-stage ${selector}`).first()
+    await expect(card).toHaveCSS('transition-property', properties.join(', '))
+    await expect(card).toHaveCSS('transition-duration', properties.map(() => '0.12s').join(', '))
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await expect(card).toHaveCSS('transition-duration', '0s')
+  })
+}
+
 test('operates tabs with the keyboard and retains panel contents', async ({ page }) => {
   await page.goto('/#/sandbox/tabs')
   const stage = page.locator('.playground-stage')
@@ -71,6 +139,8 @@ for (const { slug, role, name, state, track } of [
     await toggle.press('Space')
     await expect(toggle).toHaveAttribute(state, 'true')
     if (slug === 'toggle-button') {
+      // Selection now fades; compare the settled edge before and after hover.
+      await toggle.evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)))
       const pressedBorder = await toggle.evaluate(element => getComputedStyle(element).borderColor)
       await toggle.hover()
       await expect(toggle).toHaveCSS('border-color', pressedBorder)
