@@ -35,8 +35,6 @@ const declarationsIn = (css: string): Declaration[] => {
   return declarations
 }
 
-const focusRing = /^(inset )?0 0 0 [\d.]+px var\(--color-[\w-]+\)$/
-
 /** Explains why a shadow declaration breaks the depth contract, or returns undefined when it keeps it. */
 const violation = ({ selectors, property, value }: Declaration): string | undefined => {
   if (selectors.some(selector => /\.dark\b|prefers-color-scheme:\s*dark/.test(selector))) return 'sets depth in a dark-mode rule; set dark values in the :root.dark token block'
@@ -44,7 +42,6 @@ const violation = ({ selectors, property, value }: Declaration): string | undefi
   const token = /^var\((--[\w-]+)\)$/.exec(value)?.[1]
   // A component's own --*-shadow property is checked as a declaration in its own right.
   if (token && (shadowTokens.has(token) || (token.includes('shadow') && !token.startsWith('--shadow-')))) return undefined
-  if (property === 'box-shadow' && /focus/.test(selectors.at(-1)!) && focusRing.test(value)) return undefined
   return `uses "${value}"; use a --shadow-* token from src/theme.css`
 }
 
@@ -55,7 +52,14 @@ const shadowViolations = (css: string): string[] => declarationsIn(css)
     return reason ? [`${declaration.selectors.at(-1)} { ${declaration.property} } ${reason}`] : []
   })
 
-const vueStyles = (source: string): string => [...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(([, css]) => css).join('\n')
+const styleBlock = /<style[^>]*>([\s\S]*?)<\/style>/g
+const vueStyles = (source: string): string => [...source.matchAll(styleBlock)].map(([, css]) => css).join('\n')
+
+// Templates must not reach around the stylesheets: no inline box-shadow and no Tailwind shadow utility in a class or style binding.
+const bindingValue = /(?:^|\s):?(?:class|style)\s*=\s*("[^"]*"|'[^']*')/g
+const bindingShadow = /box-shadow|boxShadow|(?<![\w-])(?:[\w-]+:)*(?:drop-|inset-)?shadow(?:-[\w/[\]().%-]+)?(?![\w-])/g
+const markupShadows = (source: string): string[] => [...source.replace(styleBlock, '').matchAll(bindingValue)]
+  .flatMap(([, value]) => value!.match(bindingShadow) ?? [])
 
 // Theme files (src/theme.css, src/themes/*.css) own the token values and are not scanned.
 const sources = [
@@ -78,7 +82,20 @@ describe('depth tokens', () => {
     expect(shadowViolations(':root.dark .x { box-shadow: var(--shadow-surface) }')).toHaveLength(1)
     expect(shadowViolations(':root.dark { .x { box-shadow: var(--shadow-surface) } }')).toHaveLength(1)
     expect(shadowViolations('@media (prefers-color-scheme: dark) { .x { box-shadow: var(--shadow-raise) } }')).toHaveLength(1)
-    expect(shadowViolations('.x:focus-visible { box-shadow: 0 0 0 2px var(--color-focus) } .y { box-shadow: var(--shadow-sink) }')).toEqual([])
+    expect(shadowViolations('.x:focus-visible { box-shadow: 0 0 0 8px var(--color-focus) }')).toHaveLength(1)
+    expect(shadowViolations('.y { box-shadow: var(--shadow-sink) }')).toEqual([])
+  })
+
+  it('flags inline shadows and Tailwind shadow utilities in markup', () => {
+    expect(markupShadows('<div style="box-shadow: 0 8px 20px black" />')).toHaveLength(1)
+    expect(markupShadows('<div :style="{ boxShadow: lift }" />')).toHaveLength(1)
+    expect(markupShadows('<div class="p-2 shadow-xl dark:shadow-2xl hover:shadow" />')).toHaveLength(3)
+    expect(markupShadows('<p>Raise uses one tight shadow.</p><div class="fg-card" /><style>.fg-card { box-shadow: var(--shadow-surface) }</style>')).toEqual([])
+  })
+
+  it('keeps templates free of shadows', () => {
+    const files = [...filesUnder('src', '.vue'), ...filesUnder('docs/src', '.vue')]
+    expect(files.flatMap(path => markupShadows(read(path)).map(match => `${path}: ${match}`))).toEqual([])
   })
 
   it('keeps every shadow outside the theme on a token', () => {
