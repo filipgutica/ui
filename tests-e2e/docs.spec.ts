@@ -11,6 +11,7 @@ const componentSlugs = [
   'code-block',
   'dialog',
   'drawer',
+  'example',
   'field',
   'figure',
   'input',
@@ -375,13 +376,41 @@ test('owns compact component typography independently of host styles', async ({ 
   }
 })
 
+test('shows each example as one frame: the live stage over its source, with Copy in the source corner', async ({ page }) => {
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/components/card')
+    const section = page.locator('section[aria-labelledby="example-heading"]')
+    const source = section.locator('.fg-code-block').last()
+    const pre = source.locator('pre')
+    const copy = source.getByRole('button', { name: 'Copy code' })
+    await expect(pre).toBeVisible()
+    const [sourceBox, preBox, copyBox] = await Promise.all([source.boundingBox(), pre.boundingBox(), copy.boundingBox()])
+    if (!sourceBox || !preBox || !copyBox) throw new Error('example source is not rendered')
+    // No header row: the code starts at the top edge of the source, and Copy sits in its top-right corner.
+    expect(preBox.y - sourceBox.y, `${width}px code top`).toBeLessThanOrEqual(1)
+    expect(copyBox.y - sourceBox.y, `${width}px copy top`).toBeLessThanOrEqual(8)
+    expect(sourceBox.x + sourceBox.width - (copyBox.x + copyBox.width), `${width}px copy right`).toBeLessThanOrEqual(8)
+    expect(copyBox.x + copyBox.width).toBeLessThanOrEqual(sourceBox.x + sourceBox.width)
+    expect(await copy.evaluate(button => Boolean(button.compareDocumentPosition(button.closest('.fg-code-block')!.querySelector('pre')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true)
+
+    const frame = section.locator('.fg-example')
+    const stage = frame.locator(':scope > .fg-example__stage')
+    await expect(stage.locator('.fg-card')).toBeVisible()
+    await expect(frame.locator(':scope > .fg-code-block')).toHaveCount(1)
+    const stageBox = await stage.boundingBox()
+    expect((stageBox?.y ?? 0) + (stageBox?.height ?? 0), `${width}px stage above source`).toBeLessThanOrEqual(sourceBox.y + 1)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}px page overflow`).toBe(true)
+  }
+})
+
 test('keeps documentation heading hierarchy without decorative preview chrome', async ({ page }) => {
   await page.goto('/#/components/button')
   const heading = page.locator('h1')
   expect(await heading.evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBe(44)
   const sectionHeading = page.getByRole('heading', { name: 'Usage', exact: true })
   expect(await sectionHeading.evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBeLessThanOrEqual(20)
-  await expect(page.locator('.example-frame')).toHaveCSS('background-image', 'none')
+  await expect(page.locator('.fg-example__stage')).toHaveCSS('background-image', 'none')
   await page.goto('/#/sandbox/button')
   const controlLabel = page.locator('.playground-controls > .pane-label')
   await expect(controlLabel).toHaveCSS('text-transform', 'none')
@@ -756,7 +785,7 @@ test('renders usable slider tracks in documentation examples', async ({ page }) 
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/components/slider')
-    const track = page.locator('.example-frame .fg-slider__track')
+    const track = page.locator('.fg-example__stage .fg-slider__track')
     await expect(track).toBeVisible()
     expect((await track.boundingBox())?.width ?? 0).toBeGreaterThan(180)
     const thumb = page.getByRole('slider', { name: 'Confidence threshold' })

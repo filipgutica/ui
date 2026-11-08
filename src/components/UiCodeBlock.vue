@@ -10,7 +10,7 @@ export interface UiCodeBlockProps {
   copyable?: boolean
   lineNumbers?: boolean
   wrap?: boolean
-  variant?: 'default' | 'compact'
+  variant?: 'default' | 'compact' | 'embedded'
 }
 
 const {
@@ -25,8 +25,12 @@ const {
 
 defineSlots<{ actions?(): unknown }>()
 type CodeToken = { content: string; color?: string | undefined }
+// Compact and embedded blocks show Copy as an icon in the code's corner, with no labels.
+const iconOnly = computed(() => variant !== 'default')
 // Compact commands may omit a language; typed source never receives a prompt.
+// Embedded source sits under a live example, so it is never a command.
 const command = computed(() => {
+  if (variant === 'embedded') return false
   const normalizedLanguage = language.trim().toLowerCase()
   const shell = ['bash', 'sh', 'shell'].includes(normalizedLanguage)
   return variant === 'compact' ? shell || normalizedLanguage === 'text' : shell && !title
@@ -68,10 +72,10 @@ const { copied, pending, error, copy } = useClipboardCopy({
   failureMessage: 'Could not copy. Select the code to copy it.',
 })
 const copySucceeded = computed(() => copied.value && !error.value)
-const compactSuccess = computed(() => variant === 'compact' && copySucceeded.value && !highlightingError.value)
+const hiddenSuccess = computed(() => iconOnly.value && copySucceeded.value && !highlightingError.value)
 const statusMessage = computed(() => {
   if (error.value) return error.value
-  if (variant === 'compact' && highlightingError.value) {
+  if (iconOnly.value && highlightingError.value) {
     return copied.value ? `Code copied to clipboard. ${highlightingError.value}` : highlightingError.value
   }
   return copied.value ? 'Code copied to clipboard.' : highlightingError.value
@@ -108,7 +112,7 @@ const copyCode = (): Promise<void> => copy(code)
           class="fg-code-block__copy fg-quiet-action"
           :disabled="pending"
           aria-label="Copy code"
-          :title="variant === 'compact' ? (copySucceeded ? 'Copied' : 'Copy code') : undefined"
+          :title="iconOnly ? (copySucceeded ? 'Copied' : 'Copy code') : undefined"
           @click="copyCode"
         >
           <svg
@@ -119,7 +123,7 @@ const copyCode = (): Promise<void> => copy(code)
             aria-hidden="true"
           >
             <path
-              v-if="variant === 'compact' && copySucceeded"
+              v-if="iconOnly && copySucceeded"
               d="m5 12 4 4L19 6"
             />
             <template v-else>
@@ -157,7 +161,7 @@ const copyCode = (): Promise<void> => copy(code)
     <span
       class="fg-code-block__status"
       role="status"
-      :data-state="compactSuccess ? 'success' : undefined"
+      :data-state="hiddenSuccess ? 'success' : undefined"
     >{{ statusMessage }}</span>
   </div>
 </template>

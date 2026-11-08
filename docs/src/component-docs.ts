@@ -482,7 +482,7 @@ export const componentDocs: ComponentDoc[] = [
     title: 'Code block',
     summary: 'Displays source code with optional syntax highlighting and clipboard copying.',
     usage: [
-      'Use variant="default" for source files. For short commands, use variant="compact".',
+      'Use variant="default" for source files. For short commands, use variant="compact". UiExample uses variant="embedded" for the source under a preview.',
       'For highlighting, choose vue, ts, typescript, js, javascript, json, css, html, bash, sh, or shell.',
       'If copying fails or the clipboard API is unavailable, select the code to copy it manually.',
     ],
@@ -490,7 +490,7 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'code', required: true, type: 'string', description: 'Source text. Copies exactly, including whitespace and line endings.' },
       { name: 'language', required: false, type: 'string', default: "'text'", description: 'Highlighting language and header text. Names ignore case and surrounding spaces. Unsupported languages or highlighting failures show plain text.' },
       { name: 'title', required: false, type: 'string', default: "''", description: 'Accessible code label and default header title. When empty, the header shows language and the accessible label becomes \'<language> code\'.' },
-      { name: 'variant', required: false, type: "'default' | 'compact'", default: "'default'", description: 'Default puts labels and actions above code. Compact hides labels and puts actions beside code. Compact uses dark terminal colors and decorative \'$ \' prompts for bash, sh, shell, or text. Default uses them only for bash, sh, or shell with an empty title. Other blocks use active theme code colors.' },
+      { name: 'variant', required: false, type: "'default' | 'compact' | 'embedded'", default: "'default'", description: 'Default puts labels and actions above code. Compact hides labels and puts actions beside code. Compact uses dark terminal colors and decorative \'$ \' prompts for bash, sh, shell, or text. Default uses them only for bash, sh, or shell with an empty title. Embedded is for source inside another frame, such as UiExample: no labels, edge, corners, or shadow, with Copy in the top corner and active theme code colors for every language. Other blocks use active theme code colors.' },
       { name: 'copyable', required: false, type: 'boolean', default: 'true', description: 'Shows a copy button, disabled during copying. Live status reports success or failure.' },
       { name: 'lineNumbers', required: false, type: 'boolean', default: 'false', description: 'Shows line numbers from 1, hidden from assistive technology and omitted from copies.' },
       { name: 'wrap', required: false, type: 'boolean', default: 'false', description: 'Wraps long lines to available width, including within words. When false, scrolls horizontally.' },
@@ -570,6 +570,32 @@ export const componentDocs: ComponentDoc[] = [
       title: 'Numbered figure',
       description: 'A table above a numbered caption.',
       code: `<UiFigure :number="1">\n  <SafeguardTable />\n  <template #caption>\n    Each safeguard stops one problem before review.\n  </template>\n</UiFigure>`,
+    },
+  },
+  {
+    category: 'Layout',
+    slug: 'example',
+    name: 'UiExample',
+    title: 'Example',
+    summary: 'Shows a live preview above its source code in one frame.',
+    usage: [
+      'Use UiExample in documentation to show a component next to the code that renders it.',
+      'The preview sits on the page background, so components show the depth they have on a real page.',
+      'Pass the exact source in code. Copy copies it unchanged.',
+      'For source without a preview, use UiCodeBlock.',
+    ],
+    props: [
+      { name: 'code', required: true, type: 'string', description: 'Source shown below the preview. Copies exactly, including whitespace and line endings.' },
+      { name: 'language', required: false, type: 'string', default: "'text'", description: 'Highlighting language for the source, as in UiCodeBlock. The source never shows a command prompt.' },
+    ],
+    slots: [
+      { name: 'default', type: 'unknown', description: 'The live preview, centred on the stage. Wide content scrolls inside the stage.' },
+    ],
+    events: [],
+    example: {
+      title: 'Button with its source',
+      description: 'A live button above the source that renders it. Copy sits in the top corner of the source.',
+      code: `<UiExample language="vue" :code="source">\n  <UiButton variant="secondary">Save draft</UiButton>\n</UiExample>`,
     },
   },
   {

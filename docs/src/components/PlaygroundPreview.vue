@@ -12,6 +12,7 @@ import {
   UiCodeBlock,
   UiDialog,
   UiDrawer,
+  UiExample,
   UiField,
   UiFigure,
   UiInput,
@@ -242,6 +243,15 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
           Each safeguard stops one problem before review. The table scrolls inside the plate on narrow screens.
         </template>
       </UiFigure>
+      <UiExample
+        v-else-if="slug === 'example'"
+        code="<UiButton variant=&quot;secondary&quot;>Save draft</UiButton>"
+        language="vue"
+      >
+        <UiButton variant="secondary">
+          Save draft
+        </UiButton>
+      </UiExample>
 
       <UiRadioCardGroup
         v-else-if="slug === 'radio-card'"

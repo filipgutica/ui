@@ -32,6 +32,7 @@ const exportedComponents = [
   'UiCodeBlock',
   'UiDialog',
   'UiDrawer',
+  'UiExample',
   'UiField',
   'UiFigure',
   'UiInput',

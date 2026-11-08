@@ -126,7 +126,24 @@ describe('UiCodeBlock', () => {
     wrapper.unmount()
   })
 
-  it.each(['default', 'compact'] as const)('reports clipboard failure and allows copying to be disabled in %s blocks', async (variant) => {
+  it.each(['sh', 'text'])('shows embedded %s source without labels or a command prompt, with an icon-only Copy', async (language) => {
+    vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    const wrapper = mount(UiCodeBlock, { props: { code: 'pnpm add @filipgutica/ui', language, title: 'Install', variant: 'embedded' } })
+    expect(wrapper.get('.fg-code-block').attributes('data-command')).toBeUndefined()
+    expect(wrapper.find('.fg-code-block__title').exists()).toBe(false)
+    expect(wrapper.find('.fg-code-block__language').exists()).toBe(false)
+    const copy = wrapper.get('.fg-code-block__copy')
+    expect(copy.text()).toBe('')
+    expect(copy.attributes('title')).toBe('Copy code')
+    await copy.trigger('click')
+    await flushPromises()
+    expect(copy.attributes('title')).toBe('Copied')
+    expect(wrapper.get('[role="status"]').text()).toBe('Code copied to clipboard.')
+    expect(wrapper.get('[role="status"]').attributes('data-state')).toBe('success')
+    wrapper.unmount()
+  })
+
+  it.each(['default', 'compact', 'embedded'] as const)('reports clipboard failure and allows copying to be disabled in %s blocks', async (variant) => {
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'))
     const wrapper = mount(UiCodeBlock, { props: { code: 'example', variant } })
     await wrapper.get('button').trigger('click')
