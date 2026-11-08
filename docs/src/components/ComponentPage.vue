@@ -47,25 +47,15 @@
           <p>{{ component.example.description }}</p>
         </div>
       </div>
-      <div class="example-workbench">
-        <div class="example-pane">
-          <p class="pane-label">
-            Preview
-          </p>
-          <div class="example-frame">
-            <ComponentPlayground
-              :slug="component.slug"
-              compact
-            />
-          </div>
-        </div>
-        <div class="code-pane">
-          <UiCodeBlock
-            :code="component.example.code"
-            language="vue"
-          />
-        </div>
-      </div>
+      <UiExample
+        :code="component.example.code"
+        language="vue"
+      >
+        <ComponentPlayground
+          :slug="component.slug"
+          compact
+        />
+      </UiExample>
     </section>
 
     <section aria-labelledby="props-heading">
@@ -94,7 +84,7 @@
 <script setup lang="ts">
 import type { ComponentDoc } from '../component-docs.js'
 
-import { UiCodeBlock } from '../../../src/index.js'
+import { UiExample } from '../../../src/index.js'
 import ApiTable from './ApiTable.vue'
 import ComponentPlayground from './ComponentPlayground.vue'
 

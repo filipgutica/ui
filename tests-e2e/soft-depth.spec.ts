@@ -119,14 +119,16 @@ test('keeps idle controls and surfaces to a quiet lift in both themes', async ({
     expectQuietLift(raise, `${colorScheme} raise`)
     expectQuietLift(surface, `${colorScheme} surface`)
 
-    expect(await shadowOf(page.locator('.example-frame .fg-card')), `${colorScheme} card`).toBe(surface)
-    expect(await shadowOf(page.locator('.example-workbench')), `${colorScheme} example panel`).toBe(surface)
+    expect(await shadowOf(page.locator('.fg-example__stage .fg-card')), `${colorScheme} card`).toBe(surface)
+    // The example frame is a figure well: an edge and no shadow, so the stage shows each component's own depth.
+    expect(await shadowOf(page.locator('.fg-example')), `${colorScheme} example frame`).toBe('none')
+    expect(await shadowOf(page.locator('.fg-example > .fg-code-block')), `${colorScheme} example source`).toBe('none')
     await page.goto('/#/components/code-block')
-    expect(await shadowOf(page.locator('.example-frame .fg-code-block').first()), `${colorScheme} code block`).toBe(surface)
+    expect(await shadowOf(page.locator('.fg-example__stage .fg-code-block').first()), `${colorScheme} code block`).toBe(surface)
     await page.goto('/#/components/button')
-    expect(await shadowOf(page.locator('.example-frame .fg-button')), `${colorScheme} button`).toBe(raise)
+    expect(await shadowOf(page.locator('.fg-example__stage .fg-button')), `${colorScheme} button`).toBe(raise)
     await page.goto('/#/components/segmented-control')
-    expect(await shadowOf(page.locator('.example-frame .fg-segmented__item[aria-pressed="true"]'), '::before'), `${colorScheme} segmented thumb`).toBe(raise)
+    expect(await shadowOf(page.locator('.fg-example__stage .fg-segmented__item[aria-pressed="true"]'), '::before'), `${colorScheme} segmented thumb`).toBe(raise)
   }
 })
 

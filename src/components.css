@@ -92,13 +92,14 @@
   .fg-code-block[data-wrap="true"] .fg-code-block__text { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
   .fg-code-block__status:empty { display: none; }
   .fg-code-block__status:not(:empty) { display: block; padding: var(--space-2) var(--space-3); font-size: var(--text-xs); }
-  .fg-code-block[data-variant="compact"] {
+  /* Compact and embedded blocks put an icon-only Copy beside the code instead of in a header row. */
+  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) {
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
   }
-  .fg-code-block[data-variant="compact"] .fg-code-block__header {
+  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__header {
     grid-column: 2;
     grid-row: 1;
     min-height: 0;
@@ -106,27 +107,27 @@
     border: 0;
     background: transparent;
   }
-  .fg-code-block[data-variant="compact"] .fg-code-block__actions {
+  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__actions {
     gap: var(--space-1);
     margin-left: 0;
   }
-  .fg-code-block[data-variant="compact"] .fg-code-block__copy {
+  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__copy {
     padding: 0;
     border-radius: var(--radius-control);
   }
-  .fg-code-block[data-variant="compact"] .fg-code-block__pre {
+  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__pre {
     grid-column: 1;
     grid-row: 1;
     min-width: 0;
-    padding: var(--space-2) var(--space-3);
   }
-  .fg-code-block[data-variant="compact"] .fg-code-block__status:not(:empty) {
+  .fg-code-block[data-variant="compact"] .fg-code-block__pre { padding: var(--space-2) var(--space-3); }
+  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__status:not(:empty) {
     grid-column: 1 / -1;
     padding: var(--space-2) var(--space-3);
     font-size: var(--text-sm);
     overflow-wrap: anywhere;
   }
-  .fg-code-block[data-variant="compact"] .fg-code-block__status[data-state="success"] {
+  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__status[data-state="success"] {
     position: absolute;
     top: 0;
     left: 0;
@@ -137,6 +138,44 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+  /* Embedded source sits inside a frame that draws the edge, so the block has no edge, corners, or depth of its own. */
+  .fg-code-block[data-variant="embedded"] {
+    align-items: start;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* An example frame: the live preview on the page canvas, its source below one hairline. */
+  .fg-example {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-panel);
+    background: var(--color-bg);
+  }
+  /* The stage keeps the page canvas and no shadow, so a component shows the depth it has on a real page.
+   * Wide previews scroll inside the stage so the page never overflows. */
+  .fg-example__stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    /* safe: a preview wider than the stage starts at the left edge, so scrolling reaches both ends. */
+    place-items: safe center;
+    min-width: 0;
+    min-height: 8rem;
+    overflow-x: auto;
+    padding: var(--space-8);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+  .fg-example__stage > * { min-width: 0; max-width: 100%; }
+
+  @media (max-width: 640px) {
+    .fg-example__stage { padding: var(--space-6) var(--space-4); }
+  }
+
   .fg-button,
   .fg-input,
   .fg-select {
@@ -1138,11 +1177,14 @@
   :root.high-contrast .fg-surface,
   :root.high-contrast .fg-card,
   :root.high-contrast .fg-code-block,
+  :root.high-contrast .fg-example,
   :root.high-contrast .fg-dialog__content,
   :root.high-contrast .fg-toggle-button {
     border-width: 2px;
     border-color: var(--color-border);
   }
+  /* The example frame draws the edge around its embedded source. */
+  :root.high-contrast .fg-code-block[data-variant="embedded"] { border-width: 0; }
 
   @media (max-width: 640px) {
     .fg-dialog__content {
