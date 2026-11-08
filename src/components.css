@@ -1161,6 +1161,7 @@
     .fg-progress__indicator,
     .fg-score__pip[data-filled="true"],
     .fg-slider__range { forced-color-adjust: none; background: Highlight; }
+    .fg-score__pip[data-filled="true"] { border-color: Highlight; }
     /* The checkbox is a custom-drawn button, so its checked fill redraws in the system highlight. */
     .fg-checkbox__control[data-state="checked"] {
       forced-color-adjust: none;
@@ -1177,7 +1178,8 @@
     /* Forced colors drop the fill and the ring, so the pressed choice takes the system highlight. */
     .fg-segmented__item[aria-pressed="true"] { forced-color-adjust: none; color: HighlightText; }
     .fg-segmented__item[aria-pressed="true"]::before { forced-color-adjust: none; background: Highlight; }
-    .fg-segmented__item[aria-pressed="true"]:focus-visible { outline-color: HighlightText; }
+    /* The inset ring sits on the track, which is Canvas, so it takes CanvasText. */
+    .fg-segmented__item[aria-pressed="true"]:focus-visible { outline-color: CanvasText; }
     .fg-toggle-button__switch,
     .fg-switch__track { border-color: ButtonText; background: Canvas; }
     .fg-toggle-button__switch::after,
