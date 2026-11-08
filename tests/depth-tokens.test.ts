@@ -36,7 +36,7 @@ const declarationsIn = (css: string): Declaration[] => {
 }
 
 /** Explains why a shadow declaration breaks the depth contract, or returns undefined when it keeps it. */
-const violation = ({ selectors, property, value }: Declaration): string | undefined => {
+const violation = ({ selectors, value }: Declaration): string | undefined => {
   if (selectors.some(selector => /\.dark\b|prefers-color-scheme:\s*dark/.test(selector))) return 'sets depth in a dark-mode rule; set dark values in the :root.dark token block'
   if (/^(none|inherit|initial|unset)$/.test(value)) return undefined
   const token = /^var\((--[\w-]+)\)$/.exec(value)?.[1]
