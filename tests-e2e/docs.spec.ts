@@ -45,28 +45,33 @@ for (const { slug, selector } of [
       return colors
     })
     await expect(mark).toHaveCSS('background-color', colors.highlight)
+    // A filled pip's edge matches its fill, so no accent ring is left around it.
+    if (slug === 'score') await expect(mark).toHaveCSS('border-top-color', colors.highlight)
     expect(await mark.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(colors.canvas)
   })
 }
 
-test('rings the focused pressed segmented option in HighlightText in forced colors', async ({ page }) => {
-  await page.emulateMedia({ forcedColors: 'active' })
-  await page.goto('/#/sandbox/segmented-control')
-  const pressed = page.locator('.playground-stage .fg-segmented__item[aria-pressed="true"]')
-  await pressed.focus()
-  await expect(pressed).toBeFocused()
-  const colors = await pressed.evaluate(element => {
-    const probe = document.createElement('span')
-    probe.style.cssText = 'forced-color-adjust: none; color: HighlightText; background: var(--color-accent)'
-    element.after(probe)
-    const style = getComputedStyle(probe)
-    const colors = { text: style.color, accent: style.backgroundColor }
-    probe.remove()
-    return colors
-  })
-  await expect(pressed).toHaveCSS('outline-style', 'solid')
-  await expect(pressed).toHaveCSS('outline-color', colors.text)
-  expect(colors.text).not.toBe(colors.accent)
+test('rings the focused pressed segmented option visibly on its track in forced colors', async ({ page }) => {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ forcedColors: 'active', colorScheme })
+    await page.goto('/#/sandbox/segmented-control')
+    const pressed = page.locator('.playground-stage .fg-segmented__item[aria-pressed="true"]')
+    await pressed.focus()
+    await expect(pressed).toBeFocused()
+    const system = await pressed.evaluate(element => {
+      const probe = document.createElement('span')
+      probe.style.cssText = 'forced-color-adjust: none; color: CanvasText; background: Canvas'
+      element.after(probe)
+      const style = getComputedStyle(probe)
+      const colors = { text: style.color, canvas: style.backgroundColor }
+      probe.remove()
+      return colors
+    })
+    // The inset ring sits on the Canvas track, so it must not be Canvas-coloured.
+    await expect(pressed).toHaveCSS('outline-style', 'solid')
+    await expect(pressed).toHaveCSS('outline-color', system.text)
+    expect(system.text).not.toBe(system.canvas)
+  }
 })
 
 test('lets the dialog shadow draw its edge over a transparent border', async ({ page }) => {
