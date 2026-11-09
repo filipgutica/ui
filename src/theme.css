@@ -40,7 +40,7 @@
   --color-well: var(--color-surface-muted);
   --color-control-thumb: var(--color-surface-raised);
   /* Selected rows lift and take a faint accent tint, so the selection reads on near-white panels too. */
-  --color-nav-current: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-raised));
+  --color-nav-current: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface-raised));
   --shadow-nav-current: 0 1px 3px rgb(130 142 158 / 40%);
   /* The selected-row lift for always-dark regions, such as the capture header, in either appearance. */
   --shadow-nav-current-dark: 0 1px 2px rgb(0 0 0 / 25%);
@@ -127,7 +127,7 @@
   --color-surface-muted: #20262b;
   --color-well: color-mix(in srgb, var(--color-bg) 87.5%, black);
   --color-control-thumb: color-mix(in srgb, var(--color-surface-raised) 88%, white);
-  --color-nav-current: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  --color-nav-current: color-mix(in srgb, var(--color-accent) 20%, transparent);
   --shadow-nav-current: var(--shadow-nav-current-dark);
   --color-text: #e6e9eb;
   --color-muted: #9aa3ab;
