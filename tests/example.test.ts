@@ -37,6 +37,18 @@ describe('UiExample', () => {
     expect(caption?.classList.contains('fg-figure__caption')).toBe(true)
     expect(caption?.textContent).toBe('A secondary button.')
     captioned.unmount()
+
+    for (const slots of [{}, { caption: 'Caption' }]) {
+      const styled = mount(UiExample, {
+        attrs: { class: 'custom', style: 'border-radius: 0px;' },
+        props: { code: 'source' },
+        slots,
+      })
+      const frameElement = styled.get('.fg-example')
+      expect(frameElement.classes()).toContain('custom')
+      expect(frameElement.attributes('style')).toContain('border-radius: 0px')
+      styled.unmount()
+    }
   })
 
   it('places Copy before the code and labels plain source without a command prompt', () => {

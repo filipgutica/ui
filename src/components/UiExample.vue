@@ -3,7 +3,10 @@
     v-if="$slots.caption"
     class="fg-figure"
   >
-    <div class="fg-example">
+    <div
+      class="fg-example"
+      v-bind="$attrs"
+    >
       <div class="fg-example__stage">
         <slot />
       </div>
@@ -20,6 +23,7 @@
   <figure
     v-else
     class="fg-example"
+    v-bind="$attrs"
   >
     <div class="fg-example__stage">
       <slot />
@@ -40,10 +44,13 @@ export interface UiExampleProps {
   language?: string
 }
 
+defineOptions({ inheritAttrs: false })
+
 const { code, language = 'text' } = defineProps<UiExampleProps>()
 
 // Without a caption the root figure is the frame. A caption follows the frame, as a figure
-// caption does, so with one the frame moves inside a UiFigure-style figure.
+// caption does, so with one the frame moves inside a UiFigure-style figure. Attributes such as
+// class and style always land on the frame, so a caption does not change what they style.
 defineSlots<{
   caption?(): unknown
   default?(): unknown
