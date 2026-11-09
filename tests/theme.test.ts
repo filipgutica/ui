@@ -320,6 +320,24 @@ describe('VS Code theme parsing and normalization', () => {
     expect(root.style.getPropertyValue('--color-focus')).toBe(root.style.getPropertyValue('--color-accent'))
   })
 
+  it('keeps the accent focus ring at 3:1 on the page, the surface, and the raised surface', () => {
+    // A white focus border clears the mid-grey side bar but would vanish on the white page and panels.
+    const theme = parseVsCodeTheme({ fileName: 'white-panels.json', source: JSON.stringify({
+      type: 'light',
+      colors: {
+        'editor.background': '#FFFFFF',
+        'editor.foreground': '#000000',
+        'panel.background': '#FFFFFF',
+        'sideBar.background': '#777777',
+        focusBorder: '#FFFFFF',
+      },
+    }) })
+    const { accent, pageBackground, surface, surfaceRaised } = theme.tokens
+    for (const background of [pageBackground, surface, surfaceRaised]) {
+      expect(contrast(accent, background), `accent ${accent} on ${background}`).toBeGreaterThanOrEqual(3)
+    }
+  })
+
   it('rests a light field on the theme\'s input background when its text would not read on the raised surface', () => {
     const fieldFill = (type: string, colors: Record<string, string>) => {
       const root = document.createElement('div')

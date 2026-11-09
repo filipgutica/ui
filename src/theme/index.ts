@@ -351,12 +351,15 @@ const visibleIndicator = ({
   fallback,
 }: {
   color: string
-  against: string
+  against: string | readonly string[]
   fallback: string
 }): string => {
-  if (contrastRatio(color, against, against) >= 3) return color
-  if (contrastRatio(fallback, against, against) >= 3) return fallback
-  return readableForeground({ background: against, preferred: fallback, underlay: against })
+  const backgrounds = typeof against === 'string' ? [against] : against
+  const visible = (candidate: string) =>
+    backgrounds.every(background => contrastRatio(candidate, background, background) >= 3)
+  if (visible(color)) return color
+  if (visible(fallback)) return fallback
+  return readableAcrossBackgrounds({ color: fallback, backgrounds, underlay: backgrounds[0]!, fallbacks: ['#000000', '#FFFFFF'] })
 }
 
 const readableSemanticColor = ({
@@ -499,9 +502,10 @@ const mapSemanticTokens = ({
     underlay: background,
     fallbacks: [fallback.link, textPrimary],
   })
+  // The accent is also the focus ring, so it must show on every background a focusable control sits on.
   const accent = visibleIndicator({
     color: rawAccent,
-    against: surface,
+    against: [background, surface, surfaceRaised],
     fallback: fallback.accent,
   })
   const textMutedCandidate = firstColor(
