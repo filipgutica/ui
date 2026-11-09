@@ -1084,3 +1084,13 @@ test('keeps the page frame and dialog widths in pixels when the reader enlarges 
   await expect(page.getByRole('dialog')).toBeVisible()
   expect((await page.getByRole('dialog').boundingBox())?.width).toBe(512)
 })
+
+test('rings the skip link and other unstyled docs links in the text colour', async ({ page }) => {
+  await page.goto('/#/components/button')
+  await page.keyboard.press('Tab')
+  const skip = page.getByRole('link', { name: 'Skip to content' })
+  await expect(skip).toBeFocused()
+  await expect(skip).toHaveCSS('outline-style', 'solid')
+  await expect(skip).toHaveCSS('outline-width', '2px')
+  await expect(skip).toHaveCSS('outline-offset', '2px')
+})
