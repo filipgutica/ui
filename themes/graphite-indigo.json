@@ -43,7 +43,7 @@
       }
     },
     {
-      "comment": "Project hue for primary actions and selection; links and focus stay separate.",
+      "comment": "Project hue for primary actions and selection; links stay separate. Focus is one ring in the text colour.",
       "tokens": {
         "project": [
           "#4b45d1",
@@ -57,7 +57,7 @@
           "#0b5f7c",
           "#67c1df"
         ],
-        "focus": "{link}",
+        "focus": "{text}",
         "button-hover": "color-mix(in srgb, {accent} 85%, {text})"
       }
     },

@@ -132,12 +132,12 @@ test('keeps idle controls and surfaces to a quiet lift in both themes', async ({
   }
 })
 
-test('lifts a focused field out of its well instead of drawing a ring', async ({ page }) => {
+test('lifts a focused field out of its well under the shared ring', async ({ page }) => {
   await page.goto('/#/sandbox/input')
   const input = page.locator('.playground-stage > .fg-input')
   const restFill = await input.evaluate(element => getComputedStyle(element).backgroundColor)
   await input.focus()
-  await expect(input).toHaveCSS('outline-offset', '0px')
+  await expect(input).toHaveCSS('outline-offset', '2px')
   expect(await input.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(restFill)
   expect(await shadowOf(input)).toBe(await resolveShadow(page, '--shadow-raise'))
 

@@ -317,10 +317,10 @@ test('contains drawer focus, dismisses it, and restores the trigger in both moti
   }
 })
 
-test('rings quiet actions in the accent, like every control that acts', async ({ page }) => {
-  const accent = () => page.evaluate(() => {
+test('rings quiet actions in the text colour, like every control', async ({ page }) => {
+  const ink = () => page.evaluate(() => {
     const probe = document.body.appendChild(document.createElement('i'))
-    probe.style.color = 'var(--color-accent)'
+    probe.style.color = 'var(--color-text)'
     const color = getComputedStyle(probe).color
     probe.remove()
     return color
@@ -333,22 +333,22 @@ test('rings quiet actions in the accent, like every control that acts', async ({
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Tab')
   await expect(copy).toBeFocused()
-  await expect(copy).toHaveCSS('outline-color', await accent())
-  // On the dark command plate the ring takes the plate's project hue, not the page accent.
+  await expect(copy).toHaveCSS('outline-color', await ink())
+  // On the dark command plate the ring takes the plate's text colour.
   await page.getByLabel('Variant', { exact: true }).selectOption('compact')
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
   await copy.focus()
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Tab')
   await expect(copy).toBeFocused()
-  const plateHue = await block.evaluate(element => {
+  const plateInk = await block.evaluate(element => {
     const probe = element.appendChild(document.createElement('i'))
-    probe.style.color = 'var(--color-project-dark)'
+    probe.style.color = 'var(--color-terminal-text)'
     const color = getComputedStyle(probe).color
     probe.remove()
     return color
   })
-  await expect(copy).toHaveCSS('outline-color', plateHue)
+  await expect(copy).toHaveCSS('outline-color', plateInk)
 
   await page.goto('/#/sandbox/drawer')
   await page.locator('.playground-stage').getByRole('button', { name: 'Open drawer' }).click()
@@ -357,9 +357,50 @@ test('rings quiet actions in the accent, like every control that acts', async ({
   await page.keyboard.press('Tab')
   const close = drawer.getByRole('button', { name: 'Close drawer' })
   await expect(close).toBeFocused()
-  await expect(close).toHaveCSS('outline-color', await accent())
+  await expect(close).toHaveCSS('outline-color', await ink())
   // The shared recipe leaves each action's own icon size alone.
   await expect(close.locator('svg')).toHaveCSS('width', '16px')
+})
+
+test('rings danger and primary buttons and fields in the text colour, never a hue', async ({ page }) => {
+  const ink = () => page.evaluate(() => {
+    const probe = document.body.appendChild(document.createElement('i'))
+    probe.style.color = 'var(--color-text)'
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  })
+  await page.goto('/#/sandbox/button')
+  const stage = page.locator('.playground-stage')
+  for (const variant of ['primary', 'danger']) {
+    await page.getByLabel('Variant', { exact: true }).selectOption(variant)
+    const button = stage.getByRole('button').first()
+    await button.focus()
+    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('Tab')
+    await expect(button).toBeFocused()
+    await expect(button).toHaveCSS('outline-color', await ink())
+  }
+  await page.goto('/#/sandbox/input')
+  const field = page.locator('.playground-stage .fg-input').first()
+  await field.focus()
+  await expect(field).toHaveCSS('outline-style', 'solid')
+  await expect(field).toHaveCSS('outline-width', '2px')
+  await expect(field).toHaveCSS('outline-color', await ink())
+})
+
+test('rings a checked checkbox and switch in the system text colour in forced colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  for (const [slug, selector] of [['checkbox', '.fg-checkbox__control'], ['switch', '.fg-switch__track']]) {
+    await page.goto(`/#/sandbox/${slug}`)
+    const control = page.locator(`.playground-stage ${slug === 'switch' ? '.fg-switch__control' : selector}`).first()
+    await control.click()
+    await control.focus()
+    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('Tab')
+    // Their checked fill opts out of forced colors, so without the rule the ring kept the accent.
+    await expect(page.locator(`.playground-stage ${selector}`).first()).toHaveCSS('outline-color', 'rgb(0, 0, 0)')
+  }
 })
 
 test('leaves a disabled quiet action without hover or press fills', async ({ page }) => {

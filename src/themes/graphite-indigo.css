@@ -16,7 +16,7 @@
   --color-link: #0b5f7c;
   --color-accent: var(--color-project);
   --color-accent-text: var(--color-bg);
-  --color-focus: var(--color-link);
+  --color-focus: var(--color-text);
   --color-border: #6d747b;
   --color-border-subtle: #d3d8dd;
   --color-button-bg: var(--color-accent);
@@ -85,7 +85,7 @@
   --color-link: #67c1df;
   --color-accent: var(--color-project);
   --color-accent-text: var(--color-bg);
-  --color-focus: var(--color-link);
+  --color-focus: var(--color-text);
   --color-border: #78818a;
   --color-border-subtle: #262d33;
   --color-button-bg: var(--color-accent);
