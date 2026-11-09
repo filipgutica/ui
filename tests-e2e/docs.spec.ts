@@ -1074,3 +1074,13 @@ test('leaves the mobile drawer open after a modified navigation click', async ({
   await expect(drawer).toHaveAttribute('data-state', 'open')
   await expect(page.locator('h1')).toHaveText('Dialog')
 })
+
+test('keeps the page frame and dialog widths in pixels when the reader enlarges text', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 })
+  await page.goto('/#/sandbox/dialog')
+  await page.evaluate(() => { document.documentElement.style.fontSize = '20px' })
+  expect((await page.locator('.docs-shell').boundingBox())?.width).toBe(224 + 960)
+  await page.locator('.playground-stage').getByRole('button', { name: 'Open dialog' }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  expect((await page.getByRole('dialog').boundingBox())?.width).toBe(512)
+})

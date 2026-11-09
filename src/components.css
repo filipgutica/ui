@@ -1076,8 +1076,8 @@
     top: 50%;
     left: 50%;
     display: grid;
-    width: min(32rem, calc(100vw - var(--space-8)));
-    max-height: min(42rem, calc(100vh - var(--space-8)));
+    width: min(512px, calc(100vw - var(--space-8)));
+    max-height: min(672px, calc(100vh - var(--space-8)));
     overflow: hidden;
     transform: translate(-50%, -50%);
     border: 1px solid transparent;

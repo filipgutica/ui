@@ -31,8 +31,8 @@
   --control-md: 2.25rem;
   --control-lg: 2.75rem;
   --measure: 68ch;
-  --page-max: 60rem;
-  --sidebar: 14rem;
+  --page-max: 960px;
+  --sidebar: 224px;
   --color-bg: #f4f5f6;
   --color-surface: #e9ebed;
   --color-surface-raised: #fbfbfc;
