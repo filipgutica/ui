@@ -1,5 +1,26 @@
 <template>
-  <div class="fg-example">
+  <figure
+    v-if="$slots.caption"
+    class="fg-figure"
+  >
+    <div class="fg-example">
+      <div class="fg-example__stage">
+        <slot />
+      </div>
+      <UiCodeBlock
+        :code="code"
+        :language="language"
+        variant="embedded"
+      />
+    </div>
+    <figcaption class="fg-figure__caption">
+      <slot name="caption" />
+    </figcaption>
+  </figure>
+  <figure
+    v-else
+    class="fg-example"
+  >
     <div class="fg-example__stage">
       <slot />
     </div>
@@ -8,7 +29,7 @@
       :language="language"
       variant="embedded"
     />
-  </div>
+  </figure>
 </template>
 
 <script setup lang="ts">
@@ -21,5 +42,10 @@ export interface UiExampleProps {
 
 const { code, language = 'text' } = defineProps<UiExampleProps>()
 
-defineSlots<{ default?(): unknown }>()
+// Without a caption the root figure is the frame. A caption follows the frame, as a figure
+// caption does, so with one the frame moves inside a UiFigure-style figure.
+defineSlots<{
+  caption?(): unknown
+  default?(): unknown
+}>()
 </script>

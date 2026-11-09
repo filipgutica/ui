@@ -19,6 +19,26 @@ describe('UiExample', () => {
     wrapper.unmount()
   })
 
+  it('is a figure whose optional caption follows the frame', () => {
+    const plain = mount(UiExample, { props: { code: 'source' } })
+    expect(plain.element.tagName).toBe('FIGURE')
+    expect(plain.classes()).toContain('fg-example')
+    expect(plain.find('figcaption').exists()).toBe(false)
+    plain.unmount()
+
+    const captioned = mount(UiExample, {
+      props: { code: 'source' },
+      slots: { caption: 'A secondary button.' },
+    })
+    const [frame, caption] = captioned.get('figure').element.children
+    expect(frame?.classList.contains('fg-example')).toBe(true)
+    expect(frame?.querySelector('.fg-example__stage')).not.toBeNull()
+    expect(caption?.tagName).toBe('FIGCAPTION')
+    expect(caption?.classList.contains('fg-figure__caption')).toBe(true)
+    expect(caption?.textContent).toBe('A secondary button.')
+    captioned.unmount()
+  })
+
   it('places Copy before the code and labels plain source without a command prompt', () => {
     const wrapper = mount(UiExample, { props: { code: 'plain source' } })
     const block = wrapper.get('.fg-code-block')
