@@ -45,7 +45,7 @@ describe('VS Code theme parsing and normalization', () => {
     // Each accent clears the 3:1 indicator check but not 4.5:1 text on the lifted fill.
     const cases = [
       { type: 'light', page: '#FFFFFF', text: '#111111', accent: '#888888', fill: (page: string) => page },
-      { type: 'dark', page: '#000000', text: '#EEEEEE', accent: '#666666', fill: () => '#111111' },
+      { type: 'dark', page: '#000000', text: '#EEEEEE', accent: '#666666', fill: () => '#141414' },
     ]
     for (const { type, page, text, accent, fill } of cases) {
       const root = document.createElement('div')
@@ -76,16 +76,16 @@ describe('VS Code theme parsing and normalization', () => {
     }) })
     expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
 
-    // A white accent tints a mid-grey dark page to #7d7d7d, where white body text drops to 4.12:1.
+    // A white accent tints a mid-grey dark page to #868686, where white body text drops to 3.64:1.
     const grey = document.createElement('div')
     applySemanticTheme({ root: grey, theme: parseVsCodeTheme({
       fileName: 'grey-dark.json',
       source: JSON.stringify({ type: 'dark', colors: { 'editor.background': '#686868', 'editor.foreground': '#FFFFFF', focusBorder: '#FFFFFF' } }),
     }) })
-    expect(contrast(grey.style.getPropertyValue('--color-nav-current-text'), '#7d7d7d')).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(grey.style.getPropertyValue('--color-nav-current-text'), '#868686')).toBeGreaterThanOrEqual(4.5)
 
-    // color-mix keeps a translucent accent's alpha: #282828cc 8% into #b8b8b8 over #808080 renders #aeaeae,
-    // where the accent itself reaches only 4.46:1.
+    // color-mix keeps a translucent accent's alpha: #282828cc 14% into #b8b8b8 over #808080 renders #a6a6a6,
+    // where the accent itself reaches only 4.18:1.
     const alphaMix = document.createElement('div')
     applySemanticTheme({ root: alphaMix, theme: parseVsCodeTheme({
       fileName: 'alpha-mix.json',
