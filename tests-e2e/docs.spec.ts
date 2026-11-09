@@ -1041,3 +1041,21 @@ test('keeps component browsing reachable after scrolling on phones and tablets',
     await expect(trigger).toBeFocused()
   }
 })
+
+test('grows small and medium controls to the touch height at tablet width', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 900 })
+  for (const { path, selector } of [
+    { path: '/#/components/button', selector: 'section[aria-labelledby="example-heading"] .fg-button[data-size="sm"]' },
+    { path: '/#/sandbox/button', selector: '.playground-stage .fg-button' },
+    { path: '/#/sandbox/input', selector: '.playground-stage > .fg-input' },
+    { path: '/#/sandbox/select', selector: '.playground-stage > .fg-select' },
+    { path: '/#/sandbox/checkbox', selector: '.playground-stage .fg-checkbox' },
+    { path: '/#/sandbox/switch', selector: '.playground-stage .fg-switch__control' },
+    { path: '/#/sandbox/segmented-control', selector: '.playground-stage .fg-segmented__item' },
+  ]) {
+    await page.goto(path)
+    const control = page.locator(selector).first()
+    await expect(control).toBeVisible()
+    expect((await control.boundingBox())?.height, `${path} ${selector}`).toBeGreaterThanOrEqual(44)
+  }
+})

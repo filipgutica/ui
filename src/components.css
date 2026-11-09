@@ -1180,6 +1180,17 @@
   /* The example frame draws the edge around its embedded source. */
   :root.high-contrast .fg-code-block[data-variant="embedded"] { border-width: 0; }
 
+  /* Touch: at tablet width every control size grows to --control-lg. This follows the per-size
+   * rules above, so it wins at equal specificity. */
+  @media (max-width: 800px) {
+    .fg-button[data-size],
+    .fg-checkbox[data-size],
+    .fg-switch[data-size] .fg-switch__control { min-height: var(--control-lg); }
+    .fg-input[data-size],
+    .fg-select[data-size] { height: var(--control-lg); }
+    .fg-segmented[data-size] { --fg-segmented-item: var(--control-lg); }
+  }
+
   @media (max-width: 640px) {
     .fg-dialog__content {
       top: auto;
