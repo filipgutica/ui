@@ -56,8 +56,8 @@
     "release:dry-run": "semantic-release --dry-run --no-ci",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "themes:build": "node scripts/graphite-indigo.mjs",
-    "themes:check": "node scripts/graphite-indigo.mjs --check",
+    "themes:build": "node scripts/vendor-design-system.mjs",
+    "themes:check": "node scripts/vendor-design-system.mjs --check",
     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
     "verify": "pnpm lint && pnpm themes:check && pnpm typecheck && pnpm docs:typecheck && pnpm test && pnpm test:e2e && pnpm build && pnpm docs:build && pnpm pack --dry-run && publint"
   },
@@ -92,6 +92,7 @@
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
     "@eslint/js": "^10.0.1",
+    "@filipgutica/design-system": "1.1.0",
     "@playwright/test": "^1.62.1",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@tailwindcss/vite": "^4.3.3",

@@ -322,7 +322,17 @@ pnpm docs:dev
 pnpm verify
 ```
 
-Graphite Indigo values live in `themes/graphite-indigo.json`. After editing it,
-run `pnpm themes:build` to regenerate the opt-in theme and the standalone
-`themes/graphite-indigo.tokens.css`; `pnpm themes:check` fails when either is
-stale.
+Graphite Indigo token values and the IBM Plex fonts live in
+[`@filipgutica/design-system`](https://github.com/filipgutica/design-system).
+`pnpm themes:build` copies them from the pinned package into `src/theme.css`,
+`src/themes/graphite-indigo.css`, `src/fonts.css`, and `src/fonts/`. In
+`src/theme.css` it rewrites only the values that the package's `tokens.css`
+maps with a `ui:` comment. The other declarations belong to this library.
+`pnpm themes:check` fails when any of these files differs from the package.
+
+To update the values, bump the package and rebuild:
+
+```sh
+pnpm add -D -E @filipgutica/design-system@<version>
+pnpm themes:build
+```

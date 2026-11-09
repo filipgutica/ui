@@ -1,6 +1,6 @@
-/* Generated from themes/graphite-indigo.json by scripts/graphite-indigo.mjs. Do not edit.
- * Opt-in Graphite Indigo roles for @filipgutica/ui. Import after theme.css.
- * Dark mode uses the same .dark class as theme.css. Keep exactly one :root.dark block:
+/* Generated from tokens/graphite-indigo.json by scripts/build-tokens.mjs in @filipgutica/design-system. Do not edit.
+ * Opt-in Graphite Indigo roles for the class flavour. Import after class/base.css (theme.css in @filipgutica/ui).
+ * Dark mode uses the same .dark class as the base. Keep exactly one :root.dark block:
  * sites copy it into a <noscript> prefers-color-scheme rule. */
 
 :root {
@@ -74,7 +74,7 @@
 
 :root.dark {
   color-scheme: dark;
-  --color-project: #a5a1ff;
+  --color-project: var(--color-project-dark);
   --color-project-dark: #a5a1ff;
   --color-bg: #0d1012;
   --color-surface: #13171a;
