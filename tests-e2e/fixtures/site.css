@@ -6,4 +6,6 @@
 @import '../../src/site.css';
 
 /* The docs shell supplies the frame, element defaults, footer, legend, and terminal colors. */
-main > section { display: grid; gap: var(--space-4); min-width: 0; }
+main > section { display: grid; min-width: 0; }
+/* The hero owns its own gap; ordinary sections keep the fixture rhythm. */
+main > section:not(.fg-site-hero) { gap: var(--space-4); }

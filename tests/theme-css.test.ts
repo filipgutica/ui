@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { contrast } from './contrast.js'
+import { contrast, mix } from './contrast.js'
 
 const source = readFileSync(resolve(process.cwd(), 'src/theme.css'), 'utf8')
 
@@ -47,6 +47,12 @@ describe.each([
     ['--color-focus', '--color-surface-raised'],
   ])('keeps %s visible against %s', (foreground, background) => {
     expect(contrast(tokens[foreground]!, tokens[background]!)).toBeGreaterThanOrEqual(3)
+  })
+
+  it.each([0.08, 0.12])('keeps select text and its checkmark readable on the %s accent tint', ratio => {
+    const fill = mix(tokens['--color-accent']!, tokens['--color-input-bg']!, ratio)
+    expect(contrast(tokens['--color-text']!, fill)).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(tokens['--color-accent']!, fill)).toBeGreaterThanOrEqual(3)
   })
 
   it('keeps danger text readable on its semantic surface', () => {

@@ -51,6 +51,7 @@ const toneOptions = [
 ] satisfies Array<{ label: string, value: NonNullable<UiAlertProps['tone']> }>
 
 const statusOptions = [
+  { label: 'Choose a status', value: '' },
   { label: 'All statuses', value: 'all' },
   { label: 'Passed', value: 'passed' },
   { label: 'Failed', value: 'failed' },

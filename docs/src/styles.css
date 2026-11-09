@@ -81,13 +81,11 @@ pre,
 }
 .content-page > section { margin-top: var(--space-12); scroll-margin-top: var(--space-24); }
 .content-page > section > h2,
-.content-page > section > .section-heading h2 {
+.content-page > section > hgroup > h2 {
   margin-bottom: var(--space-3);
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border-subtle);
 }
-.content-page > section > h2::before,
-.content-page > section > .section-heading h2::before { content: '## ' / ''; color: var(--color-project); }
 .content-page h3:not(.fg-card__title) { font-family: var(--font-ui); font-size: var(--text-lg); }
 .content-page p { font-size: var(--text-reading); }
 /* Tailwind preflight removes list markers; the Usage list keeps them, inside the prose column. */
@@ -95,7 +93,6 @@ pre,
 .content-page > section[aria-labelledby="usage-heading"] > ul > li + li { margin-top: var(--space-2); }
 .home-page .intro h1 { font-size: var(--text-display); line-height: 1.04; word-spacing: -0.12em; }
 .content-page h3:not(.fg-card__title) { margin: 0 0 var(--space-1); }
-.lede { color: var(--color-muted); }
 .component-name { display: inline-block; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-sm); }
 .page-heading {
   display: flex;
@@ -106,8 +103,7 @@ pre,
   border-bottom: 1px solid var(--color-border-subtle);
 }
 .page-heading .lede { margin-bottom: var(--space-1); }
-.section-heading { display: flex; justify-content: space-between; gap: var(--space-4); }
-.intro { display: grid; gap: var(--space-4); max-width: 62rem; }
+.intro { max-width: 62rem; }
 .intro .lede { margin: 0; }
 
 .button-row > .fg-button,

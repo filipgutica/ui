@@ -420,6 +420,7 @@ export const componentDocs: ComponentDoc[] = [
       'Use UiField for a visible label and automatic help or error links.',
       'Outside UiField, provide a visible label associated with id.',
       'Keep option labels concise.',
+      'For a muted placeholder, supply an empty-value first option. Choosing a value restores text color.',
       'Bind v-model to retain user selections.',
     ],
     props: [

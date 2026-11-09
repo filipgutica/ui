@@ -740,8 +740,11 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     return fill
   })
   expect(picker.background).toBe(raisedFill)
-  // The picker is a floating layer, so it takes the panel radius.
-  expect(picker.radius).toBe(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--radius-panel').trim()))
+  // A picker sits one radius step outside the field.
+  expect(picker.radius).toBe('12px')
+  await expect(select.locator('option').first()).toHaveCSS('height', '30px')
+  await expect(select.locator('option').first()).toHaveCSS('border-radius', '8px')
+  await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('matrix(-1, 0, 0, -1, 0, 0)')
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
   await expect(select).toHaveValue('passed')
@@ -749,11 +752,38 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
 
   // Pointer hover fills a row; only the keyboard position draws the focus ring.
   await select.press('Space')
+  const checked = select.locator('option:checked')
+  const color = await checked.evaluate(element => getComputedStyle(element).backgroundColor)
+  await expect(checked).toHaveCSS('font-weight', '500')
+  expect(color).not.toBe(picker.background)
+  await expect(checked).toHaveCSS('outline-style', 'solid')
+  await checked.hover()
+  expect(await checked.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(color)
   const hovered = select.locator('option').first()
   await hovered.hover()
   await expect(hovered).toHaveCSS('outline-style', 'none')
+  // The anonymous option text stays in column two whether the leading check is visible or not.
+  const starts = await select.locator('option').evaluateAll(options => options.map(option => {
+    const range = document.createRange()
+    range.selectNodeContents(option)
+    return range.getBoundingClientRect().x
+  }))
+  expect(new Set(starts).size).toBe(1)
   await page.keyboard.press('ArrowDown')
   await expect(select.locator('option:focus-visible')).toHaveCSS('outline-style', 'solid')
+  await page.keyboard.press('Escape')
+  await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('none')
+  // A consumer supplies the empty-value first option; UiSelect adds no placeholder API.
+  await select.selectOption('')
+  const muted = await select.evaluate(element => getComputedStyle(element).color)
+  await select.selectOption('failed')
+  expect(await select.evaluate(element => getComputedStyle(element).color)).not.toBe(muted)
+  // Start a pointer interaction outside the field; clicking an already keyboard-focused
+  // field correctly retains its keyboard focus indication in Chromium.
+  await page.locator('h1').click()
+  await select.click()
+  await select.locator('option:checked').hover()
+  await expect(select.locator('option:checked')).toHaveCSS('outline-style', 'none')
   await page.keyboard.press('Escape')
 })
 

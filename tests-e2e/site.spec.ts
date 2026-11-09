@@ -344,6 +344,9 @@ test('hides [hidden] elements over page display rules and sizes inline code one 
       const heading = page.locator('#heading-case h2')
       await expect(heading).toHaveCSS('border-top-width', '1px')
       expect(await heading.evaluate(element => getComputedStyle(element, '::before').content)).toContain('## ')
+      expect(await heading.evaluate(element => getComputedStyle(element, '::before').letterSpacing)).toBe('1.6px')
+      await page.locator('#heading-case').evaluate(element => { element.style.setProperty('--heading-mark', 'none') })
+      expect(await heading.evaluate(element => getComputedStyle(element, '::before').content)).not.toContain('##')
       await page.locator('#heading-case').evaluate(element => element.remove())
     }
   }
@@ -511,4 +514,24 @@ test('keeps selected tabs lifted, readable, and stable on docs and terminal surf
       await page.emulateMedia({ forcedColors: 'none' })
     }
   }
+})
+
+test('keeps site explanations readable and navigation compact only for fine pointers', async ({ page, browser }) => {
+  await page.goto(fixture)
+  await expect(page.locator('.fg-site-hero')).toHaveCSS('row-gap', '24px')
+  const text = await page.locator('main').evaluate(element => getComputedStyle(element).color)
+  for (const selector of ['.fg-site-hero__lede', '.fg-site-legend dd', '.fg-command-list th', '.fg-command-list__description', '.fg-site-definitions dd', '.fg-site-steps__result']) {
+    await expect(page.locator(selector).first()).toHaveCSS('color', text)
+  }
+  await expect(page.locator('.fg-site-meta').first()).not.toHaveCSS('color', text)
+  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('min-height', '30px')
+  const touch = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } })
+  const touchPage = await touch.newPage()
+  await touchPage.goto(fixture)
+  await touchPage.getByRole('button', { name: /^On this page:/ }).click()
+  await expect(touchPage.locator('.fg-site-rail__nav a').first()).toHaveCSS('min-height', '44px')
+  await touchPage.goto('/#/sandbox/select')
+  await touchPage.locator('.playground-stage > .fg-select').click()
+  await expect(touchPage.locator('.playground-stage > .fg-select option').first()).toHaveCSS('min-height', '44px')
+  await touch.close()
 })
