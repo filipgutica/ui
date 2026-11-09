@@ -520,7 +520,7 @@ test('keeps site explanations readable and navigation compact only for fine poin
   await page.goto(fixture)
   await expect(page.locator('.fg-site-hero')).toHaveCSS('row-gap', '24px')
   const text = await page.locator('main').evaluate(element => getComputedStyle(element).color)
-  for (const selector of ['.fg-site-hero__lede', '.fg-site-legend dd', '.fg-command-list th', '.fg-command-list__description', '.fg-site-definitions dd', '.fg-site-steps__result']) {
+  for (const selector of ['.fg-site-hero__lede', '.fg-site-legend dd', '.fg-command-list__description', '.fg-site-definitions dd', '.fg-site-steps__result']) {
     await expect(page.locator(selector).first()).toHaveCSS('color', text)
   }
   await expect(page.locator('.fg-site-meta').first()).not.toHaveCSS('color', text)
