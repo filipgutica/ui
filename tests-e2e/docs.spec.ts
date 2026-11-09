@@ -1094,3 +1094,20 @@ test('rings the skip link and other unstyled docs links in the text colour', asy
   await expect(skip).toHaveCSS('outline-width', '2px')
   await expect(skip).toHaveCSS('outline-offset', '2px')
 })
+
+test('draws the search clear cross in forced colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/sandbox/input')
+  const field = page.locator('.playground-stage > .fg-input')
+  // Chromium reports no computed style for the cancel button, so compare the field's end, where it sits.
+  const fieldEnd = async () => {
+    const box = await field.boundingBox()
+    if (!box) throw new Error('search field is not rendered')
+    return page.screenshot({ clip: { x: box.x + box.width - 40, y: box.y + 4, width: 32, height: box.height - 8 } })
+  }
+  await field.fill('')
+  await field.focus()
+  const empty = await fieldEnd()
+  await field.fill('agent')
+  expect((await fieldEnd()).equals(empty)).toBe(false)
+})
