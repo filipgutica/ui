@@ -338,6 +338,22 @@ describe('VS Code theme parsing and normalization', () => {
     }
   })
 
+  it('measures the accent focus ring against a translucent surface as rendered over the page', () => {
+    // #00000080 over the white page renders #7F7F7F, where the purple focus border reaches only 1.35:1.
+    const theme = parseVsCodeTheme({ fileName: 'translucent-side-bar.json', source: JSON.stringify({
+      type: 'light',
+      colors: {
+        'editor.background': '#FFFFFF',
+        'editor.foreground': '#000000',
+        'panel.background': '#FFFFFF',
+        'sideBar.background': '#00000080',
+        focusBorder: '#8839EF',
+      },
+    }) })
+    expect(theme.tokens.surface).toBe('#00000080')
+    expect(contrast(theme.tokens.accent, '#7F7F7F')).toBeGreaterThanOrEqual(3)
+  })
+
   it('rests a light field on the theme\'s input background when its text would not read on the raised surface', () => {
     const fieldFill = (type: string, colors: Record<string, string>) => {
       const root = document.createElement('div')

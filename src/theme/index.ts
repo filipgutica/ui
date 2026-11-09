@@ -349,12 +349,16 @@ const visibleIndicator = ({
   color,
   against,
   fallback,
+  underlay,
 }: {
   color: string
   against: string | readonly string[]
   fallback: string
+  underlay?: string
 }): string => {
-  const backgrounds = typeof against === 'string' ? [against] : against
+  // Translucent backgrounds are measured as rendered over the page, so composite them first.
+  const backgrounds = (typeof against === 'string' ? [against] : against)
+    .map(background => underlay ? compositeColor(background, underlay) : background)
   const visible = (candidate: string) =>
     backgrounds.every(background => contrastRatio(candidate, background, background) >= 3)
   if (visible(color)) return color
@@ -506,6 +510,7 @@ const mapSemanticTokens = ({
   const accent = visibleIndicator({
     color: rawAccent,
     against: [background, surface, surfaceRaised],
+    underlay: background,
     fallback: fallback.accent,
   })
   const textMutedCandidate = firstColor(
