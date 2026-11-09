@@ -28,14 +28,16 @@
   --text: #101315; /* ui: --color-text, --color-input-text, --color-row-selected-text, --color-status-text */
   --text-muted: #50575e; /* ui: --color-muted, --color-input-placeholder, --color-syntax-operator, --color-syntax-punctuation */
 
-  /* Project hue for primary actions and selection; links stay separate. Focus is one ring in the text colour. */
+  /* Project hue for primary actions, selection, and the one focus ring; links stay separate. */
   --project: #4b45d1; /* ui: --color-project */
   --project-dark: #a5a1ff; /* ui: --color-project-dark */
   --accent: var(--project); /* ui: --color-accent, --color-button-bg, --color-progress */
   --accent-text: var(--bg); /* ui: --color-accent-text, --color-button-text */
   --accent-hover: var(--text); /* ui: --color-accent-hover */
   --link: #0b5f7c; /* ui: --color-link */
-  --focus: var(--text); /* ui: --color-focus */
+  --focus: var(--accent); /* ui: --color-focus */
+  --focus-width: 2px; /* ui: --focus-width */
+  --focus-offset: 3px; /* ui: --focus-offset */
   --button-hover: color-mix(in srgb, var(--accent) 85%, var(--text)); /* ui: --color-button-hover */
 
   /* Status: only for state, never for decoration. */
@@ -202,7 +204,7 @@ table, .num { font-variant-numeric: tabular-nums; }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
 p a, dd a { text-decoration: underline; text-underline-offset: 0.18em; }
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+:focus-visible { outline: var(--focus-width) solid var(--focus); outline-offset: var(--focus-offset); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; scroll-behavior: auto !important; }
 }

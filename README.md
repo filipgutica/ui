@@ -200,9 +200,11 @@ navigation and focuses the destination section, and focus follows the visible co
 breakpoint.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
-Set `--color-project-dark` to the dark variant in both appearances, so prompts
-and capture tab underlines stay readable on terminal plates. The default hue
+Set `--color-project-dark` to the dark variant in both appearances, so prompts,
+capture tab underlines, and focus rings stay readable on terminal plates. The default hue
 belongs to ui. Primary buttons use `--color-accent` with `--color-accent-text` in both appearances.
+Focus rings use `--color-focus`, the accent, at `--focus-width` with a `--focus-offset` gap.
+A focused field draws no ring: its edge turns accent, and its fill does not change.
 Command plates use `--color-command-bg` and `--color-command-border`, derived from the
 project hue. Terminal captures keep the neutral `--color-terminal` palette.
 

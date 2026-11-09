@@ -26,7 +26,8 @@
   .fg-code-block[data-command="true"] {
     --color-code-text: var(--color-terminal-text);
     --color-muted: var(--color-terminal-caption-text);
-    --color-focus: var(--color-terminal-text);
+    /* The plate's ring takes the dark-theme accent, 7:1 or more on --color-command-bg in both page themes. */
+    --color-focus: var(--color-project-dark);
     --color-syntax-comment: var(--color-terminal-caption-text);
     --color-syntax-keyword: var(--color-terminal-text);
     --color-syntax-string: var(--color-terminal-text);
@@ -76,9 +77,9 @@
   .fg-code-block .fg-code-block__copy:hover { color: inherit; }
   .fg-code-block__copy svg { width: 1rem; height: 1rem; }
   /* Inset: the code block clips its content. */
-  .fg-code-block__pre:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-  .fg-code-block .fg-code-block__copy:focus-visible { outline-offset: -2px; }
-  .fg-figure__plate:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-code-block__pre:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
+  .fg-code-block .fg-code-block__copy:focus-visible { outline-offset: calc(var(--focus-width) * -1); }
+  .fg-figure__plate:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
   .fg-code-block__pre { margin: 0; padding: var(--space-4); overflow: auto; max-height: 32rem; tab-size: 2; }
   .fg-code-block__pre, .fg-code-block__pre code { font-family: var(--font-mono); font-size: var(--text-code); line-height: 1.65; }
   .fg-code-block__pre code { display: block; color: inherit; }
@@ -373,8 +374,8 @@
     border-radius: var(--radius-field);
     color: var(--color-input-text);
     border-color: var(--color-field-edge);
-    background: var(--color-well);
-    box-shadow: var(--shadow-sink);
+    background: var(--color-field-bg);
+    box-shadow: var(--shadow-field);
     line-height: 1.35;
   }
 
@@ -439,7 +440,7 @@
     .fg-select:not([multiple]):not([size]) option:checked { color: var(--color-row-selected-text); background: var(--color-row-selected); }
     /* Pointer hover only fills the row; the focus ring marks the keyboard position. Inset: the picker scrolls. */
     .fg-select:not([multiple]):not([size]) option:hover:not(:disabled) { background: var(--color-row-hover); }
-    .fg-select:not([multiple]):not([size]) option:focus-visible { background: var(--color-row-hover); outline: 2px solid var(--color-focus); outline-offset: -2px; }
+    .fg-select:not([multiple]):not([size]) option:focus-visible { background: var(--color-row-hover); outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
     .fg-select:not([multiple]):not([size]) option:disabled { color: var(--color-muted); opacity: 0.58; cursor: not-allowed; }
     .fg-select:not([multiple]):not([size]) option::checkmark { order: 1; margin-left: auto; color: var(--color-accent); }
     @media (pointer: coarse) {
@@ -463,6 +464,13 @@
   .fg-input[aria-invalid="true"],
   .fg-select[aria-invalid="true"] {
     border-color: var(--color-error);
+  }
+
+  /* A disabled field sits in the well with no depth, under the shared disabled treatment. */
+  .fg-input:disabled,
+  .fg-select:disabled {
+    background-color: var(--color-well);
+    box-shadow: none;
   }
 
   /* The native search clear button, quieted to a thin muted cross. */
@@ -841,7 +849,7 @@
   .fg-toggle-button[data-size="lg"] { min-height: var(--control-lg); font-size: var(--text-lg); }
 
   .fg-toggle-button:hover:not(:disabled, [aria-pressed="true"]) { border-color: var(--color-border); }
-  /* The switch carries the on state; the card takes the selected rows' faint tint and the hairline a focused field uses. */
+  /* The switch carries the on state; the card takes the selected rows' faint tint and a faint accent hairline. */
   .fg-toggle-button[aria-pressed="true"] {
     border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
     background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-raised));
@@ -892,7 +900,7 @@
    * An imported theme whose accent falls short sets --color-segmented-current-text. */
   .fg-segmented__item[aria-pressed="true"] { color: var(--color-segmented-current-text, var(--color-accent)); }
   /* Drawn inside the button, the ring hugs the thumb instead of reaching the next choice. */
-  .fg-segmented .fg-segmented__item:focus-visible { outline-offset: -2px; }
+  .fg-segmented .fg-segmented__item:focus-visible { outline-offset: calc(var(--focus-width) * -1); }
   .fg-segmented__item[aria-pressed="true"]::before {
     z-index: -1;
     background: var(--fg-segmented-thumb);
@@ -1134,8 +1142,9 @@
     to { transform: rotate(360deg); }
   }
 
-  /* One focus ring for every control: a 2px outline in the text colour with a 2px gap, no glow,
-   * over the control's own raise or sink shadow. Links, navigation, and tabs draw the same ring. */
+  /* One focus ring for every control except fields: a --focus-width outline in the accent with a
+   * --focus-offset gap, no glow, over the control's own raise or sink shadow. Links, navigation,
+   * and tabs draw the same ring. */
   .fg-button:focus-visible,
   .fg-checkbox__control:focus-visible,
   .fg-radio-card:focus-visible,
@@ -1146,17 +1155,22 @@
   .fg-toggle-button:focus-visible,
   .fg-segmented__item:focus-visible,
   .fg-switch__control:focus-visible .fg-switch__track {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-offset);
   }
 
-  /* A focused field takes the same ring and lifts out of its well onto the raised control surface. */
+  /* A focused field keeps its fill and draws no ring: its edge turns accent, with a faint inset
+   * accent line inside. An invalid field keeps its danger edge and takes a danger line instead. */
   .fg-input:focus-visible,
   .fg-select:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-    background-color: var(--color-field-focus-bg, var(--color-control-thumb));
-    box-shadow: var(--shadow-raise);
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-field-focus);
+  }
+  .fg-input[aria-invalid="true"]:focus-visible,
+  .fg-select[aria-invalid="true"]:focus-visible {
+    border-color: var(--color-error);
+    box-shadow: var(--shadow-field-focus-invalid);
   }
 
   /* The control is a larger transparent hit area, so the ring follows the visible track instead. */
@@ -1179,6 +1193,9 @@
   }
   /* The example frame draws the edge around its embedded source. */
   :root.high-contrast .fg-code-block[data-variant="embedded"] { border-width: 0; }
+  /* Fields have no ring, so their focus and invalid edges must outrank the high-contrast edge. */
+  :root.high-contrast :is(.fg-input, .fg-select):focus-visible { border-color: var(--color-accent); }
+  :root.high-contrast :is(.fg-input, .fg-select)[aria-invalid="true"] { border-color: var(--color-error); }
 
   /* Touch: at tablet width every control size grows to --control-lg. This follows the per-size
    * rules above, so it wins at equal specificity. */
@@ -1240,6 +1257,9 @@
     .fg-switch__control[aria-checked="true"] .fg-switch__track { border-color: Highlight; background: Highlight; forced-color-adjust: none; }
     .fg-toggle-button[aria-pressed="true"] .fg-toggle-button__switch::after,
     .fg-switch__control[aria-checked="true"] .fg-switch__track::after { background: HighlightText; }
+    /* Forced colors drop the inset line, so a focused field draws a system ring over its edge. */
+    .fg-input:focus-visible,
+    .fg-select:focus-visible { outline: var(--focus-width) solid Highlight; outline-offset: -1px; }
     /* The masked cross is its background, which would otherwise take the field's Canvas fill. */
     .fg-input[type="search"]::-webkit-search-cancel-button,
     .fg-input[type="search"]::-webkit-search-cancel-button:hover { forced-color-adjust: none; background: CanvasText; }

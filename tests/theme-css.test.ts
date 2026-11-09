@@ -43,6 +43,8 @@ describe.each([
     ['--color-border', '--color-surface-raised'],
     ['--color-input-border', '--color-input-bg'],
     ['--color-focus', '--color-bg'],
+    ['--color-focus', '--color-surface'],
+    ['--color-focus', '--color-surface-raised'],
   ])('keeps %s visible against %s', (foreground, background) => {
     expect(contrast(tokens[foreground]!, tokens[background]!)).toBeGreaterThanOrEqual(3)
   })

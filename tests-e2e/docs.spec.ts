@@ -317,10 +317,10 @@ test('contains drawer focus, dismisses it, and restores the trigger in both moti
   }
 })
 
-test('rings quiet actions in the text colour, like every control', async ({ page }) => {
+test('rings quiet actions in the accent, like every control', async ({ page }) => {
   const ink = () => page.evaluate(() => {
     const probe = document.body.appendChild(document.createElement('i'))
-    probe.style.color = 'var(--color-text)'
+    probe.style.color = 'var(--color-accent)'
     const color = getComputedStyle(probe).color
     probe.remove()
     return color
@@ -334,7 +334,7 @@ test('rings quiet actions in the text colour, like every control', async ({ page
   await page.keyboard.press('Tab')
   await expect(copy).toBeFocused()
   await expect(copy).toHaveCSS('outline-color', await ink())
-  // On the dark command plate the ring takes the plate's text colour.
+  // On the dark command plate the ring takes the dark-theme accent.
   await page.getByLabel('Variant', { exact: true }).selectOption('compact')
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
   await copy.focus()
@@ -343,7 +343,7 @@ test('rings quiet actions in the text colour, like every control', async ({ page
   await expect(copy).toBeFocused()
   const plateInk = await block.evaluate(element => {
     const probe = element.appendChild(document.createElement('i'))
-    probe.style.color = 'var(--color-terminal-text)'
+    probe.style.color = 'var(--color-project-dark)'
     const color = getComputedStyle(probe).color
     probe.remove()
     return color
@@ -362,10 +362,10 @@ test('rings quiet actions in the text colour, like every control', async ({ page
   await expect(close.locator('svg')).toHaveCSS('width', '16px')
 })
 
-test('rings danger and primary buttons and fields in the text colour, never a hue', async ({ page }) => {
+test('rings danger and primary buttons in the accent and edges a focused field in it', async ({ page }) => {
   const ink = () => page.evaluate(() => {
     const probe = document.body.appendChild(document.createElement('i'))
-    probe.style.color = 'var(--color-text)'
+    probe.style.color = 'var(--color-accent)'
     const color = getComputedStyle(probe).color
     probe.remove()
     return color
@@ -380,13 +380,15 @@ test('rings danger and primary buttons and fields in the text colour, never a hu
     await page.keyboard.press('Tab')
     await expect(button).toBeFocused()
     await expect(button).toHaveCSS('outline-color', await ink())
+    await expect(button).toHaveCSS('outline-width', '2px')
+    await expect(button).toHaveCSS('outline-offset', '3px')
   }
+  // A field draws no ring: its edge takes the accent.
   await page.goto('/#/sandbox/input')
   const field = page.locator('.playground-stage .fg-input').first()
   await field.focus()
-  await expect(field).toHaveCSS('outline-style', 'solid')
-  await expect(field).toHaveCSS('outline-width', '2px')
-  await expect(field).toHaveCSS('outline-color', await ink())
+  await expect(field).toHaveCSS('outline-style', 'none')
+  await expect(field).toHaveCSS('border-top-color', await ink())
 })
 
 test('rings a checked checkbox and switch in the system text colour in forced colors', async ({ page }) => {
@@ -778,9 +780,11 @@ test('keeps borderless controls edged and focus visible in forced colors', async
     await page.emulateMedia({ forcedColors: 'none' })
     await page.goto(`/#/sandbox/${slug}`)
     const control = page.locator(selector).first()
-    await expect(control).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
-    // The dark well sits within 1.1:1 of its host, so fields alone keep a faint edge there.
-    if (slug === 'input' || slug === 'select') {
+    const field = slug === 'input' || slug === 'select'
+    // Fields alone keep a faint edge, in both themes: the light field sits on near-white panels,
+    // and the dark well within 1.1:1 of its host.
+    await expect(control).toHaveCSS('border-color', field ? 'rgb(211, 216, 221)' : 'rgba(0, 0, 0, 0)')
+    if (field) {
       await page.emulateMedia({ colorScheme: 'dark' })
       await expect(control).toHaveCSS('border-color', 'rgb(38, 45, 51)')
       await page.emulateMedia({ colorScheme: 'light' })
@@ -798,6 +802,8 @@ test('keeps borderless controls edged and focus visible in forced colors', async
     await focusTarget.focus()
     await expect(focusTarget).toHaveCSS('outline-style', 'solid')
     await expect(focusTarget).toHaveCSS('outline-width', '2px')
+    // Forced colors drop a field's inset line, so its system ring sits over the edge.
+    if (field) await expect(focusTarget).toHaveCSS('outline-offset', '-1px')
   }
 })
 
@@ -1087,14 +1093,14 @@ test('keeps the page frame and dialog widths in pixels when the reader enlarges 
   expect((await page.getByRole('dialog').boundingBox())?.width).toBe(512)
 })
 
-test('rings the skip link and other unstyled docs links in the text colour', async ({ page }) => {
+test('rings the skip link and other unstyled docs links with the shared ring', async ({ page }) => {
   await page.goto('/#/components/button')
   await page.keyboard.press('Tab')
   const skip = page.getByRole('link', { name: 'Skip to content' })
   await expect(skip).toBeFocused()
   await expect(skip).toHaveCSS('outline-style', 'solid')
   await expect(skip).toHaveCSS('outline-width', '2px')
-  await expect(skip).toHaveCSS('outline-offset', '2px')
+  await expect(skip).toHaveCSS('outline-offset', '3px')
 
   // Keyboard navigation moves focus to the new page's heading, which takes the same ring.
   await page.getByRole('link', { name: 'Dialog', exact: true }).first().focus()
