@@ -52,7 +52,15 @@ const emit = defineEmits<{
             class="fg-dialog__close fg-quiet-action"
             aria-label="Close dialog"
           >
-            ×
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
           </DialogClose>
         </div>
         <div class="fg-dialog__body">
