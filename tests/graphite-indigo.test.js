@@ -51,7 +51,13 @@ describe('Graphite Indigo generated files', () => {
     expect(css).toMatch(/--font-sans: [^;]+; \/\* ui: --font-ui \*\//)
     expect(css).toContain('--radius-sm: 6px; /* ui: --radius-inline */')
     expect(css).toContain('--radius-field: 10px; /* ui: --radius-field */')
-    expect(css).toContain('--space-4: 16px; /* ui: --space-4 */')
+    expect(css).toContain('--space-4: 1rem; /* ui: --space-4 */')
+  })
+
+  it('sizes type, spacing, and controls in rem, so they follow the reader\'s font size', () => {
+    const css = renderStandaloneTokens({ data, libraryCss: read('src/theme.css') })
+    const pxSizes = [...css.matchAll(/^\s*(--(?:text|space|control)-[\w-]+|--row):\s*[\d.]+px/gm)].map(([, name]) => name)
+    expect(pxSizes).toEqual([])
   })
 
   it('puts the general variable first when several share a token', () => {
