@@ -1059,3 +1059,18 @@ test('grows small and medium controls to the touch height at tablet width', asyn
     expect((await control.boundingBox())?.height, `${path} ${selector}`).toBeGreaterThanOrEqual(44)
   }
 })
+
+test('leaves the mobile drawer open after a modified navigation click', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/#/components/dialog')
+  const trigger = page.getByRole('button', { name: /^Browse components:/ })
+  await trigger.click()
+  const drawer = page.getByRole('dialog', { name: 'Browse components', exact: true })
+  await expect.poll(async () => (await drawer.boundingBox())?.x).toBe(0)
+  const opened = context.waitForEvent('page')
+  await drawer.getByRole('link', { name: 'Button', exact: true }).click({ modifiers: ['ControlOrMeta'] })
+  await (await opened).close()
+  // data-state, not visibility: a closing drawer stays visible until its exit animation ends.
+  await expect(drawer).toHaveAttribute('data-state', 'open')
+  await expect(page.locator('h1')).toHaveText('Dialog')
+})
