@@ -1076,8 +1076,8 @@
     top: 50%;
     left: 50%;
     display: grid;
-    width: min(32rem, calc(100vw - var(--space-8)));
-    max-height: min(42rem, calc(100vh - var(--space-8)));
+    width: min(512px, calc(100vw - var(--space-8)));
+    max-height: min(672px, calc(100vh - var(--space-8)));
     overflow: hidden;
     transform: translate(-50%, -50%);
     border: 1px solid transparent;
@@ -1180,6 +1180,19 @@
   /* The example frame draws the edge around its embedded source. */
   :root.high-contrast .fg-code-block[data-variant="embedded"] { border-width: 0; }
 
+  /* Touch: at tablet width every control size grows to --control-lg. This follows the per-size
+   * rules above, so it wins at equal specificity. */
+  @media (max-width: 800px) {
+    .fg-button[data-size],
+    .fg-checkbox[data-size],
+    .fg-slider[data-size],
+    .fg-switch[data-size] .fg-switch__control,
+    .fg-toggle-button[data-size] { min-height: var(--control-lg); }
+    .fg-input[data-size],
+    .fg-select[data-size] { height: var(--control-lg); }
+    .fg-segmented[data-size] { --fg-segmented-item: var(--control-lg); }
+  }
+
   @media (max-width: 640px) {
     .fg-dialog__content {
       top: auto;
@@ -1227,6 +1240,9 @@
     .fg-switch__control[aria-checked="true"] .fg-switch__track { border-color: Highlight; background: Highlight; forced-color-adjust: none; }
     .fg-toggle-button[aria-pressed="true"] .fg-toggle-button__switch::after,
     .fg-switch__control[aria-checked="true"] .fg-switch__track::after { background: HighlightText; }
+    /* The masked cross is its background, which would otherwise take the field's Canvas fill. */
+    .fg-input[type="search"]::-webkit-search-cancel-button,
+    .fg-input[type="search"]::-webkit-search-cancel-button:hover { forced-color-adjust: none; background: CanvasText; }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -19,6 +19,9 @@ html {
 
 body { margin: 0; font-size: var(--text-md); }
 @layer base { a { color: var(--color-link); } }
+/* The library draws this base ring only inside .fg-site-docs, which this app does not use.
+ * In the base layer, so component rings such as inset ones still win. */
+@layer base { :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; } }
 
 @layer base {
   button, input, select { font: inherit; }
@@ -77,7 +80,6 @@ pre,
   padding: var(--space-8) var(--space-8) var(--space-16);
 }
 .content-page > section { margin-top: var(--space-12); scroll-margin-top: var(--space-24); }
-.content-page h1:focus { outline: none; }
 .content-page > section > h2,
 .content-page > section > .section-heading h2 {
   margin-bottom: var(--space-3);
@@ -120,7 +122,6 @@ pre,
   text-decoration: none;
 }
 .docs-link:hover { color: var(--color-text); }
-.docs-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .button-row { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
 .intro .button-row { align-items: center; gap: var(--space-6); margin-top: 0; }
 .intro .fg-button { min-height: var(--control-lg); }
@@ -166,7 +167,6 @@ pre,
   border-top: 1px solid var(--color-border-subtle);
   border-bottom: 1px solid var(--color-border-subtle);
 }
-.api-table-wrap:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .api-table { width: 100%; min-width: 44rem; border-collapse: collapse; font-size: var(--text-md); text-align: left; font-variant-numeric: tabular-nums; }
 .api-table th,
 .api-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-subtle); vertical-align: top; }

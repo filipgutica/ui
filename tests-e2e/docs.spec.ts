@@ -1041,3 +1041,83 @@ test('keeps component browsing reachable after scrolling on phones and tablets',
     await expect(trigger).toBeFocused()
   }
 })
+
+test('grows small and medium controls to the touch height at tablet width', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 900 })
+  for (const { path, selector } of [
+    { path: '/#/components/button', selector: 'section[aria-labelledby="example-heading"] .fg-button[data-size="sm"]' },
+    { path: '/#/sandbox/button', selector: '.playground-stage .fg-button' },
+    { path: '/#/sandbox/input', selector: '.playground-stage > .fg-input' },
+    { path: '/#/sandbox/select', selector: '.playground-stage > .fg-select' },
+    { path: '/#/sandbox/checkbox', selector: '.playground-stage .fg-checkbox' },
+    { path: '/#/sandbox/switch', selector: '.playground-stage .fg-switch__control' },
+    { path: '/#/sandbox/segmented-control', selector: '.playground-stage .fg-segmented__item' },
+    { path: '/#/sandbox/slider', selector: '.playground-stage .fg-slider' },
+    { path: '/#/sandbox/toggle-button', selector: '.playground-stage .fg-toggle-button' },
+  ]) {
+    await page.goto(path)
+    const control = page.locator(selector).first()
+    await expect(control).toBeVisible()
+    expect((await control.boundingBox())?.height, `${path} ${selector}`).toBeGreaterThanOrEqual(44)
+  }
+})
+
+test('leaves the mobile drawer open after a modified navigation click', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/#/components/dialog')
+  const trigger = page.getByRole('button', { name: /^Browse components:/ })
+  await trigger.click()
+  const drawer = page.getByRole('dialog', { name: 'Browse components', exact: true })
+  await expect.poll(async () => (await drawer.boundingBox())?.x).toBe(0)
+  const opened = context.waitForEvent('page')
+  await drawer.getByRole('link', { name: 'Button', exact: true }).click({ modifiers: ['ControlOrMeta'] })
+  await (await opened).close()
+  // data-state, not visibility: a closing drawer stays visible until its exit animation ends.
+  await expect(drawer).toHaveAttribute('data-state', 'open')
+  await expect(page.locator('h1')).toHaveText('Dialog')
+})
+
+test('keeps the page frame and dialog widths in pixels when the reader enlarges text', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 })
+  await page.goto('/#/sandbox/dialog')
+  await page.evaluate(() => { document.documentElement.style.fontSize = '20px' })
+  expect((await page.locator('.docs-shell').boundingBox())?.width).toBe(224 + 960)
+  await page.locator('.playground-stage').getByRole('button', { name: 'Open dialog' }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  expect((await page.getByRole('dialog').boundingBox())?.width).toBe(512)
+})
+
+test('rings the skip link and other unstyled docs links in the text colour', async ({ page }) => {
+  await page.goto('/#/components/button')
+  await page.keyboard.press('Tab')
+  const skip = page.getByRole('link', { name: 'Skip to content' })
+  await expect(skip).toBeFocused()
+  await expect(skip).toHaveCSS('outline-style', 'solid')
+  await expect(skip).toHaveCSS('outline-width', '2px')
+  await expect(skip).toHaveCSS('outline-offset', '2px')
+
+  // Keyboard navigation moves focus to the new page's heading, which takes the same ring.
+  await page.getByRole('link', { name: 'Dialog', exact: true }).first().focus()
+  await page.keyboard.press('Enter')
+  const heading = page.locator('#main-content h1')
+  await expect(heading).toHaveText('Dialog')
+  await expect(heading).toBeFocused()
+  await expect(heading).toHaveCSS('outline-style', 'solid')
+})
+
+test('draws the search clear cross in forced colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/sandbox/input')
+  const field = page.locator('.playground-stage > .fg-input')
+  // Chromium reports no computed style for the cancel button, so compare the field's end, where it sits.
+  const fieldEnd = async () => {
+    const box = await field.boundingBox()
+    if (!box) throw new Error('search field is not rendered')
+    return page.screenshot({ clip: { x: box.x + box.width - 40, y: box.y + 4, width: 32, height: box.height - 8 } })
+  }
+  await field.fill('')
+  await field.focus()
+  const empty = await fieldEnd()
+  await field.fill('agent')
+  expect((await fieldEnd()).equals(empty)).toBe(false)
+})

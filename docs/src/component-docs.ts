@@ -590,12 +590,13 @@ export const componentDocs: ComponentDoc[] = [
     ],
     slots: [
       { name: 'default', type: 'unknown', description: 'The live preview, centred on the stage. Wide content scrolls inside the stage.' },
+      { name: 'caption', type: 'unknown', description: 'Caption below the frame, styled as a UiFigure caption. Without this slot, no caption.' },
     ],
     events: [],
     example: {
       title: 'Button with its source',
-      description: 'A live button above the source that renders it. Copy sits in the top corner of the source.',
-      code: `<UiExample language="vue" :code="source">\n  <UiButton variant="secondary">Save draft</UiButton>\n</UiExample>`,
+      description: 'A live button above the source that renders it, with a caption below the frame. Copy sits in the top corner of the source.',
+      code: `<UiExample language="vue" :code="source">\n  <UiButton variant="secondary">Save draft</UiButton>\n  <template #caption>\n    A secondary button for a reversible action.\n  </template>\n</UiExample>`,
     },
   },
   {

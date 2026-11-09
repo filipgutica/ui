@@ -44,6 +44,8 @@ const focusHeading = (): void => {
 }
 const onNavigationClick = (event: MouseEvent): void => {
   if (!(event.target instanceof Element) || !event.target.closest('a')) return
+  // A modified click opens a new tab or window, so the drawer stays open (as in UiSiteNav).
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
   navigationSelected = true
   navigationOpen.value = false
 }

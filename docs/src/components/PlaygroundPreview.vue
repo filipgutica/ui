@@ -251,6 +251,9 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
         <UiButton variant="secondary">
           Save draft
         </UiButton>
+        <template #caption>
+          A secondary button for a reversible action.
+        </template>
       </UiExample>
 
       <UiRadioCardGroup
