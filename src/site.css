@@ -694,7 +694,7 @@
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__end { display: contents; }
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-projects { margin-inline-end: auto; }
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__links { order: 1; flex-basis: 100%; }
-    .fg-site-docs :where(h1) { font-size: 32px; }
+    .fg-site-docs :where(h1) { font-size: 2rem; }
     .fg-site-hero > h1 { font-size: var(--text-display-sm); }
     .fg-site-docs { padding-inline: var(--space-4); }
     /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
@@ -748,7 +748,7 @@
     .fg-site-header__inner { padding-inline: var(--site-gutter, var(--space-6)); }
   }
   @media (max-width: 680px) {
-    .fg-site-prose :where(h1) { font-size: 32px; }
+    .fg-site-prose :where(h1) { font-size: 2rem; }
     .fg-site-header__end { gap: var(--space-2) var(--space-4); }
     .fg-site-header__links { gap: var(--space-4); }
     .fg-site-projects__menu a { min-height: var(--control-lg); }

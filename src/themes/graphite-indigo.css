@@ -61,14 +61,14 @@
   --color-accent-hover: var(--color-text);
   --color-command-bg: color-mix(in srgb, var(--color-project) 25%, #101010);
   --color-command-border: transparent;
-  --text-3xl: 44px;
-  --text-reading: 16px;
-  --text-display: 56px;
-  --text-display-sm: 34px;
+  --text-3xl: 2.75rem;
+  --text-reading: 1rem;
+  --text-display: 3.5rem;
+  --text-display-sm: 2.125rem;
   --tracking-tight: -0.03em;
-  --space-20: 80px;
-  --space-24: 96px;
-  --row: 36px;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --row: 2.25rem;
   --page-wide: 1120px;
 }
 
