@@ -1052,6 +1052,8 @@ test('grows small and medium controls to the touch height at tablet width', asyn
     { path: '/#/sandbox/checkbox', selector: '.playground-stage .fg-checkbox' },
     { path: '/#/sandbox/switch', selector: '.playground-stage .fg-switch__control' },
     { path: '/#/sandbox/segmented-control', selector: '.playground-stage .fg-segmented__item' },
+    { path: '/#/sandbox/slider', selector: '.playground-stage .fg-slider' },
+    { path: '/#/sandbox/toggle-button', selector: '.playground-stage .fg-toggle-button' },
   ]) {
     await page.goto(path)
     const control = page.locator(selector).first()
@@ -1093,6 +1095,14 @@ test('rings the skip link and other unstyled docs links in the text colour', asy
   await expect(skip).toHaveCSS('outline-style', 'solid')
   await expect(skip).toHaveCSS('outline-width', '2px')
   await expect(skip).toHaveCSS('outline-offset', '2px')
+
+  // Keyboard navigation moves focus to the new page's heading, which takes the same ring.
+  await page.getByRole('link', { name: 'Dialog', exact: true }).first().focus()
+  await page.keyboard.press('Enter')
+  const heading = page.locator('#main-content h1')
+  await expect(heading).toHaveText('Dialog')
+  await expect(heading).toBeFocused()
+  await expect(heading).toHaveCSS('outline-style', 'solid')
 })
 
 test('draws the search clear cross in forced colors', async ({ page }) => {

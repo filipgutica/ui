@@ -1185,7 +1185,9 @@
   @media (max-width: 800px) {
     .fg-button[data-size],
     .fg-checkbox[data-size],
-    .fg-switch[data-size] .fg-switch__control { min-height: var(--control-lg); }
+    .fg-slider[data-size],
+    .fg-switch[data-size] .fg-switch__control,
+    .fg-toggle-button[data-size] { min-height: var(--control-lg); }
     .fg-input[data-size],
     .fg-select[data-size] { height: var(--control-lg); }
     .fg-segmented[data-size] { --fg-segmented-item: var(--control-lg); }
