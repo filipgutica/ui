@@ -402,6 +402,9 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
         :size="controlSize"
         aria-label="Status"
       >
+        <option value="">
+          Choose a status
+        </option>
         <option value="all">
           All statuses
         </option>

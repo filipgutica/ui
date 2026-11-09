@@ -17,7 +17,7 @@ const principles = [
 
 <template>
   <article class="content-page home-page">
-    <header class="intro">
+    <header class="intro fg-site-hero">
       <h1 tabindex="-1">
         Component library
       </h1>

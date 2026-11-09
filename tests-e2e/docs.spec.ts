@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator } from '@playwright/test'
 
 import { contrast } from '../tests/contrast.js'
 
@@ -721,9 +721,9 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   })
 
   expect(styles.appearance).toBe('base-select')
-  expect(styles.paddingLeft).toBeLessThanOrEqual(12)
-  expect(styles.paddingRight).toBeGreaterThanOrEqual(24)
-  expect(styles.paddingRight).toBeLessThanOrEqual(32)
+  // The value starts 12px in and the chevron ends 10px from the edge.
+  expect(styles.paddingLeft).toBe(12)
+  expect(styles.paddingRight).toBe(10)
   await select.press('Space')
   await expect(select.locator('option').filter({ hasText: 'Passed' })).toBeVisible()
   const picker = await select.evaluate(element => {
@@ -740,8 +740,20 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     return fill
   })
   expect(picker.background).toBe(raisedFill)
-  // The picker is a floating layer, so it takes the panel radius.
-  expect(picker.radius).toBe(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--radius-panel').trim()))
+  // A picker sits one radius step outside the field.
+  expect(picker.radius).toBe('12px')
+  const accent = await select.evaluate(element => {
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--color-accent)'
+    element.after(probe)
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  })
+  await expect(select).toHaveCSS('border-top-color', accent)
+  await expect(select.locator('option').first()).toHaveCSS('height', '30px')
+  await expect(select.locator('option').first()).toHaveCSS('border-radius', '8px')
+  await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('matrix(-1, 0, 0, -1, 0, 0)')
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
   await expect(select).toHaveValue('passed')
@@ -749,11 +761,81 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
 
   // Pointer hover fills a row; only the keyboard position draws the focus ring.
   await select.press('Space')
+  const checked = select.locator('option:checked')
+  const color = await checked.evaluate(element => getComputedStyle(element).backgroundColor)
+  await expect(checked).toHaveCSS('font-weight', '500')
+  expect(color).not.toBe(picker.background)
+  await expect(checked).toHaveCSS('outline-style', 'solid')
+  await checked.hover()
+  expect(await checked.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(color)
   const hovered = select.locator('option').first()
   await hovered.hover()
   await expect(hovered).toHaveCSS('outline-style', 'none')
+  // The anonymous option text stays in column two whether the leading check is visible or not.
+  const starts = await select.locator('option').evaluateAll(options => options.map(option => {
+    const range = document.createRange()
+    range.selectNodeContents(option)
+    return range.getBoundingClientRect().x
+  }))
+  expect(new Set(starts).size).toBe(1)
   await page.keyboard.press('ArrowDown')
   await expect(select.locator('option:focus-visible')).toHaveCSS('outline-style', 'solid')
+  await page.keyboard.press('Escape')
+  await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('none')
+  // A consumer supplies the empty-value first option; UiSelect adds no placeholder API.
+  await select.selectOption('')
+  const muted = await select.evaluate(element => getComputedStyle(element).color)
+  expect(muted).toBe(await select.evaluate(element => {
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--color-input-placeholder)'
+    element.after(probe)
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  }))
+  await select.selectOption('failed')
+  expect(await select.evaluate(element => getComputedStyle(element).color)).not.toBe(muted)
+  // Start a pointer interaction outside the field; clicking an already keyboard-focused
+  // field correctly retains its keyboard focus indication in Chromium.
+  await page.locator('h1').click()
+  await select.click()
+  await select.locator('option:checked').hover()
+  await expect(select.locator('option:checked')).toHaveCSS('outline-style', 'none')
+  await page.keyboard.press('Escape')
+})
+
+test('keeps picker rows readable when an imported theme inverts the input fill', async ({ page }) => {
+  await page.goto('/#/sandbox/select')
+  // A light page with a dark input: page text matches the input fill.
+  await page.evaluate(() => {
+    for (const [name, value] of Object.entries({ '--color-bg': '#ffffff', '--color-text': '#111111', '--color-input-bg': '#111111', '--color-input-text': '#ffffff', '--color-accent': '#2f6fed' })) {
+      document.documentElement.style.setProperty(name, value)
+    }
+  })
+  const select = page.locator('.playground-stage > .fg-select')
+  await select.selectOption('passed')
+  await select.press('Space')
+  // Option fills are opaque, so canvas resolves each color to hex without an underlay.
+  const rowContrast = async (option: Locator) => {
+    const { color, background } = await option.evaluate(element => {
+      const context = document.createElement('canvas').getContext('2d')!
+      const hex = (value: string) => {
+        context.fillStyle = value
+        context.fillRect(0, 0, 1, 1)
+        return '#' + [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(channel => channel.toString(16).padStart(2, '0')).join('')
+      }
+      const style = getComputedStyle(element)
+      return { color: hex(style.color), background: hex(style.backgroundColor) }
+    })
+    return contrast(color, background)
+  }
+  const checked = select.locator('option:checked')
+  expect(await rowContrast(checked)).toBeGreaterThanOrEqual(4.5)
+  await checked.hover()
+  expect(await rowContrast(checked)).toBeGreaterThanOrEqual(4.5)
+  const other = select.locator('option').filter({ hasText: 'Failed' })
+  await other.hover()
+  expect(await rowContrast(other)).toBeGreaterThanOrEqual(4.5)
   await page.keyboard.press('Escape')
 })
 

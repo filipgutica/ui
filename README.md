@@ -199,6 +199,13 @@ current page or section. The drawer closes on
 navigation and focuses the destination section, and focus follows the visible control across the
 breakpoint.
 
+Section headings in `.fg-site-docs` and `.fg-site-prose` use the terminal
+identity's decorative `## ` mark, with `0.08em` tracking. Set `--heading-mark`
+on a page or section to change it; `--heading-mark: none` removes it. The
+default is `--heading-mark: "## "`. The mark is excluded from accessible text.
+Docs navigation rows use `--row-compact` (1.875rem) on fine pointers; touch
+keeps the existing row height.
+
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
 Set `--color-project-dark` to the dark variant in both appearances, so prompts,
 capture tab underlines, and focus rings stay readable on terminal plates. The default hue

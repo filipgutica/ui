@@ -39,14 +39,12 @@
     </section>
 
     <section aria-labelledby="example-heading">
-      <div class="section-heading">
-        <div>
-          <h2 id="example-heading">
-            Example
-          </h2>
-          <p>{{ component.example.description }}</p>
-        </div>
-      </div>
+      <hgroup>
+        <h2 id="example-heading">
+          Example
+        </h2>
+        <p>{{ component.example.description }}</p>
+      </hgroup>
       <UiExample
         :code="component.example.code"
         language="vue"

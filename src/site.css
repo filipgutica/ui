@@ -28,7 +28,7 @@
   .fg-site-docs :where(h2) { font-family: var(--font-mono); font-size: var(--text-xl); }
   .fg-site-docs :where(h3) { font-family: var(--font-ui); font-size: var(--text-lg); }
   :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2) { padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); }
-  :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2)::before { content: '## ' / ''; color: var(--color-project); }
+  :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2)::before { content: var(--heading-mark, '## ') / ''; color: var(--color-project); letter-spacing: 0.08em; }
   .fg-site-docs :where(p) { max-width: var(--measure); }
   /* Tab panels and other enhanced markup use the hidden attribute, so it outranks the page's own
    * display rules. until-found keeps the browser's find-in-page behavior. */
@@ -117,7 +117,7 @@
     border-top: 1px solid var(--color-border-subtle);
   }
   .fg-site-legend dt { font-family: var(--font-mono); font-weight: var(--weight-medium); }
-  .fg-site-legend dd { margin: 0; color: var(--color-muted); }
+  .fg-site-legend dd { margin: 0; color: var(--color-text); }
 
   /* A centered frame. The header uses the same edges as the page below it.
    * Set --site-frame on the header or a frame to change its width. */
@@ -229,6 +229,10 @@
     height: 14px;
     border-radius: var(--radius-pill);
     background: var(--color-accent);
+  }
+  @media (pointer: fine) {
+    /* Project switcher items keep their existing menu density. */
+    .fg-site-nav:not(.fg-site-projects__menu) a { min-height: var(--row-compact); }
   }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
 
@@ -461,7 +465,7 @@
   .fg-command-list tbody tr:last-child td { border-bottom: 1px solid var(--color-border-subtle); }
   .fg-command-list__command { width: 1%; white-space: nowrap; }
   .fg-command-list__command code { font-family: var(--font-mono); font-size: var(--text-sm); }
-  .fg-command-list__description { color: var(--color-muted); }
+  .fg-command-list__description { color: var(--color-text); }
   .fg-command-list td.fg-command-list__action { width: 1%; padding: var(--space-1) 0; }
   .fg-command-list__copy {
     display: inline-grid;
@@ -527,7 +531,7 @@
   .fg-site-steps__result {
     padding-inline-start: var(--space-3);
     border-inline-start: 2px solid var(--color-project);
-    color: var(--color-muted);
+    color: var(--color-text);
   }
   .fg-site-facts {
     display: flex;
@@ -552,7 +556,7 @@
     line-height: var(--leading);
   }
   .fg-site-definitions dt { font-weight: var(--weight-medium); }
-  .fg-site-definitions dd { margin: 0; color: var(--color-muted); }
+  .fg-site-definitions dd { margin: 0; color: var(--color-text); }
   /* Keep flags such as --all whole instead of breaking after a hyphen. */
   .fg-site-definitions code { white-space: nowrap; }
 
@@ -616,7 +620,8 @@
     .fg-site-rail__menu:not([open]) > .fg-site-rail__content { display: block; }
   }
   /* Explicit opt-in keeps the hero independent of page-owned install and capture markup. */
-  .fg-site-hero { display: grid; gap: var(--space-4); }
+  .fg-site-hero { display: grid; gap: var(--space-6); }
+  .fg-site-hero__lede { color: var(--color-text); }
   .fg-site-hero > * { min-width: 0; }
   .fg-site-hero__lede,
   .fg-site-hero__aside { display: grid; gap: var(--space-3); align-content: start; }

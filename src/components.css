@@ -379,17 +379,9 @@
     line-height: 1.35;
   }
 
-  .fg-select {
-    appearance: none;
-    background-image:
-      linear-gradient(45deg, transparent 50%, currentColor 50%),
-      linear-gradient(135deg, currentColor 50%, transparent 50%);
-    background-position:
-      calc(100% - 0.8rem) 52%,
-      calc(100% - 0.55rem) 52%;
-    background-repeat: no-repeat;
-    background-size: 0.3rem 0.3rem;
-  }
+  /* Browsers without base-select keep their platform chevron and picker. */
+  .fg-select { appearance: auto; }
+  .fg-select:not([multiple]):not([size]):has(option[value=""]:checked) { color: var(--color-input-placeholder); }
 
   /* Keep native form semantics; older browsers retain the native picker. */
   @supports (appearance: base-select) {
@@ -397,24 +389,36 @@
     .fg-select:not([multiple]):not([size])::picker(select) {
       appearance: base-select;
     }
+    /* The value starts 12px in at every size; the chevron ends 10px from the edge. */
     .fg-select:not([multiple]):not([size]) {
-      position: relative;
       align-items: center;
-      background-image: none;
+      column-gap: var(--space-2);
+      padding-inline: 0.75rem 0.625rem;
       cursor: pointer;
     }
-    .fg-select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
-    .fg-select:not([multiple]):not([size])::picker-icon { display: none; }
-    .fg-select:not([multiple]):not([size])::after {
-      position: absolute;
-      right: var(--space-3);
-      width: var(--space-2);
-      height: var(--space-2);
-      border-right: 1.5px solid var(--color-muted);
-      border-bottom: 1.5px solid var(--color-muted);
-      transform: translateY(-2px) rotate(45deg);
-      content: "";
+    /* An open trigger keeps the focused field edge until the picker closes. */
+    .fg-select:not([multiple]):not([size]):open {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-field-focus);
     }
+    .fg-select:not([multiple]):not([size])[aria-invalid="true"]:open {
+      border-color: var(--color-error);
+      box-shadow: var(--shadow-field-focus-invalid);
+    }
+    .fg-select:not([multiple]):not([size]):open::picker-icon { color: var(--color-input-text); }
+    .fg-select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
+    .fg-select:not([multiple]):not([size])::picker-icon {
+      width: 1rem;
+      height: 1rem;
+      margin-inline-start: auto;
+      flex: none;
+      color: var(--color-muted);
+      background: currentColor;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+      content: "";
+      transition: transform var(--duration-fast) var(--ease-out);
+    }
+    .fg-select:not([multiple]):not([size]):open::picker-icon { transform: rotate(180deg); }
     .fg-select:not([multiple]):not([size])::picker(select) {
       min-width: anchor-size(width);
       max-height: min(20rem, 50dvh);
@@ -422,29 +426,53 @@
       margin-block: var(--space-1);
       padding: var(--space-1);
       border: 1px solid transparent;
-      border-radius: var(--radius-panel);
-      color: var(--color-text);
+      border-radius: calc(var(--radius-field) + 2px);
+      color: var(--color-input-text);
       background: var(--color-input-bg);
-      box-shadow: var(--shadow-dialog);
+      box-shadow: var(--shadow-popover);
       font: var(--weight-regular) var(--text-md) / var(--leading) var(--font-ui);
     }
     .fg-select:not([multiple]):not([size]) option {
-      min-height: var(--control-sm);
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border-radius: calc(var(--radius-panel) - var(--space-1));
-      color: var(--color-text);
+      display: grid;
+      grid-template-columns: 1rem 1fr;
+      align-items: center;
+      min-height: var(--control-lg);
+      column-gap: var(--space-2);
+      line-height: 1.35;
+      padding: 0.3125rem 0.625rem 0.3125rem var(--space-2);
+      border-radius: 0.5rem;
+      color: var(--color-input-text);
       background: transparent;
       cursor: pointer;
     }
-    .fg-select:not([multiple]):not([size]) option:checked { color: var(--color-row-selected-text); background: var(--color-row-selected); }
-    /* Pointer hover only fills the row; the focus ring marks the keyboard position. Inset: the picker scrolls. */
-    .fg-select:not([multiple]):not([size]) option:hover:not(:disabled) { background: var(--color-row-hover); }
-    .fg-select:not([multiple]):not([size]) option:focus-visible { background: var(--color-row-hover); outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
-    .fg-select:not([multiple]):not([size]) option:disabled { color: var(--color-muted); opacity: 0.58; cursor: not-allowed; }
-    .fg-select:not([multiple]):not([size]) option::checkmark { order: 1; margin-left: auto; color: var(--color-accent); }
-    @media (pointer: coarse) {
-      .fg-select:not([multiple]):not([size]) option { min-height: var(--control-lg); }
+    .fg-select:not([multiple]):not([size]) option + option { margin-block-start: 1px; }
+    .fg-select:not([multiple]):not([size]) option[value=""] { color: var(--color-input-placeholder); }
+    /* Group labels are quiet mono captions; grouped options keep the same columns as the rest. */
+    .fg-select:not([multiple]):not([size]) optgroup {
+      padding-block-start: 0.625rem;
+      color: var(--color-input-placeholder);
+      font: var(--weight-medium) 0.6875rem / 1.35 var(--font-mono);
+    }
+    .fg-select:not([multiple]):not([size]) optgroup option {
+      font: var(--weight-regular) var(--text-md) / 1.35 var(--font-ui);
+    }
+    .fg-select:not([multiple]):not([size]) optgroup option:first-of-type { margin-block-start: 0.375rem; }
+    .fg-select:not([multiple]):not([size]) option:checked { font-weight: var(--weight-medium); background: color-mix(in srgb, var(--color-accent) 8%, var(--color-input-bg)); }
+    /* Pointer hover only fills the row; the focus ring marks the keyboard position. Inset: the picker scrolls.
+       Every picker fill mixes into the input fill, so the input text stays readable on imported themes. */
+    .fg-select:not([multiple]):not([size]) option:hover:not(:disabled) { background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg)); }
+    .fg-select:not([multiple]):not([size]) option:checked:hover:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 12%, var(--color-input-bg)); }
+    .fg-select:not([multiple]):not([size]) option:focus-visible:not(:checked) { background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg)); }
+    .fg-select:not([multiple]):not([size]) option:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
+    .fg-select:not([multiple]):not([size]) option:disabled { color: var(--color-input-placeholder); opacity: 0.58; cursor: not-allowed; }
+    /* Keep a leading column on unchecked rows too, so values never shift on selection. */
+    .fg-select:not([multiple]):not([size]) option::checkmark { display: block; visibility: hidden; color: var(--color-input-text); }
+    .fg-select:not([multiple]):not([size]) option:checked::checkmark { visibility: visible; }
+    @media (pointer: fine) {
+      .fg-select:not([multiple]):not([size]) option { min-height: var(--row-compact); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fg-select:not([multiple]):not([size])::picker-icon { transition: none; }
     }
   }
 

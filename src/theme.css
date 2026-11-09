@@ -27,6 +27,8 @@
   --space-8: 2rem;
   --space-12: 3rem;
   --space-16: 4rem;
+  --row-compact: 1.875rem;
+  --heading-mark: "## ";
   --control-sm: 2rem;
   --control-md: 2.25rem;
   --control-lg: 2.75rem;
@@ -102,6 +104,7 @@
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow-control: none;
   --shadow-dialog: 0 8px 24px rgb(16 16 24 / 12%), 0 0 0 1px var(--color-border-subtle);
+  --shadow-popover: 0 8px 24px rgb(16 24 40 / 12%), 0 1px 2px rgb(16 24 40 / 8%);
   /* Depth tiers. Component CSS uses only these tokens.
    * Raise: idle controls. Surface: containers. Sink: pressed controls and wells.
    * Nav-current: the selected row. Dialog: floating layers. Raise and surface use one tight
@@ -177,6 +180,7 @@
   --color-shadow: rgb(0 0 0 / 32%);
   --color-overlay: rgb(0 0 0 / 62%);
   --shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-subtle);
+  --shadow-popover: 0 12px 28px rgb(0 0 0 / 55%), 0 0 0 1px rgb(255 255 255 / 8%);
   --shadow-raise: inset 0 1px 0 rgb(255 255 255 / 7%), 0 1px 2px rgb(0 0 0 / 45%);
   --shadow-surface: 0 0 0 1px rgb(255 255 255 / 6%);
   --shadow-sink: inset 1.2px 1.2px 3.6px rgb(0 0 0 / 55%), inset -1.2px -1.2px 3.6px rgb(255 255 255 / 5%);
