@@ -2,6 +2,8 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Values that @filipgutica/design-system maps with a "ui:" comment come from that package.
+ * Change them there; `pnpm themes:build` copies them here. The rest belong to this library. */
 :root {
   color-scheme: light;
   --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
@@ -186,7 +188,7 @@
   --shadow-sink: inset 1.2px 1.2px 3.6px rgb(0 0 0 / 55%), inset -1.2px -1.2px 3.6px rgb(255 255 255 / 5%);
   --shadow-field: var(--shadow-sink);
 
-  --color-project: #a5a1ff;
+  --color-project: var(--color-project-dark);
   --color-accent-text: var(--color-bg);
   --color-accent-hover: var(--color-text);
   --color-project-dark: #a5a1ff;
