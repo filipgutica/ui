@@ -40,7 +40,7 @@ describe('Graphite Indigo generated files', () => {
   it('draws standalone focus with an outline, which forced-colors mode keeps', () => {
     const focus = /:focus-visible\s*\{([^}]*)\}/.exec(renderStandaloneTokens({ data, libraryCss: read('src/theme.css') }))?.[1]
 
-    expect(focus).toContain('outline: 2px solid var(--focus)')
+    expect(focus).toContain('outline: var(--focus-width) solid var(--focus)')
     expect(focus).not.toMatch(/box-shadow|outline:\s*none/)
   })
 

@@ -254,7 +254,7 @@ test('shows a stored appearance choice without moving the picker on load', async
   expect(await page.evaluate(() => (window as unknown as { segmentedStarts: string[] }).segmentedStarts)).toEqual([])
 })
 
-test('rings the project trigger in the text colour, like the other quiet actions', async ({ page }) => {
+test('rings the project trigger in the accent, like the other quiet actions', async ({ page }) => {
   await page.goto(fixture)
   const trigger = page.locator('.fg-site-projects__trigger')
   await trigger.focus()
@@ -263,7 +263,7 @@ test('rings the project trigger in the text colour, like the other quiet actions
   await expect(trigger).toBeFocused()
   const ink = await page.evaluate(() => {
     const probe = document.body.appendChild(document.createElement('i'))
-    probe.style.color = 'var(--color-text)'
+    probe.style.color = 'var(--color-accent)'
     const color = getComputedStyle(probe).color
     probe.remove()
     return color

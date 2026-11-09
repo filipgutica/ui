@@ -48,7 +48,7 @@
     font-size: var(--text-xs);
     white-space: nowrap;
   }
-  .fg-site-docs :where(:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-site-docs :where(:focus-visible) { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 }
 
 @layer components {
@@ -239,11 +239,11 @@
     .fg-site-nav a[aria-current="location"]::before { forced-color-adjust: none; background: Highlight; }
   }
 
-  /* Focus is a 2px outline outside the control, which forced-colors mode keeps. An
+  /* Focus is an accent outline outside the control, which forced-colors mode keeps. An
    * inset ring is used only where a scrolling ancestor would clip an outer one. */
-  .fg-site-header a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-site-header a:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
   /* Inset: the desktop rail and the phone drawer scroll. */
-  .fg-site-nav a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-site-nav a:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
 
   /* Section rail (UiSiteNav). The page grid places it; on desktop it stays in view
    * beside the article. At 800px and below it becomes a disclosure named by the
@@ -287,7 +287,9 @@
     --color-text: var(--color-terminal-text);
     --color-muted: var(--color-terminal-caption-text);
     --color-accent: var(--color-project-dark);
-    --color-focus: var(--color-terminal-text);
+    /* Set again here: the root --color-focus already resolved to the page accent. The dark-theme
+     * accent reaches 7:1 or more on the terminal and its caption in both page themes. */
+    --color-focus: var(--color-project-dark);
     --color-border-subtle: var(--color-terminal-border);
     position: relative;
     min-width: 0;
@@ -315,7 +317,7 @@
   }
   .fg-capture__full svg { width: 14px; height: 14px; flex: none; }
   /* Inset: the capture preview below would cover an outset ring. */
-  .fg-capture__full:focus-visible { outline-offset: -2px; }
+  .fg-capture__full:focus-visible { outline-offset: calc(var(--focus-width) * -1); }
   /* Without JavaScript every capture is listed under its own heading. */
   .fg-capture .fg-tabs__heading { margin: 0; padding: var(--space-3) var(--space-4); }
   .fg-capture:not([data-enhanced="true"]) .fg-tabs__panel + .fg-tabs__panel { border-top: 1px solid var(--color-border-subtle); }
@@ -418,7 +420,7 @@
   .fg-capture__caption > code { color: var(--color-terminal-caption-text); font-family: var(--font-mono); font-size: var(--text-sm); overflow-wrap: anywhere; }
   /* Inset: the enhanced panel clips its content. */
   .fg-capture__screen:focus-visible,
-  .fg-capture__expand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+  .fg-capture__expand:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
   .fg-dialog__content.fg-capture-viewer {
     width: calc(100vw - var(--space-8));
     max-width: var(--page-max);
@@ -471,7 +473,7 @@
   }
   .fg-command-list__copy svg { width: 1rem; height: 1rem; }
   /* Inset: the table scrolls sideways on larger screens. */
-  .fg-command-list__copy:focus-visible { outline-offset: -2px; }
+  .fg-command-list__copy:focus-visible { outline-offset: calc(var(--focus-width) * -1); }
   .fg-command-list__status:not(:empty) { display: block; padding-top: var(--space-2); font-size: var(--text-sm); }
 
   /* Page helpers. Steps number a real sequence; facts are short label and value
@@ -577,7 +579,7 @@
     box-shadow: var(--shadow-dialog);
   }
   .fg-site-skip:focus { top: var(--space-4); }
-  .fg-site-skip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  .fg-site-skip:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 
   /* Type roles for article content. Prose reads at --text-reading. Components set
    * their own size, and controls and dense content such as tables belong at --text-md.

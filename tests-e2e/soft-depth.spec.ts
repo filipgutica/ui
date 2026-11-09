@@ -132,23 +132,66 @@ test('keeps idle controls and surfaces to a quiet lift in both themes', async ({
   }
 })
 
-test('lifts a focused field out of its well under the shared ring', async ({ page }) => {
+for (const colorScheme of ['light', 'dark'] as const) test(`edges a focused field in the accent without lifting it in ${colorScheme}`, async ({ page }) => {
+  await page.emulateMedia({ colorScheme })
   await page.goto('/#/sandbox/input')
   const input = page.locator('.playground-stage > .fg-input')
-  const restFill = await input.evaluate(element => getComputedStyle(element).backgroundColor)
-  await input.focus()
-  await expect(input).toHaveCSS('outline-offset', '2px')
-  expect(await input.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(restFill)
-  expect(await shadowOf(input)).toBe(await resolveShadow(page, '--shadow-raise'))
+  /** Resolves a colour expression on the page, in the browser's computed form. */
+  const paint = (value: string): Promise<string> => page.evaluate(color => {
+    const probe = document.body.appendChild(document.createElement('i'))
+    probe.style.color = color
+    const computed = getComputedStyle(probe).color
+    probe.remove()
+    return computed
+  }, value)
+  const state = () => input.evaluate(element => {
+    const style = getComputedStyle(element)
+    return { fill: style.backgroundColor, edge: style.borderTopColor, shadow: style.boxShadow, outline: style.outlineStyle }
+  })
 
-  // An invalid field keeps its error edge while focused.
-  const error = await input.evaluate(element => {
+  const rest = await state()
+  // Light fields rest flat on the raised surface; dark fields stay sunk in the well.
+  expect(rest.shadow).toBe(colorScheme === 'light' ? 'none' : await resolveShadow(page, '--shadow-sink'))
+  expect(rest.edge).toBe(await paint('var(--color-border-subtle)'))
+
+  await input.focus()
+  const focused = await state()
+  expect(focused.edge).toBe(await paint('var(--color-accent)'))
+  expect(focused.outline).toBe('none')
+  expect(focused.fill).toBe(rest.fill)
+  // One inset 2px line in a faint accent, inside the edge, and no outer depth.
+  expect(shadowLayers(focused.shadow)).toEqual([expect.objectContaining({ inset: true })])
+  expect(focused.shadow).toContain(await paint('color-mix(in srgb, var(--color-accent) 18%, transparent)'))
+  expect(focused.shadow).toContain('0px 0px 0px 2px')
+
+  // An invalid field keeps its danger edge while focused, with a danger line.
+  await input.evaluate(element => {
     element.setAttribute('aria-invalid', 'true')
     element.blur()
-    return getComputedStyle(element).borderTopColor
   })
+  const danger = await paint('var(--color-error)')
+  expect((await state()).edge).toBe(danger)
   await input.focus()
-  await expect(input).toHaveCSS('border-top-color', error)
+  const invalid = await state()
+  expect(invalid.edge).toBe(danger)
+  expect(invalid.outline).toBe('none')
+  expect(invalid.fill).toBe(rest.fill)
+  expect(invalid.shadow).toContain(await paint('color-mix(in srgb, var(--color-error) 18%, transparent)'))
+
+  // A disabled field sits flat in the well.
+  await input.evaluate(element => {
+    element.removeAttribute('aria-invalid')
+    element.setAttribute('disabled', '')
+  })
+  const disabled = await state()
+  expect(disabled.fill).toBe(await page.evaluate(() => {
+    const probe = document.body.appendChild(document.createElement('span'))
+    probe.style.background = 'var(--color-well)'
+    const color = getComputedStyle(probe).backgroundColor
+    probe.remove()
+    return color
+  }))
+  expect(disabled.shadow).toBe('none')
 })
 
 test('marks a pressed toggle card with its switch and a faint hairline, on square corners', async ({ page }) => {

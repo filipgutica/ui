@@ -21,7 +21,7 @@ body { margin: 0; font-size: var(--text-md); }
 @layer base { a { color: var(--color-link); } }
 /* The library draws this base ring only inside .fg-site-docs, which this app does not use.
  * In the base layer, so component rings such as inset ones still win. */
-@layer base { :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; } }
+@layer base { :focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); } }
 
 @layer base {
   button, input, select { font: inherit; }

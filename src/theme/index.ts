@@ -349,14 +349,21 @@ const visibleIndicator = ({
   color,
   against,
   fallback,
+  underlay,
 }: {
   color: string
-  against: string
+  against: string | readonly string[]
   fallback: string
+  underlay?: string
 }): string => {
-  if (contrastRatio(color, against, against) >= 3) return color
-  if (contrastRatio(fallback, against, against) >= 3) return fallback
-  return readableForeground({ background: against, preferred: fallback, underlay: against })
+  // Translucent backgrounds are measured as rendered over the page, so composite them first.
+  const backgrounds = (typeof against === 'string' ? [against] : against)
+    .map(background => underlay ? compositeColor(background, underlay) : background)
+  const visible = (candidate: string) =>
+    backgrounds.every(background => contrastRatio(candidate, background, background) >= 3)
+  if (visible(color)) return color
+  if (visible(fallback)) return fallback
+  return readableAcrossBackgrounds({ color: fallback, backgrounds, underlay: backgrounds[0]!, fallbacks: ['#000000', '#FFFFFF'] })
 }
 
 const readableSemanticColor = ({
@@ -499,9 +506,11 @@ const mapSemanticTokens = ({
     underlay: background,
     fallbacks: [fallback.link, textPrimary],
   })
+  // The accent is also the focus ring, so it must show on every background a focusable control sits on.
   const accent = visibleIndicator({
     color: rawAccent,
-    against: surface,
+    against: [background, surface, surfaceRaised],
+    underlay: background,
     fallback: fallback.accent,
   })
   const textMutedCandidate = firstColor(
@@ -793,8 +802,8 @@ export const applySemanticTheme = ({
 }): void => {
   for (const key of semanticTokenKeys) {
     const variable = semanticCssVariables[key]
-    // Focus is one ring in the text colour, so an applied theme's own focus colour is not used.
-    if (theme) root.style.setProperty(variable, theme.tokens[key === 'focus' ? 'textPrimary' : key])
+    // Focus is one ring in the accent, which is validated at 3:1, so an applied theme's own focus colour is not used.
+    if (theme) root.style.setProperty(variable, theme.tokens[key === 'focus' ? 'accent' : key])
     else root.style.removeProperty(variable)
   }
 
@@ -829,17 +838,15 @@ export const applySemanticTheme = ({
     const segmentedMinimum = (text: string) => Math.min(...segmentedThumbs.map(fill => contrastRatio(text, fill, fill)))
     root.style.setProperty('--color-segmented-current-text', candidates.find(segmentedReads)
       ?? candidates.reduce((best, candidate) => segmentedMinimum(candidate) > segmentedMinimum(best) ? candidate : best))
-    // A focused field lifts onto the control thumb: the raised surface, lightened 12% toward white
-    // in dark mode. If the theme's field text would not read there, the field keeps its resting fill.
+    // A light field rests on the raised surface (dark fields stay in the well). If the theme's field
+    // text would not read there, the field takes the theme's input background, which that text is
+    // validated against.
     const { inputForeground, inputPlaceholder, surface } = theme.tokens
-    const lifts = [pageBackground, compositeColor(surface, pageBackground)].map(host => {
-      const raised = compositeColor(surfaceRaised, host)
-      return dark ? compositeColor('#FFFFFF1F', raised) : raised
-    })
-    const liftReads = lifts.every(fill =>
+    const raisedFills = [pageBackground, compositeColor(surface, pageBackground)].map(host => compositeColor(surfaceRaised, host))
+    const fieldReads = raisedFills.every(fill =>
       [inputForeground, inputPlaceholder].every(text => contrastRatio(text, fill, fill) >= 4.5))
-    if (liftReads) root.style.removeProperty('--color-field-focus-bg')
-    else root.style.setProperty('--color-field-focus-bg', 'var(--color-well)')
+    if (dark || fieldReads) root.style.removeProperty('--color-field-bg')
+    else root.style.setProperty('--color-field-bg', 'var(--color-input-bg)')
     // The danger button mixes its label from the error hue toward body text (75% in light, 85% in
     // dark) on --color-error-surface, which an imported theme keeps from theme.css, deepened by the
     // error hue 10% on hover and 16% when pressed. If that label falls below 4.5:1 on any of the
@@ -861,7 +868,7 @@ export const applySemanticTheme = ({
     root.style.removeProperty('--color-switch-off-thumb')
     root.style.removeProperty('--color-nav-current-text')
     root.style.removeProperty('--color-segmented-current-text')
-    root.style.removeProperty('--color-field-focus-bg')
+    root.style.removeProperty('--color-field-bg')
     root.style.removeProperty('--color-danger-button-text')
   }
 

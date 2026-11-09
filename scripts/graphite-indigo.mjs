@@ -113,7 +113,7 @@ table, .num { font-variant-numeric: tabular-nums; }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
 p a, dd a { text-decoration: underline; text-underline-offset: 0.18em; }
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+:focus-visible { outline: var(--focus-width) solid var(--focus); outline-offset: var(--focus-offset); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; scroll-behavior: auto !important; }
 }

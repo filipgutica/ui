@@ -311,42 +311,69 @@ describe('VS Code theme parsing and normalization', () => {
     expect(theme.tokens.buttonForeground).toBe('#11111B')
   })
 
-  it('rings focus in the applied theme\'s text colour, not its focus border', () => {
+  it('rings focus in the applied theme\'s accent, not its focus border', () => {
     const root = document.createElement('div')
     applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: 'forest.json', source: JSON.stringify({
       type: 'dark',
       colors: { 'editor.background': '#101812', 'editor.foreground': '#E8F0EA', focusBorder: '#78D69F' },
     }) }) })
-    expect(root.style.getPropertyValue('--color-focus')).toBe(root.style.getPropertyValue('--color-text'))
+    expect(root.style.getPropertyValue('--color-focus')).toBe(root.style.getPropertyValue('--color-accent'))
   })
 
-  it('keeps a focused field on its resting fill when its text would not read on the lift', () => {
-    const fieldFocusFill = (type: string, colors: Record<string, string>) => {
+  it('keeps the accent focus ring at 3:1 on the page, the surface, and the raised surface', () => {
+    // A white focus border clears the mid-grey side bar but would vanish on the white page and panels.
+    const theme = parseVsCodeTheme({ fileName: 'white-panels.json', source: JSON.stringify({
+      type: 'light',
+      colors: {
+        'editor.background': '#FFFFFF',
+        'editor.foreground': '#000000',
+        'panel.background': '#FFFFFF',
+        'sideBar.background': '#777777',
+        focusBorder: '#FFFFFF',
+      },
+    }) })
+    const { accent, pageBackground, surface, surfaceRaised } = theme.tokens
+    for (const background of [pageBackground, surface, surfaceRaised]) {
+      expect(contrast(accent, background), `accent ${accent} on ${background}`).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('measures the accent focus ring against a translucent surface as rendered over the page', () => {
+    // #00000080 over the white page renders #7F7F7F, where the purple focus border reaches only 1.35:1.
+    const theme = parseVsCodeTheme({ fileName: 'translucent-side-bar.json', source: JSON.stringify({
+      type: 'light',
+      colors: {
+        'editor.background': '#FFFFFF',
+        'editor.foreground': '#000000',
+        'panel.background': '#FFFFFF',
+        'sideBar.background': '#00000080',
+        focusBorder: '#8839EF',
+      },
+    }) })
+    expect(theme.tokens.surface).toBe('#00000080')
+    expect(contrast(theme.tokens.accent, '#7F7F7F')).toBeGreaterThanOrEqual(3)
+  })
+
+  it('rests a light field on the theme\'s input background when its text would not read on the raised surface', () => {
+    const fieldFill = (type: string, colors: Record<string, string>) => {
       const root = document.createElement('div')
       applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: `${type}.json`, source: JSON.stringify({ type, colors }) }) })
-      return root.style.getPropertyValue('--color-field-focus-bg')
+      return root.style.getPropertyValue('--color-field-bg')
     }
 
-    // Grey text on a black well, under a lighter raised surface.
-    expect(fieldFocusFill('dark', {
-      'editor.background': '#000000',
-      'editor.foreground': '#EEEEEE',
-      'panel.background': '#343434',
-      'input.background': '#000000',
-      'input.foreground': '#777777',
-      'input.placeholderForeground': '#777777',
-    })).toBe('var(--color-well)')
-    // White text on a black well in a white light theme.
-    expect(fieldFocusFill('light', {
+    // White text on a black input in a white light theme.
+    expect(fieldFill('light', {
       'editor.background': '#FFFFFF',
       'editor.foreground': '#000000',
       'panel.background': '#FFFFFF',
       'input.background': '#000000',
       'input.foreground': '#FFFFFF',
       'input.placeholderForeground': '#FFFFFF',
-    })).toBe('var(--color-well)')
-    // Readable on the lift: the field lifts.
-    expect(fieldFocusFill('dark', { 'editor.background': '#101010', 'editor.foreground': '#F0F0F0' })).toBe('')
+    })).toBe('var(--color-input-bg)')
+    // Readable on the raised surface: the field keeps it.
+    expect(fieldFill('light', { 'editor.background': '#FFFFFF', 'editor.foreground': '#101010' })).toBe('')
+    // Dark fields stay in the well.
+    expect(fieldFill('dark', { 'editor.background': '#101010', 'editor.foreground': '#F0F0F0' })).toBe('')
   })
 
   it('keeps muted text and links readable across page and surface backgrounds', () => {
