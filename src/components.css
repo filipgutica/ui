@@ -26,9 +26,7 @@
   .fg-code-block[data-command="true"] {
     --color-code-text: var(--color-terminal-text);
     --color-muted: var(--color-terminal-caption-text);
-    --color-focus: var(--color-project-dark);
-    /* Copy is a quiet action and rings the accent, so the plate scopes it with the focus colour. */
-    --color-accent: var(--color-project-dark);
+    --color-focus: var(--color-terminal-text);
     --color-syntax-comment: var(--color-terminal-caption-text);
     --color-syntax-keyword: var(--color-terminal-text);
     --color-syntax-string: var(--color-terminal-text);
@@ -1136,8 +1134,8 @@
     to { transform: rotate(360deg); }
   }
 
-  /* One ring for controls: a 2px accent outline with a 2px gap, no glow, over the control's own
-   * raise or sink shadow. It matches the 2px focus outline on links, navigation, and tabs. */
+  /* One focus ring for every control: a 2px outline in the text colour with a 2px gap, no glow,
+   * over the control's own raise or sink shadow. Links, navigation, and tabs draw the same ring. */
   .fg-button:focus-visible,
   .fg-checkbox__control:focus-visible,
   .fg-radio-card:focus-visible,
@@ -1148,23 +1146,18 @@
   .fg-toggle-button:focus-visible,
   .fg-segmented__item:focus-visible,
   .fg-switch__control:focus-visible .fg-switch__track {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
-  /* A focused field lifts out of its well onto the raised control surface, with a faint accent
-   * hairline instead of a ring. This cue is below 3:1 by choice (see the design language's known
-   * gaps); the transparent outline still shows in forced colors. */
+  /* A focused field takes the same ring and lifts out of its well onto the raised control surface. */
   .fg-input:focus-visible,
   .fg-select:focus-visible {
-    outline: 2px solid transparent;
-    outline-offset: 0;
-    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
     background-color: var(--color-field-focus-bg, var(--color-control-thumb));
     box-shadow: var(--shadow-raise);
   }
-  .fg-input[aria-invalid="true"]:focus-visible,
-  .fg-select[aria-invalid="true"]:focus-visible { border-color: var(--color-error); }
 
   /* The control is a larger transparent hit area, so the ring follows the visible track instead. */
   .fg-switch__control:focus-visible { outline: none; }
@@ -1223,6 +1216,9 @@
     .fg-segmented__item[aria-pressed="true"]::before { forced-color-adjust: none; background: Highlight; }
     /* The inset ring sits on the track, which is Canvas, so it takes CanvasText. */
     .fg-segmented__item[aria-pressed="true"]:focus-visible { outline-color: CanvasText; }
+    /* These redraw their own fill with forced-color-adjust: none, so the ring would keep the author colour. */
+    .fg-checkbox__control:focus-visible,
+    .fg-switch__control:focus-visible .fg-switch__track { outline-color: CanvasText; }
     .fg-toggle-button__switch,
     .fg-switch__track { border-color: ButtonText; background: Canvas; }
     .fg-toggle-button__switch::after,

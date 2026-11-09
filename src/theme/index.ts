@@ -793,7 +793,8 @@ export const applySemanticTheme = ({
 }): void => {
   for (const key of semanticTokenKeys) {
     const variable = semanticCssVariables[key]
-    if (theme) root.style.setProperty(variable, theme.tokens[key])
+    // Focus is one ring in the text colour, so an applied theme's own focus colour is not used.
+    if (theme) root.style.setProperty(variable, theme.tokens[key === 'focus' ? 'textPrimary' : key])
     else root.style.removeProperty(variable)
   }
 
