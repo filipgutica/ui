@@ -811,11 +811,11 @@ export const applySemanticTheme = ({
     root.style.setProperty('--color-switch-off-thumb', thumb)
     const dark = theme.appearance === 'dark' || theme.appearance === 'high-contrast-dark'
     // The current nav row and selected tab put accent text on --color-nav-current, which theme.css mixes
-    // as color-mix(accent 8%, raised surface) in light and color-mix(accent 14%, transparent) in dark.
+    // as color-mix(accent 14%, raised surface) in light and color-mix(accent 20%, transparent) in dark.
     // The accent is validated only at 3:1, so pick the first text colour that reads at 4.5:1 over that
     // fill on the page and on a surface: the accent, then body text, then black or white.
     const currentFills = [pageBackground, compositeColor(theme.tokens.surface, pageBackground)].map(host =>
-      dark ? mixColors(theme.tokens.accent, 0.14, '#00000000', host) : mixColors(theme.tokens.accent, 0.08, surfaceRaised, host))
+      dark ? mixColors(theme.tokens.accent, 0.2, '#00000000', host) : mixColors(theme.tokens.accent, 0.14, surfaceRaised, host))
     const reads = (text: string) => currentFills.every(fill => contrastRatio(text, fill, fill) >= 4.5)
     const minimumContrast = (text: string) => Math.min(...currentFills.map(fill => contrastRatio(text, fill, fill)))
     const candidates = [theme.tokens.accent, foreground, '#000000', '#FFFFFF']

@@ -280,7 +280,7 @@
    * reach the full-size viewer. Nothing clips the panel, so focus rings inside it stay whole. */
   .fg-capture {
     /* The header stays terminal-dark in either page appearance. */
-    --color-nav-current: color-mix(in srgb, var(--color-project-dark) 14%, transparent);
+    --color-nav-current: color-mix(in srgb, var(--color-project-dark) 20%, transparent);
     --shadow-nav-current: var(--shadow-nav-current-dark);
     --color-row-hover: color-mix(in srgb, var(--color-terminal-text) 4%, transparent);
     --color-nav-current-text: var(--color-project-dark);
