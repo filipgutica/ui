@@ -50,24 +50,31 @@ describe('Graphite Indigo files', () => {
 describe('Design-system token vendoring', () => {
   const tokensCss = readPackage('tokens.css')
   const graphiteCss = read('src/themes/graphite-indigo.css')
+  const baseCss = readPackage('class/base.css')
   const themeCss = read('src/theme.css')
 
   it('restores a theme.css value that drifts from the package', () => {
     const drifted = themeCss.replace('--space-4: 1rem;', '--space-4: 2rem;')
 
-    expect(renderThemeCss({ themeCss: drifted, tokensCss, graphiteCss })).toBe(themeCss)
+    expect(renderThemeCss({ themeCss: drifted, tokensCss, graphiteCss, baseCss })).toBe(themeCss)
   })
 
   it('fails when a value that changes in dark mode has no :root.dark declaration', () => {
     const noDarkText = themeCss.replace(/(:root\.dark\s*\{[^}]*?)\n {2}--color-text: [^;]+;/, '$1')
 
-    expect(() => renderThemeCss({ themeCss: noDarkText, tokensCss, graphiteCss })).toThrow('--color-text changes in dark mode')
+    expect(() => renderThemeCss({ themeCss: noDarkText, tokensCss, graphiteCss, baseCss })).toThrow('--color-text changes in dark mode')
   })
 
   it('fails when the package names a variable neither theme file declares', () => {
     const noSpace = themeCss.replace('\n  --space-4: 1rem;', '')
 
-    expect(() => renderThemeCss({ themeCss: noSpace, tokensCss, graphiteCss })).toThrow('--space-4')
+    expect(() => renderThemeCss({ themeCss: noSpace, tokensCss, graphiteCss, baseCss })).toThrow('--space-4')
+  })
+
+  it('fails when theme.css drops a base token that the Graphite Indigo theme also declares', () => {
+    const noProjectDark = themeCss.replace('\n  --color-project-dark: #a5a1ff;', '')
+
+    expect(() => renderThemeCss({ themeCss: noProjectDark, tokensCss, graphiteCss, baseCss })).toThrow('--color-project-dark')
   })
 })
 

@@ -73,7 +73,7 @@ const fillRule = ({ body, mode, values }) => body.replace(declaration, (line, in
 const declared = (body) => new Set([...body.matchAll(declaration)].map(([, , name]) => name))
 
 // theme.css with each mapped declaration's value taken from the package.
-export const renderThemeCss = ({ themeCss, tokensCss, graphiteCss }) => {
+export const renderThemeCss = ({ themeCss, tokensCss, graphiteCss, baseCss }) => {
   const values = uiValues(tokensCss)
   const root = ruleBody(themeCss, ':root', 'src/theme.css')
   const dark = ruleBody(themeCss, ':root.dark', 'src/theme.css')
@@ -82,9 +82,12 @@ export const renderThemeCss = ({ themeCss, tokensCss, graphiteCss }) => {
   const rootNames = declared(root.body)
   const darkNames = declared(dark.body)
   const graphiteNames = declared(graphiteCss)
+  const baseNames = declared(baseCss)
   for (const [name, entry] of values) {
-    if (!rootNames.has(name) && !graphiteNames.has(name)) {
-      throw new Error(`tokens.css names ${name}, which neither src/theme.css nor the Graphite Indigo theme declares`)
+    // Sites import src/theme.css alone, so it declares every base token. Only the Graphite
+    // Indigo theme's extra steps, which the package's base.css lacks, may live in that theme alone.
+    if (!rootNames.has(name) && (baseNames.has(name) || !graphiteNames.has(name))) {
+      throw new Error(`tokens.css names ${name}, which src/theme.css :root must declare`)
     }
     if (rootNames.has(name) && entry.light !== entry.dark && !darkNames.has(name)) {
       throw new Error(`${name} changes in dark mode, so src/theme.css :root.dark must declare it`)
@@ -120,7 +123,12 @@ const run = () => {
   const fontsDir = dirname(packageFile('fonts.css'))
   const fontFiles = readdirSync(fontsDir).filter((file) => file !== 'fonts.css')
   const outputs = [
-    ['src/theme.css', renderThemeCss({ themeCss: read('src/theme.css'), tokensCss: readFileSync(packageFile('tokens.css'), 'utf8'), graphiteCss })],
+    ['src/theme.css', renderThemeCss({
+      themeCss: read('src/theme.css'),
+      tokensCss: readFileSync(packageFile('tokens.css'), 'utf8'),
+      graphiteCss,
+      baseCss: readFileSync(packageFile('class/base.css'), 'utf8'),
+    })],
     ['src/themes/graphite-indigo.css', graphiteCss],
     ['src/fonts.css', renderFontsCss(readFileSync(packageFile('fonts.css'), 'utf8'))],
     ...fontFiles.map((file) => [`src/fonts/${file}`, readFileSync(join(fontsDir, file))]),
