@@ -311,6 +311,15 @@ describe('VS Code theme parsing and normalization', () => {
     expect(theme.tokens.buttonForeground).toBe('#11111B')
   })
 
+  it('rings focus in the applied theme\'s text colour, not its focus border', () => {
+    const root = document.createElement('div')
+    applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: 'forest.json', source: JSON.stringify({
+      type: 'dark',
+      colors: { 'editor.background': '#101812', 'editor.foreground': '#E8F0EA', focusBorder: '#78D69F' },
+    }) }) })
+    expect(root.style.getPropertyValue('--color-focus')).toBe(root.style.getPropertyValue('--color-text'))
+  })
+
   it('keeps a focused field on its resting fill when its text would not read on the lift', () => {
     const fieldFocusFill = (type: string, colors: Record<string, string>) => {
       const root = document.createElement('div')
