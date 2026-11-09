@@ -84,6 +84,31 @@ test('lets the dialog shadow draw its edge over a transparent border', async ({ 
   await expect(dialog).toHaveCSS('border-width', '1px')
 })
 
+for (const { slug, name } of [
+  { slug: 'dialog', name: 'Close dialog' },
+  { slug: 'drawer', name: 'Close drawer' },
+]) {
+  test(`centres the ${slug} close icon in its button`, async ({ page }) => {
+    await page.goto(`/#/sandbox/${slug}`)
+    await page.locator('.playground-stage').getByRole('button', { name: `Open ${slug}` }).click()
+    const close = page.getByRole('dialog').getByRole('button', { name })
+    // Measure both boxes in one frame: the drawer may still be sliding in.
+    // A text × has no box of its own; its ink sat about 2px low.
+    const offset = await close.evaluate((button) => {
+      const outer = button.getBoundingClientRect()
+      const icon = button.querySelector('svg')?.getBoundingClientRect()
+      if (!icon) return null
+      return {
+        x: icon.x + icon.width / 2 - (outer.x + outer.width / 2),
+        y: icon.y + icon.height / 2 - (outer.y + outer.height / 2),
+      }
+    })
+    expect(offset).not.toBeNull()
+    expect(Math.abs(offset!.x)).toBeLessThanOrEqual(0.5)
+    expect(Math.abs(offset!.y)).toBeLessThanOrEqual(0.5)
+  })
+}
+
 for (const { slug, selector, properties } of [
   { slug: 'toggle-button', selector: '.fg-toggle-button', properties: ['background-color', 'border-color'] },
   { slug: 'radio-card-group', selector: '.fg-radio-card', properties: ['background-color'] },
@@ -333,8 +358,8 @@ test('rings quiet actions in the accent, like every control that acts', async ({
   const close = drawer.getByRole('button', { name: 'Close drawer' })
   await expect(close).toBeFocused()
   await expect(close).toHaveCSS('outline-color', await accent())
-  // The shared recipe leaves each action's own glyph size alone.
-  await expect(close).toHaveCSS('font-size', '20px')
+  // The shared recipe leaves each action's own icon size alone.
+  await expect(close.locator('svg')).toHaveCSS('width', '16px')
 })
 
 test('leaves a disabled quiet action without hover or press fills', async ({ page }) => {
