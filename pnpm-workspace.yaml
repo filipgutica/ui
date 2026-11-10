@@ -1,4 +1,4 @@
 allowBuilds:
   vue-demi: true
 minimumReleaseAgeExclude:
-  - '@filipgutica/design-system@1.1.0'
+  - '@filipgutica/*'
