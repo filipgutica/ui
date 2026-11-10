@@ -33,7 +33,7 @@ describe('Graphite Indigo files', () => {
 
       expect(css).not.toMatch(/@import[^;]*design-system/)
       expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
-      expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain(`--color-bg: ${graphiteIndigo.dark.bg}`)
+      expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain(`--color-bg: ${graphiteIndigo.dark['color-bg']}`)
     },
   )
 
@@ -82,42 +82,42 @@ describe.each(['light', 'dark'])('Graphite Indigo %s contrast', (mode) => {
   const color = name => graphiteIndigo[mode][name]
 
   it.each([
-    ...['text', 'text-muted', 'link', 'project', 'success', 'danger', 'warning', 'info'].flatMap(foreground =>
-      ['bg', 'surface', 'surface-raised', 'surface-hover'].map(background => [foreground, background])),
-    ['text', 'row-hover'],
-    ['text', 'row-selected'],
-    ['accent-text', 'accent'],
-    ['accent-text', 'accent-hover'],
-    ...['code-key', 'code-string', 'code-number', 'code-comment'].map(foreground => [foreground, 'surface']),
-    ['terminal-text', 'terminal'],
-    ['terminal-caption-text', 'terminal-caption'],
-    ['project-dark', 'terminal'],
+    ...['color-text', 'color-muted', 'color-link', 'color-project', 'color-success', 'color-error', 'color-warning', 'color-info'].flatMap(foreground =>
+      ['color-bg', 'color-surface', 'color-surface-raised', 'color-surface-muted'].map(background => [foreground, background])),
+    ['color-text', 'color-row-hover'],
+    ['color-text', 'color-row-selected'],
+    ['color-accent-text', 'color-accent'],
+    ['color-accent-text', 'color-accent-hover'],
+    ...['color-syntax-keyword', 'color-syntax-string', 'color-syntax-number', 'color-syntax-comment'].map(foreground => [foreground, 'color-surface']),
+    ['color-terminal-text', 'color-terminal'],
+    ['color-terminal-caption-text', 'color-terminal-caption'],
+    ['color-project-dark', 'color-terminal'],
   ])('keeps %s readable on %s', (foreground, background) => {
     expect(contrast(color(foreground), color(background))).toBeGreaterThanOrEqual(4.5)
   })
 
   it('separates the well from the canvas in each appearance', () => {
     const luminance = hex => contrast(hex, '#000000')
-    if (mode === 'light') expect(luminance(color('surface'))).toBeLessThan(luminance(color('bg')))
-    else expect(luminance(color('surface'))).toBeGreaterThan(luminance(color('bg')))
+    if (mode === 'light') expect(luminance(color('color-surface'))).toBeLessThan(luminance(color('color-bg')))
+    else expect(luminance(color('color-surface'))).toBeGreaterThan(luminance(color('color-bg')))
   })
 
   // --color-status-text takes the text token.
-  it.each(['success', 'warning', 'danger', 'info'])(
+  it.each(['success', 'warning', 'error', 'info'])(
     'keeps status text readable on the %s fill', (status) => {
-      expect(contrast(color('text'), color(`${status}-soft`))).toBeGreaterThanOrEqual(4.5)
+      expect(contrast(color('color-text'), color(`color-${status}-surface`))).toBeGreaterThanOrEqual(4.5)
     },
   )
 
   it.each([
-    ['border', 'surface-raised'],
-    ['border', 'bg'],
-    ['border', 'surface'],
-    ['border', 'surface-hover'],
-    ['project', 'surface-raised'],
-    ['project-dark', 'terminal'],
-    ['focus', 'bg'],
-    ['focus', 'row-selected'],
+    ['color-border', 'color-surface-raised'],
+    ['color-border', 'color-bg'],
+    ['color-border', 'color-surface'],
+    ['color-border', 'color-surface-muted'],
+    ['color-project', 'color-surface-raised'],
+    ['color-project-dark', 'color-terminal'],
+    ['color-focus', 'color-bg'],
+    ['color-focus', 'color-row-selected'],
   ])('keeps %s visible on %s', (foreground, background) => {
     expect(contrast(color(foreground), color(background))).toBeGreaterThanOrEqual(3)
   })
