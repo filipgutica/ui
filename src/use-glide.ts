@@ -52,6 +52,11 @@ export const useGlide = <T>({ container, value, index, prefix }: GlideOptions<T>
     }
     // An interrupted glide starts from where its fill is now, read before it stops.
     const fromFill = getComputedStyle(from, '::before')
+    // No fill is drawn, as in forced colors for tabs, so there is nothing to glide.
+    if (fromFill.content === 'none') {
+      clear()
+      return
+    }
     const fromRect = from.getBoundingClientRect()
     const fromLeft = fromRect.left + parseFloat(fromFill.left)
     const fromRight = fromRect.right - parseFloat(fromFill.right)

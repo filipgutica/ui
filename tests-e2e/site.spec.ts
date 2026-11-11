@@ -295,6 +295,11 @@ test('gives each site control the corner of its role', async ({ page }) => {
   // On phones the labelled contents trigger takes the field corner too.
   await page.setViewportSize({ width: 390, height: 900 })
   await expect(page.locator('.fg-site-rail__toggle')).toHaveCSS('border-radius', '10px')
+  // Without JavaScript the rail is a disclosure whose summary is the same trigger.
+  await page.locator('.fg-site-rail').evaluate((rail) => {
+    rail.insertAdjacentHTML('beforeend', '<details class="fg-site-rail__menu"><summary class="fg-button fg-site-rail__summary" data-variant="secondary" data-size="lg">On this page</summary></details>')
+  })
+  await expect(page.locator('.fg-site-rail__summary')).toHaveCSS('border-radius', '10px')
 })
 
 test('gives the rail section in view the current-page look without a pip', async ({ page }) => {

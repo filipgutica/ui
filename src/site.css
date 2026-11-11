@@ -201,8 +201,8 @@
   }
 
   /* Route rows. Hover is neutral, and the current page keeps its selected fill on
-   * hover. An in-page section marker (aria-current="location") must look different
-   * from the current page, so it uses an accent pip without the raised fill. */
+   * hover. An in-page section marker (aria-current="location") takes an accent pip,
+   * except in the section rail, where it takes the current-page look (below). */
   .fg-site-nav a {
     display: flex;
     min-height: var(--row);
@@ -248,8 +248,8 @@
   }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
 
-  /* Forced colors drop fills and shadows. The current page takes a system border; the
-   * in-page location keeps its pip, redrawn in the system highlight, so the two still differ. */
+  /* Forced colors drop fills and shadows. The current page and the rail's section in view take a
+   * system border; any other in-page location keeps its pip, redrawn in the system highlight. */
   @media (forced-colors: active) {
     .fg-site-nav a[aria-current="page"] { border-inline-start: 2px solid Highlight; }
     .fg-site-nav a[aria-current="location"]::before { forced-color-adjust: none; background: Highlight; }

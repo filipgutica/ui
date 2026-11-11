@@ -993,10 +993,19 @@ test('glides the selected tab fill from the previous tab and settles on the new 
   expect(end.right).toBeCloseTo(end.tabRight, 0)
   await expect(list).not.toHaveAttribute('data-slide')
 
-  // Reduced motion selects without a glide.
-  await page.emulateMedia({ reducedMotion: 'reduce' })
+  // Forced colors draw the selection as a border, so there is no fill to glide.
+  const glides = () => list.evaluate(element => element.getAnimations({ subtree: true })
+    .map(animation => (animation as CSSAnimation).animationName).filter(name => name?.startsWith('fg-tabs-')))
+  await page.emulateMedia({ forcedColors: 'active' })
   await tabs.nth(0).click()
   await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  expect(await glides()).toEqual([])
+  await expect(list).not.toHaveAttribute('data-slide')
+
+  // Reduced motion selects without a glide.
+  await page.emulateMedia({ forcedColors: 'none', reducedMotion: 'reduce' })
+  await tabs.nth(1).click()
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
   expect(await list.evaluate(element => element.getAnimations({ subtree: true }).length)).toBe(0)
 })
 
