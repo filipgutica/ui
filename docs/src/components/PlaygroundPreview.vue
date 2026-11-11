@@ -85,7 +85,7 @@ const dialogOpen = ref(false)
 const drawerOpen = ref(false)
 const selectedTab = ref('list')
 
-type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
+type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'yaml' | 'css' | 'html' | 'bash' | 'text'
 
 const codeExamples: Record<CodeLanguage, string> = {
   vue: `<UiCodeBlock
@@ -109,6 +109,12 @@ setActiveTheme(theme)`,
     "editor.foreground": "#f4f5f8"
   }
 }`,
+  yaml: `# Shared site appearance
+name: Aurora
+type: dark
+colors:
+  editor.background: "#101218"
+  editor.foreground: "#f4f5f8"`,
   css: `@import "tailwindcss";
 @import "@filipgutica/ui/theme.css";
 @import "@filipgutica/ui/components.css";`,
