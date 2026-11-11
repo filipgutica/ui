@@ -1,4 +1,4 @@
-import { useTimeoutFn } from '@vueuse/core'
+import { tryOnScopeDispose, useTimeoutFn } from '@vueuse/core'
 import { readonly, ref } from 'vue'
 import type { Ref } from 'vue'
 
@@ -32,6 +32,8 @@ export const useClipboardCopy = ({ unavailableMessage, failureMessage }: Clipboa
     error.value = message
   }
   let inFlight = 0
+  let active = true
+  tryOnScopeDispose(() => { active = false })
 
   const copy = async (text: string): Promise<void> => {
     error.value = ''
@@ -41,17 +43,23 @@ export const useClipboardCopy = ({ unavailableMessage, failureMessage }: Clipboa
     }
     inFlight += 1
     pending.value = true
+    let ok = true
     try {
       await navigator.clipboard.writeText(text)
-      // A repeat or overlapping copy keeps the tick, and restarts its 1.5s once this copy settles.
-      copied.value = true
-      holdCopied()
     } catch {
-      fail(failureMessage)
-    } finally {
-      inFlight -= 1
-      pending.value = inFlight > 0
+      ok = false
     }
+    // A copy that settles after its owner unmounts changes nothing and starts no timer.
+    if (!active) return
+    inFlight -= 1
+    pending.value = inFlight > 0
+    if (!ok) {
+      fail(failureMessage)
+      return
+    }
+    // A repeat or overlapping copy keeps the tick, and restarts its 1.5s once this copy settles.
+    copied.value = true
+    holdCopied()
   }
 
   return { copied: readonly(copied), pending: readonly(pending), error: readonly(error), copy }

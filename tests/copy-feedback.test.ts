@@ -92,6 +92,19 @@ describe('useClipboardCopy', () => {
     scope.stop()
     expect(vi.getTimerCount()).toBe(0)
   })
+
+  it('changes nothing and starts no wait when a copy settles after its owner unmounts', async () => {
+    const writes: (() => void)[] = []
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(() => new Promise<void>((resolve) => { writes.push(resolve) }))
+    const { scope, copied, pending, error, copy } = withCopy()
+    const settling = copy('a')
+    expect(pending.value).toBe(true)
+    scope.stop()
+    writes[0]?.()
+    await settling
+    expect(vi.getTimerCount()).toBe(0)
+    expect([copied.value, pending.value, error.value]).toEqual([false, true, ''])
+  })
 })
 
 describe('UiCodeBlock copy feedback', () => {
@@ -100,9 +113,17 @@ describe('UiCodeBlock copy feedback', () => {
     const wrapper = mount(UiCodeBlock, { props: { code: 'pnpm add @filipgutica/ui', title: 'Install' } })
     const copy = wrapper.get('.fg-code-block__copy')
     expect(copy.attributes('data-copied')).toBeUndefined()
+    // The copy icon and the tick share one box and stroke, so the line weight holds at the swap.
+    const stroke = () => {
+      const { viewBox, 'stroke-width': width, 'stroke-linecap': cap, 'stroke-linejoin': join } = copy.get('svg').attributes()
+      return { viewBox, width, cap, join }
+    }
+    const atRest = stroke()
+    expect(atRest).toEqual({ viewBox: '0 0 16 16', width: '1.5', cap: 'round', join: 'round' })
     await copy.trigger('click')
     await flushPromises()
     expect(copy.get('path').attributes('d')).toBe(tick)
+    expect(stroke()).toEqual(atRest)
     expect(copy.attributes('data-copied')).toBe('')
     expect(copy.text()).toBe('Copy')
     expect(copy.attributes('aria-label')).toBe('Copy code')
