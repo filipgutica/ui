@@ -66,9 +66,9 @@
     box-shadow: var(--shadow-nav-current);
     pointer-events: none;
   }
-  /* A change of tab starts the new fill at the old one's edges; useGlide marks it with data-slide. */
+  /* A change of tab starts the new fill at the old one's edges; useGlide marks it with data-slide.
+   * The label keeps the tab's own --duration-fast colour change, as the catalogue renders it. */
   @media (prefers-reduced-motion: no-preference) {
-    .fg-tabs__list[data-slide] .fg-tabs__tab { transition: color var(--fg-tabs-glide-lead) ease; }
     .fg-tabs__list[data-slide="right"] .fg-tabs__tab[aria-selected="true"]::before {
       animation: fg-tabs-left-edge var(--fg-tabs-glide-trail) ease, fg-tabs-right-edge var(--fg-tabs-glide-lead) ease;
     }

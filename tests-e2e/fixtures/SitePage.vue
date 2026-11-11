@@ -17,21 +17,35 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
   command: `demo ${label.toLowerCase()}`,
   html: screen(label),
 }))
+
+// ?shell gives the rail the phone header menu, and ?find gives it Find with grouped, searchable rows.
+const params = new URLSearchParams(location.search)
+const shell = params.has('shell')
+const find = params.has('find') ? { label: 'Find a section', noun: 'section' } : undefined
+const links = [
+  { label: 'Guide', href: '#guide', current: shell },
+  { label: 'GitHub', href: '#github' },
+  { label: 'Releases', href: '#releases' },
+]
+const groups = find
+  ? [
+      { label: 'Start', items: [{ label: 'Install', href: '#install', terms: 'brew setup' }, { label: 'From review to agent', href: '#start', terms: 'annoterm feedback' }] },
+      { label: 'Reference', items: [{ label: 'Start with the guide', href: '#inline-steps' }, { label: 'Commands', href: '#commands', terms: 'cli flags' }] },
+    ]
+  : [{ items: [{ label: 'Install', href: '#install' }, { label: 'Commands', href: '#commands' }] }]
 </script>
 
 <template>
   <div class="fg-site-docs">
     <UiSiteHeader
       project="ui"
-      :links="[
-        { label: 'Guide', href: '#guide' },
-        { label: 'GitHub', href: '#github' },
-        { label: 'Releases', href: '#releases' },
-      ]"
+      :links="links"
     />
     <UiSiteNav
       label="On this page"
-      :groups="[{ items: [{ label: 'Install', href: '#install' }, { label: 'Commands', href: '#commands' }] }]"
+      :groups="groups"
+      :find="find"
+      :header-menu="shell"
     />
     <main>
       <section

@@ -154,16 +154,24 @@
     gap: var(--space-2) var(--space-8);
     margin-inline-start: auto;
   }
-  .fg-site-header__links { display: flex; align-items: center; gap: var(--space-6); }
-  .fg-site-header__links a {
-    display: inline-flex;
-    min-height: var(--control-lg);
-    align-items: center;
-    color: var(--color-muted);
-    font-size: var(--text-md);
-    text-decoration: none;
+  /* Site links are a navigation strip: the navigation rows in one line, at the header's 44px, in the
+   * UI face. It scrolls sideways when it must, and its 2px padding keeps the current row's lifted
+   * shadow whole. */
+  .fg-site-header__links {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    gap: 0.125rem;
+    padding: 0.125rem;
   }
-  .fg-site-header__links a:hover { color: var(--color-text); }
+  .fg-site-header__links.fg-site-nav a { flex: none; min-height: var(--control-lg); white-space: nowrap; }
+  /* The phone Find and Menu buttons of a UiSiteNav with headerMenu. Icon-only, so the button's
+   * round corner stays. */
+  .fg-site-header__bar { display: flex; flex: none; gap: var(--space-2); }
+  .fg-site-header__bar:empty { display: none; }
+  .fg-site-header__bar > .fg-site-header__bar-button[data-size] { width: var(--control-lg); padding: 0; }
+  .fg-site-header__bar-button svg { flex: none; }
 
   .fg-site-projects { position: relative; }
   .fg-site-projects__trigger {
@@ -210,7 +218,7 @@
     padding-inline: var(--space-3);
     border-radius: var(--radius-inline);
     color: var(--color-muted);
-    font-family: var(--font-mono);
+    font-family: var(--font-ui);
     font-size: var(--text-sm);
     text-decoration: none;
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
@@ -233,7 +241,7 @@
     background: var(--color-accent);
   }
   /* Rows inside the floating project menu sit --space-1 inside its 16px corner, so they are concentric with it. */
-  .fg-site-projects__menu a { border-radius: calc(var(--radius-panel) - var(--space-1)); }
+  .fg-site-projects__menu a { border-radius: calc(var(--radius-panel) - var(--space-1)); font-family: var(--font-mono); }
   /* In the section rail, the current section takes the current-page look, without the pip. It keeps
    * aria-current="location"; only the look changes. */
   .fg-site-rail__nav a[aria-current="location"] {
@@ -242,10 +250,6 @@
     color: var(--color-nav-current-text, var(--color-accent));
   }
   .fg-site-rail__nav a[aria-current="location"]::before { content: none; }
-  @media (pointer: fine) {
-    /* Project switcher items keep their existing menu density. */
-    .fg-site-nav:not(.fg-site-projects__menu) a { min-height: var(--row-compact); }
-  }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
 
   /* Forced colors drop fills and shadows. The current page and the rail's section in view take a
@@ -288,8 +292,98 @@
     font-weight: var(--weight-semibold);
   }
   .fg-site-rail__group { display: grid; gap: 2px; }
-  .fg-site-rail__group + .fg-site-rail__group { margin-top: var(--space-3); }
+  .fg-site-rail__group + .fg-site-rail__group { margin-top: var(--space-2); }
   .fg-site-rail__group-label { margin-block-end: var(--space-1); }
+  /* With headerMenu on a phone, the rail lives in the header's Menu drawer, so nothing stays in place. */
+  .fg-site-rail[data-in-header] { display: none; }
+
+  /* Find (UiSiteNav find): a search field with a leading icon and a trailing / key hint. It filters
+   * the rows below it; the empty state sits where the rows were. */
+  .fg-site-find { margin-block-end: var(--space-3); }
+  .fg-site-find__field { position: relative; display: block; max-width: 260px; }
+  .fg-site-find .fg-site-find__input[data-size] { width: 100%; padding-inline: 2rem 2.25rem; }
+  .fg-site-find__icon { position: absolute; top: 50%; left: 10px; translate: 0 -50%; color: var(--color-muted); pointer-events: none; }
+  .fg-site-find__key {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    display: inline-grid;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 0.3125rem;
+    place-items: center;
+    translate: 0 -50%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-inline);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font: var(--weight-medium) var(--text-xs) / 1 var(--font-mono);
+    pointer-events: none;
+  }
+  .fg-site-find__field:is(:focus-within, :has(.fg-site-find__input:not(:placeholder-shown))) > .fg-site-find__key { display: none; }
+  /* Touch-only devices have no / key to press. */
+  @media (hover: none) { .fg-site-find__key { display: none; } }
+  .fg-site-find__empty {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    color: var(--color-muted);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+  }
+  .fg-site-find__empty p { margin: 0; }
+  .fg-site-find__empty .fg-button { margin-inline-start: calc(-1 * var(--space-1)); }
+  /* Rows and groups Find hides. The phone drawer sits outside .fg-site-docs, whose [hidden] rule would
+   * otherwise cover this. */
+  :is(.fg-site-rail__group, .fg-site-rail__nav a, .fg-site-find__empty)[hidden] { display: none; }
+  /* Rail settings, such as the shortcut switch, sit last above a rule. */
+  .fg-site-rail__foot {
+    margin-block-start: var(--space-3);
+    padding-block-start: var(--space-3);
+    border-top: 1px solid var(--color-border-subtle);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+  .fg-site-rail__foot .fg-switch[data-size] { font-size: var(--text-sm); }
+  .fg-site-rail__foot .fg-switch__text label { color: var(--color-muted); }
+  /* With Find, the field leads the rail, so the nav's heading is hidden but still names it. */
+  .fg-site-rail__content:has(> .fg-site-find) .fg-site-rail__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* The Menu drawer holds Find, the header's links under Pages, its appearance picker, then the
+   * rows. Find stays at the top of the drawer while the rows scroll under it. */
+  .fg-drawer__body .fg-site-find {
+    position: sticky;
+    top: calc(-1 * var(--space-4));
+    z-index: 1;
+    margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-3);
+    padding: var(--space-4);
+    background: var(--color-surface-raised);
+  }
+  .fg-drawer__body .fg-site-find__field { max-width: none; }
+  /* Blocks in the drawer sit 28px apart: the catalogue's 16px margin plus its 12px rail gap. */
+  .fg-site-rail__pages { display: grid; gap: 0.125rem; margin-block-end: calc(var(--space-4) + var(--space-3)); }
+  .fg-site-rail__pages > .fg-site-rail__group-label { margin-block-end: var(--space-1); }
+  .fg-site-rail__appearance {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-2);
+    margin-block-end: calc(var(--space-4) + var(--space-3));
+    padding-block-end: var(--space-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+  /* The picker sits 8px below its label, as the grid gap sets. */
+  .fg-site-rail__appearance > .fg-site-rail__group-label { margin-block-end: 0; }
+  /* The site menu's width includes its 1px edge, so it is the catalogue's 272px. */
+  .fg-drawer__content.fg-site-rail__drawer--menu { box-sizing: border-box; }
+  /* The drawer focuses itself on a tap, so no ring shows; the rows draw their own. */
+  .fg-drawer__content.fg-site-rail__drawer:focus-visible { outline: none; }
 
   /* Capture panel (UiCapture): tabs in the header, the capture as the body, and the
    * command and caption as the footer. The screen uses a dark terminal palette by
@@ -634,6 +728,9 @@
     .fg-site-rail__content { max-height: calc(100svh - var(--space-12) - var(--space-8)); overflow-y: auto; padding: 0.125rem; }
     .fg-site-rail__menu::details-content { content-visibility: visible; }
     .fg-site-rail__menu:not([open]) > .fg-site-rail__content { display: block; }
+    /* With Find, the rows scroll and Find and the settings stay put. */
+    .fg-site-rail__content:has(> .fg-site-find) { display: flex; flex-direction: column; overflow: visible; }
+    .fg-site-rail__content:has(> .fg-site-find) > .fg-site-rail__nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.125rem; }
   }
   /* Explicit opt-in keeps the hero independent of page-owned install and capture markup. */
   .fg-site-hero { display: grid; gap: var(--space-6); }
@@ -701,7 +798,23 @@
     .fg-site-rail__menu > .fg-site-rail__content { padding-block: var(--space-4); }
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fg-site-rail__menu .fg-site-rail__group-label { grid-column: 1 / -1; }
-    .fg-site-rail__nav a { min-height: var(--control-lg); }
+    .fg-site-rail__nav a,
+    .fg-site-rail__pages a { min-height: var(--control-lg); }
+    /* With headerMenu the rows stay open in place without JavaScript, so the summary has nothing to do. */
+    .fg-site-rail[data-header-menu] .fg-site-rail__summary { display: none; }
+    /* Phone header (UiSiteNav headerMenu): one sticky row with the project menu, then Find and Menu.
+     * The header's links and picker move into the Menu drawer. The row is the 44px controls with
+     * --space-3 above and below plus its 1px subtle rule, and in-page jumps land --space-4 below it. */
+    :root:has(.fg-site-header__bar > *) { scroll-padding-top: calc(var(--control-lg) + 2 * var(--space-3) + 1px + var(--space-4)); }
+    .fg-site-header:has(.fg-site-header__bar > *) { position: sticky; top: 0; border-bottom-color: var(--color-border-subtle); }
+    .fg-site-header__inner:has(> .fg-site-header__bar > *) { padding-block: var(--space-3); }
+    .fg-site-header__inner:has(> .fg-site-header__bar > *) { flex-wrap: nowrap; }
+    .fg-site-header__inner:has(> .fg-site-header__bar > *) :is(.fg-site-header__links, .fg-site-header__appearance) { display: none; }
+    .fg-site-header__inner:has(> .fg-site-header__bar > *) .fg-site-projects { min-width: 0; }
+    /* The row sits inside the scroll inset, so its controls cancel it; otherwise focusing one scrolls the page. */
+    .fg-site-header__inner:has(> .fg-site-header__bar > *) :is(.fg-site-header__bar > *, .fg-site-projects__trigger) {
+      scroll-margin-top: calc(-1 * (var(--control-lg) + 2 * var(--space-3) + 1px + var(--space-4)));
+    }
     /* The drawer title already shows the label; the heading still names the nav. */
     .fg-drawer__content .fg-site-rail__label {
       position: absolute;
@@ -713,17 +826,40 @@
     }
   }
   @media (max-width: 640px) {
-    /* Phones: three or more site links do not fit beside the project menu, so the menu and
-     * the header controls share the first row and the links take the second. That keeps the
-     * header to two rows. With fewer links, the header keeps its wrapping row. */
+    /* Phones: three or more site links, as padded strip rows, do not fit beside the project menu and
+     * the picker, so the menu and the header controls share the first row and the links take the
+     * second. That keeps the header to two rows. */
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__end { display: contents; }
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-projects { margin-inline-end: auto; }
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__links { order: 1; flex-basis: 100%; }
+    /* One or two links stay on the project menu's row as plain text links: no strip or row padding,
+     * no hover fill, and the current page in the accent without a fill. With no strip to scroll, the
+     * links take the outward focus ring. Without the phone Find and Menu buttons, the menu, the links,
+     * and the picker wrap as one line of items 12px apart: the ui docs header fits one row at 360px,
+     * and long links send only the picker to the second row. */
+    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) { column-gap: var(--space-3); }
+    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) .fg-site-header__end { display: contents; }
+    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) .fg-site-projects { margin-inline-end: auto; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) { overflow-x: visible; gap: var(--space-3); padding: 0; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a { padding-inline: 0; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a:focus-visible { outline-offset: var(--focus-offset); }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a:hover { background: none; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] {
+      background: none;
+      box-shadow: none;
+      color: var(--color-accent);
+    }
+    /* Forced colors: an underline marks the current page, as the system border would touch the text. */
+    @media (forced-colors: active) {
+      .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] { border-inline-start: 0; text-decoration: underline; }
+    }
     .fg-site-docs :where(h1) { font-size: 2rem; }
     .fg-site-hero > h1 { font-size: var(--text-display-sm); }
     .fg-site-docs { padding-inline: var(--space-4); }
-    /* Docs-shell pages keep one header row on phones and repeat these links in their footer. */
-    .fg-site-docs .fg-site-header__links { display: none; }
+    /* Docs-shell pages keep one header row on phones and repeat these links in their footer. A page
+     * whose rail has headerMenu keeps them: without JavaScript they take a second row, and with it
+     * they move into the Menu drawer. */
+    .fg-site-docs:not(:has(.fg-site-rail[data-header-menu])) .fg-site-header__links { display: none; }
     /* Expand the link target without adding space between the text rows. A later link fact
      * moves a full target below the one before it, so their targets never overlap. */
     .fg-site-facts { row-gap: var(--space-2); }
@@ -775,7 +911,6 @@
   @media (max-width: 680px) {
     .fg-site-prose :where(h1) { font-size: 2rem; }
     .fg-site-header__end { gap: var(--space-2) var(--space-4); }
-    .fg-site-header__links { gap: var(--space-4); }
     .fg-site-projects__menu a { min-height: var(--control-lg); }
     .fg-site-definitions { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-1); }
     .fg-site-definitions dd + dt { margin-top: var(--space-3); }

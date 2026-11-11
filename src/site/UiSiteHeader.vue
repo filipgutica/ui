@@ -5,11 +5,14 @@ import type { SiteProjectId } from './projects.js'
 
 import { useSiteAppearance } from './appearance.js'
 import { SITE_PROJECTS } from './projects.js'
+import { useSiteHeaderShell } from './site-shell.js'
 import UiSiteAppearancePicker from './UiSiteAppearancePicker.vue'
 
 export interface UiSiteLink {
   label: string
   href: string
+  /** Marks the page this link points to as the current page. */
+  current?: boolean
 }
 
 export interface UiSiteHeaderProps {
@@ -37,6 +40,8 @@ const appearance = useSlots().default ? undefined : useSiteAppearance()
 const mounted = ref(false)
 const menu = ref<HTMLDetailsElement>()
 const trigger = ref<HTMLElement>()
+const bar = ref<HTMLElement>()
+const siteHeaderShell = useSiteHeaderShell()
 
 const closeMenu = (): void => {
   if (menu.value) menu.value.open = false
@@ -59,8 +64,14 @@ const onDocumentPointerdown = (event: PointerEvent): void => {
 onMounted(() => {
   mounted.value = true
   document.addEventListener('pointerdown', onDocumentPointerdown)
+  // A section rail with headerMenu puts its phone Find and Menu buttons in the bar, and repeats
+  // the links and the picker in its drawer. The getter keeps the links reactive.
+  if (bar.value) siteHeaderShell.value = { bar: bar.value, get links() { return links }, appearance }
 })
-onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPointerdown))
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocumentPointerdown)
+  if (siteHeaderShell.value?.bar === bar.value) siteHeaderShell.value = undefined
+})
 
 </script>
 
@@ -108,23 +119,30 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
       <div class="fg-site-header__end">
         <nav
           v-if="links.length > 0"
-          class="fg-site-header__links"
+          class="fg-site-header__links fg-site-nav"
           aria-label="Site links"
         >
           <a
             v-for="link in links"
             :key="link.href"
             :href="link.href"
+            :aria-current="link.current ? 'page' : undefined"
           >{{ link.label }}</a>
         </nav>
         <slot>
           <UiSiteAppearancePicker
             v-if="mounted && appearance"
+            class="fg-site-header__appearance"
             :model-value="appearance.choice.value"
             @update:model-value="appearance.chooseAppearance"
           />
         </slot>
       </div>
+      <!-- Empty unless a section rail with headerMenu puts its phone Find and Menu buttons here. -->
+      <div
+        ref="bar"
+        class="fg-site-header__bar"
+      />
     </div>
   </header>
 </template>

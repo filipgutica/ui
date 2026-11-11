@@ -208,20 +208,85 @@ test('colors captures with the default terminal palette unless the site sets its
   await expect(screen).toHaveCSS('color', 'rgb(230, 233, 235)')
 })
 
-test('keeps header links on phones outside the docs shell, on a second row when there are three', async ({ page }) => {
+test('keeps one or two header links on the phone menu row as text links, outside the docs shell', async ({ page }) => {
+  const links = page.getByRole('navigation', { name: 'Site links', exact: true })
+  // The rows that the project menu, the links, and the header controls sit on.
+  const headerRows = () => page.evaluate(() => new Set(
+    [...document.querySelectorAll('.fg-site-projects, .fg-site-header__links, .fg-site-header__end > :not(.fg-site-header__links)')]
+      .map(element => Math.round(element.getBoundingClientRect().top)),
+  ).size)
+  for (const width of [360, 375, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/')
+    await expect(links.getByRole('link')).toHaveCount(2)
+    // One row: the header keeps its 64px minimum height plus its 1px border.
+    expect((await page.locator('.fg-site-header').boundingBox())?.height, `header height at ${width}px`).toBeLessThanOrEqual(65)
+    const menu = (await page.locator('.fg-site-projects').boundingBox())!
+    const linksBox = (await links.boundingBox())!
+    expect(Math.abs(linksBox.y + linksBox.height / 2 - (menu.y + menu.height / 2)), `links beside the menu at ${width}px`).toBeLessThanOrEqual(2)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `page fits at ${width}px`).toBe(true)
+    expect(await links.evaluate(element => element.scrollWidth <= element.clientWidth), `links fit at ${width}px`).toBe(true)
+  }
+  for (const width of [320, 360, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/')
+    // Text links have no padding, so the ring sits outside them, and no ancestor clips it.
+    const link = links.getByRole('link').first()
+    await link.focus()
+    await expect(link).toHaveCSS('outline-offset', '3px')
+    const clippedBy = await link.evaluate((element) => {
+      const style = getComputedStyle(element)
+      const ring = Number.parseFloat(style.outlineOffset) + Number.parseFloat(style.outlineWidth)
+      const box = element.getBoundingClientRect()
+      const clippers: string[] = []
+      for (let node = element.parentElement; node; node = node.parentElement) {
+        const { overflowX, overflowY } = getComputedStyle(node)
+        if (overflowX === 'visible' && overflowY === 'visible') continue
+        const edge = node.getBoundingClientRect()
+        if (box.left - ring < edge.left || box.right + ring > edge.right || box.top - ring < edge.top || box.bottom + ring > edge.bottom) clippers.push(node.className || node.tagName)
+      }
+      return clippers
+    })
+    expect(clippedBy, `focus ring clipped at ${width}px`).toEqual([])
+    // Two long links never push the header past two rows: only the picker wraps.
+    await links.getByRole('link').nth(0).evaluate(element => { element.textContent = 'Documentation' })
+    await links.getByRole('link').nth(1).evaluate(element => { element.textContent = 'Release notes' })
+    expect(await headerRows(), `header rows with long links at ${width}px`).toBeLessThanOrEqual(2)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `page fits with long links at ${width}px`).toBe(true)
+  }
+  // A current link takes the accent and medium weight, with no fill, shadow, or pip.
+  const current = links.getByRole('link').first()
+  await current.evaluate(element => element.setAttribute('aria-current', 'page'))
+  const [accent, medium] = await current.evaluate((element) => {
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--color-accent)'
+    probe.style.fontWeight = 'var(--weight-medium)'
+    element.after(probe)
+    const style = getComputedStyle(probe)
+    const values = [style.color, style.fontWeight]
+    probe.remove()
+    return values
+  })
+  await expect(current).toHaveCSS('color', accent!)
+  await expect(current).toHaveCSS('font-weight', medium!)
+  await expect(current).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(current).toHaveCSS('box-shadow', 'none')
+  expect(await current.evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
+  await expect(current).toHaveAttribute('aria-current', 'page')
+})
+
+test('puts three or more header links on a second row on phones, outside the docs shell', async ({ page }) => {
+  const links = page.getByRole('navigation', { name: 'Site links', exact: true })
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 900 })
     // A fresh load each pass, since the previous pass added a link and a control.
     await page.goto('about:blank')
     await page.goto('/#/')
-    const links = page.getByRole('navigation', { name: 'Site links', exact: true })
-    await expect(links).toBeVisible()
-    // At 390px two links fit beside the project menu, so the header stays one row: 64px plus its border.
-    if (width === 390) expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
-
     await links.evaluate((element) => {
       element.insertAdjacentHTML('beforeend', '<a href="#changelog">Changelog</a>')
     })
+    await expect(links.getByRole('link')).toHaveCount(3)
+    // Strip rows are padded, so three links take the second row, below the picker beside the menu.
     const control = page.locator('.fg-site-header__end > :not(.fg-site-header__links)')
     const menu = (await page.locator('.fg-site-projects').boundingBox())!
     const first = (await control.first().boundingBox())!
@@ -583,7 +648,7 @@ test('keeps selected tabs lifted, readable, and stable on docs and terminal surf
   }
 })
 
-test('keeps site explanations readable and navigation compact only for fine pointers', async ({ page, browser }) => {
+test('keeps site explanations readable and navigation rows 36px tall, 44px at phone width', async ({ page, browser }) => {
   await page.goto(fixture)
   await expect(page.locator('.fg-site-hero')).toHaveCSS('row-gap', '24px')
   const text = await page.locator('main').evaluate(element => getComputedStyle(element).color)
@@ -591,7 +656,8 @@ test('keeps site explanations readable and navigation compact only for fine poin
     await expect(page.locator(selector).first()).toHaveCSS('color', text)
   }
   await expect(page.locator('.fg-site-meta').first()).not.toHaveCSS('color', text)
-  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('min-height', '30px')
+  // Rail rows match the catalogue's --row, with a fine pointer too.
+  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('min-height', '36px')
   const touch = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } })
   const touchPage = await touch.newPage()
   await touchPage.goto(fixture)

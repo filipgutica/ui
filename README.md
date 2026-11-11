@@ -142,8 +142,15 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 
 `project` is `wtree`, `annoterm`, `devps`, `workbench`, `filip-stack`, or `ui`. The project
 menu is a native disclosure that works without JavaScript; Escape closes it and
-returns focus to its button. Inside `.fg-site-docs`, at 640px and below, the
-header hides `links` so it fits one row, so repeat those destinations in the footer. Without a
+returns focus to its button. `links` are a navigation strip: rows 44px tall with
+6px corners. A link with `current: true` gets `aria-current="page"` and the
+current-page fill. At 640px and below, three or more links take a second row below
+the project menu and the picker. One or two links stay beside the project name as
+text links, and a current one has accent text instead of the fill. Two short links
+keep the header to one row down to 360px. At 320px and narrower, or with longer
+links, the picker wraps to a second row. Inside `.fg-site-docs`, at 640px and below, the
+header hides `links` so it fits one row, so repeat those destinations in the footer.
+A `UiSiteNav` with `headerMenu` moves them into its Menu drawer instead. Without a
 default slot the header renders a System, Light, and Dark picker, built on
 `UiSegmentedControl`. A page with its own appearance control passes it in the
 default slot and uses `useSiteAppearance({ applyToRoot: false })` when it owns
@@ -198,12 +205,37 @@ current page or section. The drawer closes on
 navigation and focuses the destination section, and focus follows the visible control across the
 breakpoint.
 
+`find` adds a Find field above the rows, for long rails. It is off by default.
+`find.label` names the field, such as `Find a component`, and `find.noun` names a
+row in the empty state ("No component matches …"; the default is `section`).
+Every word of the query must appear in a row's label, its group's label, or its
+`terms`. Rows and empty groups hide as the reader types, and the match count is
+announced after a pause. `/` focuses the field unless focus is in a text field,
+and a "Single-key shortcuts" switch below the rows turns that off; the choice is
+stored under `tool-site-shortcuts`. Escape clears the query, then leaves the
+field; Enter goes to the first match, and ArrowDown focuses it. Without
+JavaScript the field is not rendered. A page that also filters its own content
+sets `window.findScope` (the `UiSiteFindScope` type) before the reader types:
+`filter(words)` returns `{ count, one, many }` for the announcement, and
+`keeps(link)` gets each row's resolved `URL` and says whether it stays.
+
+`headerMenu` gives a page with `UiSiteHeader` the catalogue's phone header. At
+800px and below the header is one sticky row: the project menu, then round,
+icon-only Find (with `find`) and Menu buttons. Menu opens a drawer titled Menu
+that holds Find, the header's links under Pages, its appearance picker, and the
+rows. A keyboard open focuses the current row, a tap focuses the drawer, and
+Find focuses the field. Focusing a header control does not scroll the page, and
+in-page jumps land below the header. Without JavaScript the rows stay open in
+place and the header keeps its links. When the header has a default slot, that
+control stays in the header row. Without a `UiSiteHeader` the labelled trigger
+stays.
+
 Section headings in `.fg-site-docs` and `.fg-site-prose` use the terminal
 identity's decorative `## ` mark, with `0.08em` tracking. Set `--heading-mark`
 on a page or section to change it; `--heading-mark: none` removes it. The
 default is `--heading-mark: "## "`. The mark is excluded from accessible text.
-Docs navigation rows use `--row-compact` (1.875rem) on fine pointers; touch
-keeps the existing row height.
+Navigation rows in the rail, the drawer, and the docs navigation are `--row`
+(2.25rem) tall, and `--control-lg` at 800px and below.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
 Set `--color-project-dark` to the dark variant in both appearances, so prompts,

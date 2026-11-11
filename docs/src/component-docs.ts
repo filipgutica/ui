@@ -45,6 +45,7 @@ export const componentDocs: ComponentDoc[] = [
     props: [
       { name: 'open', required: true, type: 'boolean', description: 'Whether the panel is open.' },
       { name: 'title', required: true, type: 'string', description: 'Visible h2 heading that supplies the panel\'s accessible name by default.' },
+      { name: 'closeLabel', required: false, type: 'string', default: "'Close drawer'", description: 'Accessible name of the close button, such as Close menu.' },
     ],
     slots: [
       { name: 'trigger', type: 'unknown', description: 'One button receiving trigger attributes to open the drawer. Closing normally restores focus to it.' },
