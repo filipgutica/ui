@@ -728,7 +728,7 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   await expect(select.locator('option').filter({ hasText: 'Passed' })).toBeVisible()
   const picker = await select.evaluate(element => {
     const style = getComputedStyle(element, '::picker(select)')
-    return { background: style.backgroundColor, radius: style.borderRadius }
+    return { background: style.backgroundColor, radius: style.borderRadius, shadow: style.boxShadow }
   })
   // The picker remains raised while the closed control is a muted well.
   const raisedFill = await select.evaluate(element => {
@@ -740,8 +740,16 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     return fill
   })
   expect(picker.background).toBe(raisedFill)
-  // A picker is a floating layer, so it takes the panel corner.
+  // A picker is a floating layer, so it takes the panel corner and the dialog's shadow.
   expect(picker.radius).toBe('16px')
+  expect(picker.shadow).toBe(await select.evaluate((element) => {
+    const probe = document.createElement('span')
+    probe.style.boxShadow = 'var(--shadow-dialog)'
+    element.after(probe)
+    const shadow = getComputedStyle(probe).boxShadow
+    probe.remove()
+    return shadow
+  }))
   const accent = await select.evaluate(element => {
     const probe = document.createElement('span')
     probe.style.color = 'var(--color-accent)'
@@ -751,7 +759,8 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     return color
   })
   await expect(select).toHaveCSS('border-top-color', accent)
-  await expect(select.locator('option').first()).toHaveCSS('height', '30px')
+  // The catalogue's rows render 38.4px tall with a fine pointer.
+  expect((await select.locator('option').first().boundingBox())!.height).toBeCloseTo(38.4, 0)
   // Option rows sit --space-1 inside the 16px picker, so they are concentric with it.
   await expect(select.locator('option').first()).toHaveCSS('border-radius', '12px')
   await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('matrix(-1, 0, 0, -1, 0, 0)')
@@ -772,13 +781,13 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   const hovered = select.locator('option').first()
   await hovered.hover()
   await expect(hovered).toHaveCSS('outline-style', 'none')
-  // The anonymous option text stays in column two whether the leading check is visible or not.
-  const starts = await select.locator('option').evaluateAll(options => options.map(option => {
+  // The check sits at the trailing edge, so every option's text starts at the row's 12px padding.
+  const starts = await select.locator('option').evaluateAll(options => options.map((option) => {
     const range = document.createRange()
     range.selectNodeContents(option)
-    return range.getBoundingClientRect().x
+    return Math.round(range.getBoundingClientRect().x - option.getBoundingClientRect().x)
   }))
-  expect(new Set(starts).size).toBe(1)
+  expect(new Set(starts)).toEqual(new Set([12]))
   await page.keyboard.press('ArrowDown')
   await expect(select.locator('option:focus-visible')).toHaveCSS('outline-style', 'solid')
   await page.keyboard.press('Escape')
