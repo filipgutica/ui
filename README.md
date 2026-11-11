@@ -406,3 +406,7 @@ To add, rename, or remove a site in the project menu, edit
   up to 10 minutes.
 - Sites load the published file, so they need no pull request. The package's
   built-in copy catches up at the next release.
+- When you add or rename an id, also update the `SiteProjectId` union in
+  `src/site/projects.ts` in the same change; a unit test fails until they match.
+  This is a type-only change and needs no release. The published list works for
+  sites without it, because `project` accepts any string.

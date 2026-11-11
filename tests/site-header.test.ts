@@ -3,7 +3,10 @@ import { renderToString } from 'vue/server-renderer'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createSSRApp, h, nextTick } from 'vue'
 
+import type { SiteProjectId } from '../src/site/index.js'
+
 import { SITE_APPEARANCE_KEY, SITE_PROJECTS, UiSiteHeader } from '../src/site/index.js'
+import projectList from '../src/site/projects.json'
 
 const links = [
   { label: 'User guide', href: 'https://example.test/guide' },
@@ -174,7 +177,8 @@ describe('site header project list', () => {
 
   it.each([
     ['the request fails', () => Promise.reject(new TypeError('Failed to fetch'))],
-    ['the response is not 200', () => Promise.resolve(new Response(JSON.stringify(remote), { status: 404 }))],
+    ['the response is 404', () => Promise.resolve(new Response(JSON.stringify(remote), { status: 404 }))],
+    ['the response is 206, not 200', () => Promise.resolve(new Response(JSON.stringify(remote), { status: 206 }))],
     ['the body is not JSON', () => Promise.resolve(new Response('<!doctype html>', { status: 200 }))],
     ['no entry is valid', respondWith([{ id: 'script', label: 'Script', href: 'javascript:alert(1)', repository: 'javascript:alert(1)' }])],
   ])('keeps the built-in list when %s', async (_case, respond) => {
@@ -220,5 +224,17 @@ describe('site header project list', () => {
     expect(menuLabels(wrapper)).toEqual(['annoterm', 'wtree', 'devps', 'New site'])
     expect(wrapper.get('a[aria-current="page"]').text()).toBe('devps')
     wrapper.unmount()
+  })
+})
+
+describe('SiteProjectId', () => {
+  // Every built-in id, typed. `satisfies` fails typecheck on an id outside the union, and
+  // `everyId` fails it when the union has an id this list lacks.
+  const ids = ['annoterm', 'wtree', 'devps', 'pluginbench', 'workbench', 'filip-stack', 'ui', 'design-system'] as const satisfies readonly SiteProjectId[]
+  const everyId: [Exclude<SiteProjectId, (typeof ids)[number]>] extends [never] ? true : false = true
+
+  it('lists exactly the ids in projects.json', () => {
+    expect(everyId).toBe(true)
+    expect(projectList.map(({ id }) => id)).toEqual(ids)
   })
 })

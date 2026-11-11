@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useSlots } from 'vue'
 
-import type { SiteProject } from './projects.js'
+import type { ListedSiteProject, SiteProjectId } from './projects.js'
 
 import { useSiteAppearance } from './appearance.js'
 import { loadSiteProjects, SITE_PROJECTS, SITE_PROJECTS_URL } from './projects.js'
@@ -16,8 +16,12 @@ export interface UiSiteLink {
 }
 
 export interface UiSiteHeaderProps {
-  /** The site this header belongs to, by its id in the project list. It is marked as current in the project menu. */
-  project: string
+  /**
+   * The site this header belongs to, by its id in the project list. It is marked as current in
+   * the project menu. Any string is accepted, so a site that is only in the published list works.
+   */
+  // `string & {}` keeps editor completion for the known ids while accepting any other string.
+  project: SiteProjectId | (string & {})
   /** Page links shown beside the appearance control, such as a user guide or releases. */
   links?: readonly UiSiteLink[]
   /**
@@ -35,7 +39,7 @@ defineSlots<{
 }>()
 
 // The server render and first paint use the built-in list; the published list replaces it after mount.
-const loadedProjects = shallowRef<readonly SiteProject[]>(SITE_PROJECTS)
+const loadedProjects = shallowRef<readonly ListedSiteProject[]>(SITE_PROJECTS)
 
 // A site missing from the published list keeps its own entry, where the built-in list has it.
 const projects = computed(() => {
