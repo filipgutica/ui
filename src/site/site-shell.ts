@@ -1,4 +1,6 @@
-import { shallowRef } from 'vue'
+import { getCurrentInstance, shallowRef } from 'vue'
+
+import type { App, ShallowRef } from 'vue'
 
 import type { useSiteAppearance } from './appearance.js'
 import type { UiSiteLink } from './UiSiteHeader.vue'
@@ -13,9 +15,21 @@ export interface SiteHeaderShell {
   appearance: ReturnType<typeof useSiteAppearance> | undefined
 }
 
+const shells = new WeakMap<App, ShallowRef<SiteHeaderShell | undefined>>()
+
 /**
- * The site header on the page, set while it is mounted. The header and the section rail are
- * siblings in the page's template, so they meet here instead of through props. Only mounted
- * components set it, so server rendering never shares it between requests.
+ * The site header mounted in the calling component's app. The header and the section rail are
+ * siblings in the page's template, so they meet here instead of through props. Each app has its
+ * own, so two apps on one page keep their own headers, and each server render gets a new app.
+ * Only mounted headers set it. Call it from setup.
  */
-export const siteHeaderShell = shallowRef<SiteHeaderShell>()
+export const useSiteHeaderShell = (): ShallowRef<SiteHeaderShell | undefined> => {
+  const app = getCurrentInstance()?.appContext.app
+  if (!app) return shallowRef()
+  let shell = shells.get(app)
+  if (!shell) {
+    shell = shallowRef()
+    shells.set(app, shell)
+  }
+  return shell
+}

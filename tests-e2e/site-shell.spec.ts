@@ -49,7 +49,15 @@ test.describe('desktop', () => {
     await find(page).fill('comm')
     await find(page).press('ArrowDown')
     await expect(page.locator('.fg-site-rail__nav a', { hasText: 'Commands' })).toBeFocused()
+    // Keys that choose an input method's candidate belong to the composition, not to Find.
     await find(page).fill('comm')
+    for (const init of [{ key: 'Enter', isComposing: true }, { key: 'Enter', keyCode: 229 }, { key: 'ArrowDown', isComposing: true }, { key: 'Escape', isComposing: true }]) {
+      const prevented = await find(page).evaluate((element, eventInit) => !element.dispatchEvent(new KeyboardEvent('keydown', { ...eventInit, bubbles: true, cancelable: true })), init)
+      expect(prevented, JSON.stringify(init)).toBe(false)
+    }
+    await expect(find(page)).toBeFocused()
+    await expect(find(page)).toHaveValue('comm')
+    expect(new URL(page.url()).hash).toBe('')
     await find(page).press('Enter')
     await expect(page).toHaveURL(/#commands$/)
     await expect(page.locator('#commands')).toBeFocused()

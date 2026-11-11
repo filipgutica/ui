@@ -8,7 +8,7 @@ import UiButton from '../components/UiButton.vue'
 import UiDrawer from '../components/UiDrawer.vue'
 import UiSwitch from '../components/UiSwitch.vue'
 import { useActiveSection } from '../use-active-section.js'
-import { siteHeaderShell } from './site-shell.js'
+import { useSiteHeaderShell } from './site-shell.js'
 import SiteNavLinks from './SiteNavLinks.vue'
 import UiSiteAppearancePicker from './UiSiteAppearancePicker.vue'
 
@@ -75,6 +75,7 @@ const disclosureLabel = computed(() => {
   return current ? `${label}: ${current}` : label
 })
 // The site header that holds the phone Find and Menu buttons, while it applies.
+const siteHeaderShell = useSiteHeaderShell()
 const headerShell = computed(() => headerMenu && enhanced.value && mobile.value ? siteHeaderShell.value : undefined)
 let media: MediaQueryList | undefined
 let destination: HTMLElement | null = null
@@ -86,15 +87,24 @@ const focusFirstLink = (): void => {
   void nextTick(() => root.value?.querySelector<HTMLElement>('.fg-site-nav a')?.focus({ preventScroll: true }))
 }
 
-// Moves focus to the matching control when the rail and the drawer trigger swap.
+const findButton = (): HTMLElement | null | undefined => headerShell.value?.bar.querySelector<HTMLElement>('.fg-site-header__find')
+
+// Moves focus to the matching control when the rail and the drawer trigger swap. The desktop Find
+// field and the phone Find button trade focus; the rest of the rail trades it with the trigger.
 const syncBreakpoint = (): void => {
-  const leavingFocusedRail = media?.matches && !mobile.value
-    && root.value?.contains(document.activeElement)
-  const leavingFocusedTrigger = media?.matches === false && mobile.value && !open.value
-    && toggle() === document.activeElement
+  const active = document.activeElement
+  const toPhone = media?.matches === true && !mobile.value
+  const toDesktop = media?.matches === false && mobile.value && !open.value
+  const leavingFindField = toPhone && active instanceof HTMLElement && active.matches('.fg-site-find__input')
+    && root.value?.contains(active)
+  const leavingFocusedRail = toPhone && root.value?.contains(active)
+  const leavingFindButton = toDesktop && active !== null && findButton() === active
+  const leavingFocusedTrigger = toDesktop && toggle() === active
   mobile.value = media?.matches === true
   if (!mobile.value) open.value = false
-  if (leavingFocusedRail) void nextTick(() => toggle()?.focus({ preventScroll: true }))
+  if (leavingFindField) void nextTick(() => (findButton() ?? toggle())?.focus({ preventScroll: true }))
+  else if (leavingFocusedRail) void nextTick(() => toggle()?.focus({ preventScroll: true }))
+  else if (leavingFindButton) void nextTick(() => findField()?.focus({ preventScroll: true }))
   else if (leavingFocusedTrigger) focusFirstLink()
 }
 
@@ -211,6 +221,9 @@ const go = (link: HTMLAnchorElement): void => {
 }
 
 const onFindKeydown = (event: KeyboardEvent): void => {
+  // While an input method composes text, Enter, Escape, and the arrows belong to it. Some browsers
+  // report composition keys only as keyCode 229.
+  if (event.isComposing || event.keyCode === 229) return
   if (!(event.currentTarget instanceof HTMLInputElement)) return
   const field = event.currentTarget
   if (event.key === 'Escape') {
@@ -399,7 +412,7 @@ onUnmounted(() => {
           v-if="find"
           variant="secondary"
           size="lg"
-          class="fg-site-header__bar-button"
+          class="fg-site-header__bar-button fg-site-header__find"
           :aria-label="find.label"
           aria-haspopup="dialog"
           @click="openMenu({ toFind: true })"

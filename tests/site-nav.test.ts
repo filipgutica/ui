@@ -1,9 +1,9 @@
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { renderToString } from 'vue/server-renderer'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createSSRApp, h, nextTick } from 'vue'
+import { createApp, createSSRApp, h, nextTick } from 'vue'
 
-import { UiSiteNav } from '../src/site/index.js'
+import { UiSiteHeader, UiSiteNav } from '../src/site/index.js'
 import type { UiSiteNavGroup } from '../src/site/index.js'
 
 const groups: readonly UiSiteNavGroup[] = [
@@ -29,17 +29,18 @@ const settleDialog = async () => {
 }
 
 const mockViewport = ({ mobile }: { mobile: boolean }) => {
-  const listeners = new Set<() => void>()
+  // Listeners get a change event, as VueUse's media queries in the site header read one.
+  const listeners = new Set<(event: { matches: boolean }) => void>()
   const media = {
     get matches() { return mobile },
-    addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
-    removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
+    addEventListener: (_type: string, listener: (event: { matches: boolean }) => void) => listeners.add(listener),
+    removeEventListener: (_type: string, listener: (event: { matches: boolean }) => void) => listeners.delete(listener),
   }
   vi.spyOn(window, 'matchMedia').mockReturnValue(media as unknown as MediaQueryList)
   return {
     resize: ({ mobile: next }: { mobile: boolean }) => {
       mobile = next
-      listeners.forEach(listener => listener())
+      listeners.forEach(listener => listener({ matches: mobile }))
     },
   }
 }
@@ -128,5 +129,70 @@ describe('UiSiteNav', () => {
     expect(document.querySelector('[role="dialog"]')).toBeNull()
     expect(document.activeElement).toBe(destination)
     expect(destination.tabIndex).toBe(-1)
+  })
+})
+
+describe('UiSiteNav with headerMenu', () => {
+  // A site header and a rail with headerMenu and Find, as one app in its own container.
+  const mountShell = () => {
+    const container = document.body.appendChild(document.createElement('div'))
+    const app = createApp({
+      render: () => [
+        h(UiSiteHeader, { project: 'ui', links: [{ label: 'Guide', href: '#guide' }] }),
+        h(UiSiteNav, { label: 'On this page', groups, headerMenu: true, find: { label: 'Find a section' } }),
+      ],
+    })
+    app.mount(container)
+    return { app, container }
+  }
+  const settle = async () => {
+    await nextTick()
+    await nextTick()
+  }
+
+  it('keeps each app\'s phone buttons in its own header', async () => {
+    mockViewport({ mobile: true })
+    const first = mountShell()
+    await settle()
+    const second = mountShell()
+    await settle()
+
+    for (const { container } of [first, second]) {
+      const bar = container.querySelector('.fg-site-header__bar')
+      expect(bar?.querySelectorAll('button')).toHaveLength(2)
+      expect(bar?.querySelector('button[aria-label="Menu"]')).not.toBeNull()
+      expect(container.querySelector('.fg-site-rail')?.hasAttribute('data-in-header')).toBe(true)
+    }
+
+    // The first app keeps its header menu while the second one leaves.
+    second.app.unmount()
+    await settle()
+    expect(first.container.querySelector('.fg-site-header__bar button[aria-label="Menu"]')).not.toBeNull()
+    expect(first.container.querySelector('.fg-site-rail__toggle')).toBeNull()
+    first.app.unmount()
+  })
+
+  it('moves focus between the phone Find button and the desktop Find field across the breakpoint', async () => {
+    const viewport = mockViewport({ mobile: true })
+    const { app, container } = mountShell()
+    await settle()
+
+    container.querySelector<HTMLElement>('.fg-site-header__bar button[aria-label="Find a section"]')?.focus()
+    viewport.resize({ mobile: false })
+    await settle()
+    const field = container.querySelector<HTMLInputElement>('.fg-site-find__input')
+    expect(field).not.toBeNull()
+    expect(document.activeElement).toBe(field)
+
+    viewport.resize({ mobile: true })
+    await settle()
+    expect(document.activeElement).toBe(container.querySelector('.fg-site-header__bar button[aria-label="Find a section"]'))
+
+    // The Menu button and the rows still trade focus.
+    container.querySelector<HTMLElement>('.fg-site-header__bar button[aria-label="Menu"]')?.focus()
+    viewport.resize({ mobile: false })
+    await settle()
+    expect(document.activeElement).toBe(container.querySelector('.fg-site-rail__nav a'))
+    app.unmount()
   })
 })

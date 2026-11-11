@@ -5,7 +5,7 @@ import type { SiteProjectId } from './projects.js'
 
 import { useSiteAppearance } from './appearance.js'
 import { SITE_PROJECTS } from './projects.js'
-import { siteHeaderShell } from './site-shell.js'
+import { useSiteHeaderShell } from './site-shell.js'
 import UiSiteAppearancePicker from './UiSiteAppearancePicker.vue'
 
 export interface UiSiteLink {
@@ -41,6 +41,7 @@ const mounted = ref(false)
 const menu = ref<HTMLDetailsElement>()
 const trigger = ref<HTMLElement>()
 const bar = ref<HTMLElement>()
+const siteHeaderShell = useSiteHeaderShell()
 
 const closeMenu = (): void => {
   if (menu.value) menu.value.open = false
