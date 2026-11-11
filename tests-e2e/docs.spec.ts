@@ -977,6 +977,9 @@ test('glides the selected tab fill from the previous tab and settles on the new 
     animation.pause()
     animation.currentTime = 0
   }))
+  // The label changes colour over the tab's own --duration-fast, as the catalogue renders it, not over the glide.
+  await expect(list).toHaveAttribute('data-slide')
+  await expect(tabs.nth(1)).toHaveCSS('transition-duration', '0.12s, 0.12s')
   // The new fill leaves from the tab that was selected.
   const start = await fillEdges(1)
   expect(start.left).toBeCloseTo(previous.left, 0)
