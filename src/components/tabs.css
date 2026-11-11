@@ -8,6 +8,9 @@
   }
 
   .fg-tabs__list {
+    /* The selected fill glides like the segmented thumb: the leading edge settles first. */
+    --fg-tabs-glide-lead: 260ms;
+    --fg-tabs-glide-trail: 300ms;
     display: flex;
     width: max-content;
     max-width: 100%;
@@ -17,6 +20,8 @@
      * shadow whole and the frame edge clear of its fill. */
     padding: var(--space-1);
     margin-block-end: var(--space-3);
+    /* Each selected fill stacks under every label, so a gliding fill never covers a neighbour's. */
+    isolation: isolate;
   }
 
   /* A strip that scrolls fades each clipped edge; the scroll padding keeps a revealed tab clear
@@ -28,27 +33,51 @@
   }
 
   .fg-tabs__tab {
+    position: relative;
     flex: none;
     min-height: var(--control-md);
     padding: var(--space-2) var(--space-3);
     border: 0;
-    border-radius: var(--radius-field);
+    border-radius: var(--radius-inline);
     color: var(--color-muted);
     background: transparent;
     font: inherit;
     font-weight: var(--weight-medium);
     white-space: nowrap;
     cursor: pointer;
-    /* The selected tab shares the navigation row's current fill, so it shares its motion too. */
-    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+    /* Hover fades the tab's own fill and colour; the selected fill and its shadow are on ::before. */
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
   }
 
-  .fg-tabs__tab:hover { background: var(--color-row-hover); color: var(--color-text); }
+  .fg-tabs__tab:hover:where(:not(:disabled)) { background: var(--color-row-hover); color: var(--color-text); }
+  /* The selected tab takes the navigation row's lifted fill. The fill is a ::before layer behind
+   * the label, so it can glide between tabs as the segmented thumb does. */
   .fg-tabs__tab[aria-selected="true"] {
-    background: var(--color-nav-current);
-    box-shadow: var(--shadow-nav-current);
+    background: transparent;
     color: var(--color-nav-current-text, var(--color-accent));
   }
+  .fg-tabs__tab[aria-selected="true"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--color-nav-current);
+    box-shadow: var(--shadow-nav-current);
+    pointer-events: none;
+  }
+  /* A change of tab starts the new fill at the old one's edges; useGlide marks it with data-slide. */
+  @media (prefers-reduced-motion: no-preference) {
+    .fg-tabs__list[data-slide] .fg-tabs__tab { transition: color var(--fg-tabs-glide-lead) ease; }
+    .fg-tabs__list[data-slide="right"] .fg-tabs__tab[aria-selected="true"]::before {
+      animation: fg-tabs-left-edge var(--fg-tabs-glide-trail) ease, fg-tabs-right-edge var(--fg-tabs-glide-lead) ease;
+    }
+    .fg-tabs__list[data-slide="left"] .fg-tabs__tab[aria-selected="true"]::before {
+      animation: fg-tabs-left-edge var(--fg-tabs-glide-lead) ease, fg-tabs-right-edge var(--fg-tabs-glide-trail) ease;
+    }
+  }
+  @keyframes fg-tabs-left-edge { from { left: var(--fg-tabs-slide-left); } }
+  @keyframes fg-tabs-right-edge { from { right: var(--fg-tabs-slide-right); } }
 
   .fg-tabs__panel { min-width: 0; }
   .fg-tabs__panel[hidden], .fg-tabs__heading[hidden] { display: none; }
@@ -74,6 +103,8 @@
       border: 2px solid Highlight;
       padding: calc(var(--space-2) - 2px) calc(var(--space-3) - 2px);
     }
+    /* The border marks the selected tab, so there is no fill to glide. */
+    .fg-tabs__tab[aria-selected="true"]::before { content: none; }
   }
 
   @media (max-width: 640px) {

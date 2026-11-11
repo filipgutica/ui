@@ -38,7 +38,7 @@ pre,
   left: var(--space-2);
   transform: translateY(-150%);
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-field);
   background: var(--color-surface-raised);
 }
 .skip-link:focus { transform: none; }
@@ -307,7 +307,8 @@ pre,
 
 /* Below 901px the component list moves into a drawer opened from this bar. */
 .docs-mobilebar { display: none; padding: var(--space-2) var(--space-4) 0; }
-.navigation-trigger { min-height: var(--control-lg); }
+/* A labelled contents trigger shows the page's navigation and does not act, so it takes the field corner. */
+.navigation-trigger { min-height: var(--control-lg); border-radius: var(--radius-field); }
 .fg-drawer__body .docs-navigation a { min-height: var(--control-lg); }
 
 @media (max-width: 900px) {

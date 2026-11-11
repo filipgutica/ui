@@ -186,9 +186,8 @@ import read from './captures/read.html?raw'
 
 `UiSiteNav` renders a labelled list of route rows in optional `groups`. Links to
 `#id` sections track the reader's position with `useActiveSection` and get
-`aria-current="location"`, an accent pip without a fill. An item with
-`current: true` gets
-`aria-current="page"`, a quiet filled row with a slight lift and accent text; `code: true` shows the
+`aria-current="location"`. An item with `current: true` gets `aria-current="page"`.
+Both show as a quiet filled row with a slight lift and accent text; `code: true` shows the
 label in the monospace font. The page grid places the rail, which stays in view
 on desktop. At 800px and below it is a native disclosure until the page is
 interactive, then a drawer. The disclosure, the drawer button, and the drawer

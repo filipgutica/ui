@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 
+import { useGlide } from '../use-glide.js'
+
 export interface UiTabItem {
   value: string
   label: string
@@ -74,6 +76,14 @@ watch(list, (strip, _, onCleanup) => {
   const observer = new ResizeObserver(fit)
   observer.observe(strip)
   onCleanup(() => observer.disconnect())
+})
+
+// A change of tab glides the selected fill from the old tab, as the segmented thumb does.
+useGlide({
+  container: list,
+  value: () => activeValue.value,
+  index: value => items.findIndex(item => item.value === value),
+  prefix: 'fg-tabs',
 })
 
 const select = (value: string): void => {

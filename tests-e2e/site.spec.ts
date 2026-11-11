@@ -271,18 +271,81 @@ test('rings the project trigger in the accent, like the other quiet actions', as
   await expect(trigger).toHaveCSS('outline-color', ink)
 })
 
+test('gives each site control the corner of its role', async ({ page }) => {
+  await page.goto(fixture)
+  // One-line controls that are not actions take the field corner; buttons that act stay pills.
+  const trigger = page.locator('.fg-site-projects > summary')
+  await expect(trigger).toHaveCSS('border-radius', '10px')
+  await trigger.click()
+  // Rows in the floating project menu are concentric with its 16px corner.
+  const menu = page.locator('.fg-site-projects__menu')
+  await expect(menu).toHaveCSS('border-radius', '16px')
+  await expect(menu.locator('a').first()).toHaveCSS('border-radius', '12px')
+  await trigger.click()
+  // Rail rows are navigation rows.
+  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('border-radius', '6px')
+  await expect(page.locator('.fg-site-appearance .fg-segmented__item').first()).toHaveCSS('border-radius', '999px')
+  // The skip link appears on focus as a one-line control.
+  await page.evaluate(() => {
+    const skip = Object.assign(document.createElement('a'), { className: 'fg-site-skip', href: '#main', textContent: 'Skip to content' })
+    document.body.prepend(skip)
+  })
+  await expect(page.locator('.fg-site-skip')).toHaveCSS('border-radius', '10px')
+  await expect(page.locator('.fg-site-skip')).toHaveCSS('text-decoration-line', 'none')
+
+  // On phones the labelled contents trigger takes the field corner too.
+  await page.setViewportSize({ width: 390, height: 900 })
+  await expect(page.locator('.fg-site-rail__toggle')).toHaveCSS('border-radius', '10px')
+  // Without JavaScript the rail is a disclosure whose summary is the same trigger.
+  await page.locator('.fg-site-rail').evaluate((rail) => {
+    rail.insertAdjacentHTML('beforeend', '<details class="fg-site-rail__menu"><summary class="fg-button fg-site-rail__summary" data-variant="secondary" data-size="lg">On this page</summary></details>')
+  })
+  await expect(page.locator('.fg-site-rail__summary')).toHaveCSS('border-radius', '10px')
+})
+
+test('gives the rail section in view the current-page look without a pip', async ({ page }) => {
+  await page.goto(fixture)
+  const location = page.locator('.fg-site-rail__nav a[aria-current="location"]').first()
+  await expect(location).toHaveAttribute('aria-current', 'location')
+  const current = await location.evaluate((element) => {
+    const probe = document.createElement('span')
+    probe.style.background = 'var(--color-nav-current)'
+    probe.style.boxShadow = 'var(--shadow-nav-current)'
+    element.append(probe)
+    const expected = { background: getComputedStyle(probe).backgroundColor, shadow: getComputedStyle(probe).boxShadow }
+    probe.remove()
+    const style = getComputedStyle(element)
+    return { expected, background: style.backgroundColor, shadow: style.boxShadow, pip: getComputedStyle(element, '::before').content }
+  })
+  expect(current.background).toBe(current.expected.background)
+  expect(current.shadow).toBe(current.expected.shadow)
+  expect(current.pip).toBe('none')
+
+  // The rail's links scroll and clip, so every row sits inside the scroller with room for the
+  // lifted shadow on each side, including below the last row.
+  const room = await page.locator('.fg-site-rail__content').first().evaluate((content) => {
+    const box = content.getBoundingClientRect()
+    const rows = [...content.querySelectorAll('a')].map(row => row.getBoundingClientRect())
+    const last = rows.at(-1)!
+    return {
+      start: Math.min(...rows.map(row => row.left - box.left)),
+      end: Math.min(...rows.map(row => box.right - row.right)),
+      below: content.scrollHeight - (last.bottom - box.top + content.scrollTop),
+    }
+  })
+  expect(room.start).toBeGreaterThanOrEqual(2)
+  expect(room.end).toBeGreaterThanOrEqual(2)
+  expect(room.below).toBeGreaterThanOrEqual(2)
+})
+
 test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active' })
   await page.goto(fixture)
-  // The section in view keeps its pip, redrawn in Highlight; only the current page takes the leading edge.
-  const location = page.locator('.fg-site-nav a[aria-current="location"]').first()
-  await expect(location).toHaveCSS('border-inline-start-width', '0px')
-  const pip = await location.evaluate(element => {
-    const style = getComputedStyle(element, '::before')
-    return { adjust: style.forcedColorAdjust, background: style.backgroundColor }
-  })
-  expect(pip.adjust).toBe('none')
-  expect(pip.background).not.toBe('rgba(0, 0, 0, 0)')
+  // The rail's current section takes the current-page look, so it takes the leading edge, with no pip.
+  const location = page.locator('.fg-site-rail__nav a[aria-current="location"]').first()
+  await expect(location).toHaveCSS('border-inline-start-width', '2px')
+  await expect(location).toHaveCSS('border-inline-start-style', 'solid')
+  expect(await location.evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
   const current = page.getByLabel('Projects').locator('a[aria-current="page"]')
   await expect(current).toHaveCSS('border-inline-start-width', '2px')
   await expect(current).toHaveCSS('border-inline-start-style', 'solid')
@@ -474,8 +537,11 @@ test('keeps selected tabs lifted, readable, and stable on docs and terminal surf
       const other = tabs.getByRole('tab').nth(1)
       await expect(selected).toBeVisible()
       await page.evaluate(theme => document.documentElement.classList.toggle('dark', theme === 'dark'), colorScheme)
+      // The selected fill is a ::before layer, so it can glide between tabs.
+      const fillOf = (element: Element) => getComputedStyle(element, '::before').backgroundColor
       const colors = await selected.evaluate(element => {
         const style = getComputedStyle(element)
+        const fill = getComputedStyle(element, '::before')
         const context = document.createElement('canvas').getContext('2d')!
         const hex = (color: string, underlay: string) => {
           context.clearRect(0, 0, 1, 1)
@@ -488,25 +554,26 @@ test('keeps selected tabs lifted, readable, and stable on docs and terminal surf
         const ancestors: Element[] = []
         for (let parent = element.parentElement; parent; parent = parent.parentElement) ancestors.unshift(parent)
         const surface = ancestors.reduce((underlay, ancestor) => hex(getComputedStyle(ancestor).backgroundColor, underlay), '#ffffff')
-        const background = hex(style.backgroundColor, surface)
-        return { background, foreground: hex(style.color, background), fill: style.backgroundColor, surface }
+        const background = hex(fill.backgroundColor, surface)
+        return { background, foreground: hex(style.color, background), fill: fill.backgroundColor, surface }
       })
       expect(colors.background, `${colorScheme} ${url} selected fill`).not.toBe(colors.surface)
       expect(contrast(colors.foreground, colors.background), `${colorScheme} ${url} text contrast`).toBeGreaterThanOrEqual(4.5)
-      await expect(other).not.toHaveCSS('background-color', colors.fill)
-      await expect(selected).not.toHaveCSS('box-shadow', 'none')
+      expect(await other.evaluate(fillOf)).not.toBe(colors.fill)
+      expect(await selected.evaluate(element => getComputedStyle(element, '::before').boxShadow)).not.toBe('none')
       await expect(selected).toHaveCSS('border-bottom-width', '0px')
-      await expect(selected).toHaveCSS('border-radius', '10px')
+      await expect(selected).toHaveCSS('border-radius', '6px')
       // The strip scrolls and clips, so it must leave room for the lifted shadow on every side.
       const [strip, fill] = [await tabs.boundingBox(), await selected.boundingBox()]
       expect(fill!.x - strip!.x, `${colorScheme} ${url} shadow room`).toBeGreaterThanOrEqual(3)
       expect(strip!.y + strip!.height - (fill!.y + fill!.height), `${colorScheme} ${url} shadow room below`).toBeGreaterThanOrEqual(3)
       const bounds = await other.boundingBox()
       await selected.hover()
-      await expect(selected).toHaveCSS('background-color', colors.fill)
+      expect(await selected.evaluate(fillOf)).toBe(colors.fill)
+      await expect(selected).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
       await other.click()
       expect(await other.boundingBox()).toEqual(bounds)
-      await expect(other).toHaveCSS('background-color', colors.fill)
+      await expect.poll(() => other.evaluate(fillOf)).toBe(colors.fill)
       await page.emulateMedia({ forcedColors: 'active' })
       await expect(other).toHaveCSS('border-top-style', 'solid')
       await expect(other).toHaveCSS('border-top-width', '2px')

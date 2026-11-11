@@ -1,4 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>filipgutica/renovate-config"]
+  "extends": ["github>filipgutica/renovate-config"],
+  "packageRules": [
+    {
+      "description": "design-system restarted its versions at 1.0.x. The 1.1.0 to 2.4.0 releases are deprecated and older, so Renovate offers 1.0.x only.",
+      "matchPackageNames": ["@filipgutica/design-system"],
+      "allowedVersions": "/^1\\.0\\./"
+    }
+  ]
 }

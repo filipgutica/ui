@@ -32,7 +32,9 @@
 </template>
 
 <script setup lang="ts" generic="T extends string">
-import { nextTick, onMounted, useTemplateRef, watch } from 'vue'
+import { useTemplateRef } from 'vue'
+
+import { useGlide } from '../use-glide.js'
 
 import type { UiControlSize } from '../control.js'
 
@@ -73,58 +75,10 @@ defineSlots<{
 
 const root = useTemplateRef<HTMLElement>('root')
 
-// A choice set while the page loads, such as a restored appearance, shows at once.
-// Slides start only after mount and the first frame, once that has settled.
-let canSlide = false
-onMounted(() => requestAnimationFrame(() => { canSlide = true }))
-
-// Each choice's slide; a newer choice makes an older slide's ending irrelevant.
-let currentSlide = 0
-
-const clearSlide = (): void => {
-  if (!root.value) return
-  delete root.value.dataset.slide
-  root.value.style.removeProperty('--fg-segmented-slide-left')
-  root.value.style.removeProperty('--fg-segmented-slide-right')
-}
-
-/*
- * Each pressed button draws its own thumb in CSS, which also covers server rendering
- * and resizes. A change of choice only starts the new thumb where the old one is, and
- * CSS animations glide each edge home while the labels crossfade. The pre flush reads the
- * old thumb before the DOM changes, so no frame shows the thumb already moved.
- */
-watch(() => modelValue, (next, previous) => {
-  const element = root.value
-  if (!element) return
-  const buttons = Array.from(element.children).filter(child => child instanceof HTMLElement)
-  const from = buttons[items.findIndex(item => item.value === previous)]
-  const to = buttons[items.findIndex(item => item.value === next)]
-  if (!canSlide || !from || !to || matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    clearSlide()
-    return
-  }
-  // An interrupted slide starts from where its thumb is now, read before it stops.
-  const fromThumb = getComputedStyle(from, '::before')
-  const fromRect = from.getBoundingClientRect()
-  const fromLeft = fromRect.left + parseFloat(fromThumb.left)
-  const fromRight = fromRect.right - parseFloat(fromThumb.right)
-  const toRect = to.getBoundingClientRect()
-  clearSlide()
-  element.style.setProperty('--fg-segmented-slide-left', `${fromLeft - toRect.left}px`)
-  element.style.setProperty('--fg-segmented-slide-right', `${toRect.right - fromRight}px`)
-  const direction = toRect.left + toRect.right > fromLeft + fromRight ? 'right' : 'left'
-  const trailingEdge = direction === 'right' ? 'fg-segmented-left-edge' : 'fg-segmented-right-edge'
-  element.dataset.slide = direction
-  const slide = ++currentSlide
-  const endSlide = () => { if (slide === currentSlide) clearSlide() }
-  // The slide is over when its trailing edge settles: finished, or cancelled by reduced
-  // motion or hiding the control, which can happen before the animation ever starts.
-  void nextTick(() => {
-    const trailing = element.getAnimations({ subtree: true })
-      .find(animation => (animation as CSSAnimation).animationName === trailingEdge)
-    if (trailing) trailing.finished.then(endSlide, endSlide)
-    else endSlide()
-  })
-}, { flush: 'pre' })
+useGlide({
+  container: root,
+  value: () => modelValue,
+  index: value => items.findIndex(item => item.value === value),
+  prefix: 'fg-segmented',
+})
 </script>
