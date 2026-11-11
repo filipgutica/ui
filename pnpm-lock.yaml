@@ -37,8 +37,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0))
       '@filipgutica/design-system':
-        specifier: 1.0.3
-        version: 1.0.3
+        specifier: 1.0.5
+        version: 1.0.5
       '@playwright/test':
         specifier: ^1.62.1
         version: 1.62.1
@@ -272,8 +272,8 @@ packages:
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@filipgutica/design-system@1.0.3':
-    resolution: {integrity: sha512-ssQHqOkU586Sk4m0SuBVgt6HdGYrXp5t1MlkLhGy6dEorK2hNiz/sKWXQ+Mf8fcgvFj7MRL5+dhe219Fg6O/5Q==}
+  '@filipgutica/design-system@1.0.5':
+    resolution: {integrity: sha512-F1RBFlEWkH9azXf1UxmfbPr0s0+sLQG7yBYai8Va5SN2J1DQC4degSYcBhPgJeNk8/AhGBfVLcL82Z5oCIVzUw==}
     engines: {node: '>=22.12'}
 
   '@floating-ui/core@1.8.0':
@@ -2352,6 +2352,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.8.6:
+    resolution: {integrity: sha512-9lpSSU4Mly3mrtruwLs1eLK6+gzbzqeBFwRNjIjE+9LuDpWdYctrQlQ3ej1Ilgi7gknpsTRnPoLP8DpCHqHIJw==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   setimmediate@1.0.5:
     resolution: {integrity: sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==}
 
@@ -3065,7 +3070,7 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@filipgutica/design-system@1.0.3': {}
+  '@filipgutica/design-system@1.0.5': {}
 
   '@floating-ui/core@1.8.0':
     dependencies:
@@ -5083,6 +5088,8 @@ snapshots:
 
   semver@7.8.5: {}
 
+  semver@7.8.6: {}
+
   setimmediate@1.0.5: {}
 
   shebang-command@2.0.0:
@@ -5429,7 +5436,7 @@ snapshots:
       eslint-visitor-keys: 5.0.1
       espree: 11.2.0
       esquery: 1.7.0
-      semver: 7.8.5
+      semver: 7.8.6
     transitivePeerDependencies:
       - supports-color
 
