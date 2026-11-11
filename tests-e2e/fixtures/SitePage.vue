@@ -37,9 +37,11 @@ const groups = find
 
 <template>
   <div class="fg-site-docs">
+    <!-- The fixture keeps the built-in project list, so it needs no network. -->
     <UiSiteHeader
       project="ui"
       :links="links"
+      :projects-url="null"
     />
     <UiSiteNav
       label="On this page"
