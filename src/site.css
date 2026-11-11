@@ -826,12 +826,27 @@
     }
   }
   @media (max-width: 640px) {
-    /* Phones: two or more site links, as padded strip rows, do not fit beside the project menu and
+    /* Phones: three or more site links, as padded strip rows, do not fit beside the project menu and
      * the picker, so the menu and the header controls share the first row and the links take the
-     * second. That keeps the header to two rows. With one link, the header keeps its wrapping row. */
-    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(2)) .fg-site-header__end { display: contents; }
-    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(2)) .fg-site-projects { margin-inline-end: auto; }
-    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(2)) .fg-site-header__links { order: 1; flex-basis: 100%; }
+     * second. That keeps the header to two rows. */
+    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__end { display: contents; }
+    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-projects { margin-inline-end: auto; }
+    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__links { order: 1; flex-basis: 100%; }
+    /* One or two links stay on the project menu's row as plain text links: no strip or row padding,
+     * no hover fill, and the current page in the accent without a fill. With no strip to scroll, the
+     * links' focus rings are not clipped. */
+    .fg-site-header__links:not(:has(> :nth-child(3))) { overflow-x: visible; gap: var(--space-4); padding: 0; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a { padding-inline: 0; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a:hover { background: none; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] {
+      background: none;
+      box-shadow: none;
+      color: var(--color-accent);
+    }
+    /* Forced colors: an underline marks the current page, as the system border would touch the text. */
+    @media (forced-colors: active) {
+      .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] { border-inline-start: 0; text-decoration: underline; }
+    }
     .fg-site-docs :where(h1) { font-size: 2rem; }
     .fg-site-hero > h1 { font-size: var(--text-display-sm); }
     .fg-site-docs { padding-inline: var(--space-4); }

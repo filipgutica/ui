@@ -208,40 +208,65 @@ test('colors captures with the default terminal palette unless the site sets its
   await expect(screen).toHaveCSS('color', 'rgb(230, 233, 235)')
 })
 
-test('keeps header links on phones outside the docs shell, on a second row when there are two or more', async ({ page }) => {
+test('keeps one or two header links on the phone menu row as text links, outside the docs shell', async ({ page }) => {
+  const links = page.getByRole('navigation', { name: 'Site links', exact: true })
+  for (const width of [375, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/')
+    await expect(links.getByRole('link')).toHaveCount(2)
+    // One row: the header keeps its 64px minimum height plus its 1px border.
+    expect((await page.locator('.fg-site-header').boundingBox())?.height, `header height at ${width}px`).toBeLessThanOrEqual(65)
+    const menu = (await page.locator('.fg-site-projects').boundingBox())!
+    const linksBox = (await links.boundingBox())!
+    expect(Math.abs(linksBox.y + linksBox.height / 2 - (menu.y + menu.height / 2)), `links beside the menu at ${width}px`).toBeLessThanOrEqual(2)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `page fits at ${width}px`).toBe(true)
+    expect(await links.evaluate(element => element.scrollWidth <= element.clientWidth), `links fit at ${width}px`).toBe(true)
+  }
+  // A current link takes the accent and medium weight, with no fill, shadow, or pip.
+  const current = links.getByRole('link').first()
+  await current.evaluate(element => element.setAttribute('aria-current', 'page'))
+  const [accent, medium] = await current.evaluate((element) => {
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--color-accent)'
+    probe.style.fontWeight = 'var(--weight-medium)'
+    element.after(probe)
+    const style = getComputedStyle(probe)
+    const values = [style.color, style.fontWeight]
+    probe.remove()
+    return values
+  })
+  await expect(current).toHaveCSS('color', accent!)
+  await expect(current).toHaveCSS('font-weight', medium!)
+  await expect(current).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(current).toHaveCSS('box-shadow', 'none')
+  expect(await current.evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
+  await expect(current).toHaveAttribute('aria-current', 'page')
+})
+
+test('puts three or more header links on a second row on phones, outside the docs shell', async ({ page }) => {
+  const links = page.getByRole('navigation', { name: 'Site links', exact: true })
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 900 })
     // A fresh load each pass, since the previous pass added a link and a control.
     await page.goto('about:blank')
     await page.goto('/#/')
-    const links = page.getByRole('navigation', { name: 'Site links', exact: true })
-    await expect(links).toBeVisible()
+    await links.evaluate((element) => {
+      element.insertAdjacentHTML('beforeend', '<a href="#changelog">Changelog</a>')
+    })
+    await expect(links.getByRole('link')).toHaveCount(3)
+    // Strip rows are padded, so three links take the second row, below the picker beside the menu.
     const control = page.locator('.fg-site-header__end > :not(.fg-site-header__links)')
-    // Strip rows are padded, so two links already take the second row, below the picker beside the menu.
-    for (const count of [2, 3]) {
-      if (count === 3) {
-        await links.evaluate((element) => {
-          element.insertAdjacentHTML('beforeend', '<a href="#changelog">Changelog</a>')
-        })
-      }
-      await expect(links.getByRole('link')).toHaveCount(count)
-      const menu = (await page.locator('.fg-site-projects').boundingBox())!
-      const first = (await control.first().boundingBox())!
-      const linksBox = (await links.boundingBox())!
-      expect(Math.abs(first.y + first.height / 2 - (menu.y + menu.height / 2)), `control beside the menu with ${count} links at ${width}px`).toBeLessThanOrEqual(2)
-      expect(linksBox.y, `${count} links below the control at ${width}px`).toBeGreaterThanOrEqual(first.y + first.height)
-    }
+    const menu = (await page.locator('.fg-site-projects').boundingBox())!
+    const first = (await control.first().boundingBox())!
+    const linksBox = (await links.boundingBox())!
+    expect(Math.abs(first.y + first.height / 2 - (menu.y + menu.height / 2)), `control beside the menu at ${width}px`).toBeLessThanOrEqual(2)
+    expect(linksBox.y, `links below the control at ${width}px`).toBeGreaterThanOrEqual(first.y + first.height)
     // A second header control may wrap on a narrow phone, but it never covers the first.
     await control.first().evaluate(element => element.after(element.cloneNode(true)))
     const [one, two] = [(await control.first().boundingBox())!, (await control.nth(1).boundingBox())!]
     const apart = two.x >= one.x + one.width || two.y >= one.y + one.height
     expect(apart, `second control clear of the first at ${width}px`).toBe(true)
   }
-  // One link fits beside the project menu and the picker at 390px, so the header stays one row: 64px plus its border.
-  await page.goto('about:blank')
-  await page.goto('/#/')
-  await page.getByRole('navigation', { name: 'Site links', exact: true }).getByRole('link').last().evaluate(element => element.remove())
-  expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
 })
 
 test('shows a stored appearance choice without moving the picker on load', async ({ page }) => {
