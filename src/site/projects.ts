@@ -2,6 +2,7 @@ const projects = [
   { id: 'annoterm', label: 'annoterm', href: 'https://filipgutica.github.io/annoterm/', repository: 'https://github.com/filipgutica/annoterm' },
   { id: 'wtree', label: 'wtree', href: 'https://filipgutica.github.io/wtree/', repository: 'https://github.com/filipgutica/wtree' },
   { id: 'devps', label: 'devps', href: 'https://filipgutica.github.io/devps/', repository: 'https://github.com/filipgutica/devps' },
+  { id: 'pluginbench', label: 'PluginBench', href: 'https://filipgutica.github.io/pluginbench/', repository: 'https://github.com/filipgutica/pluginbench' },
   { id: 'workbench', label: 'Workbench', href: 'https://filipgutica.github.io/t3code/', repository: 'https://github.com/filipgutica/t3code' },
   { id: 'filip-stack', label: 'Filip Stack', href: 'https://filipgutica.github.io/filip-stack/', repository: 'https://github.com/filipgutica/filip-stack' },
   { id: 'ui', label: 'UI', href: 'https://filipgutica.github.io/ui/', repository: 'https://github.com/filipgutica/ui' },

@@ -23,7 +23,7 @@ const selectValue = defineModel<string>('selectValue', { required: true })
 const tone = defineModel<NonNullable<UiAlertProps['tone']>>('tone', { required: true })
 const dialogDescription = defineModel<string>('dialogDescription', { required: true })
 const dialogTitle = defineModel<string>('dialogTitle', { required: true })
-type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
+type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'yaml' | 'css' | 'html' | 'bash' | 'text'
 const language = defineModel<CodeLanguage>('language', { required: true })
 const codeVariant = defineModel<NonNullable<UiCodeBlockProps['variant']>>('codeVariant', { required: true })
 
@@ -74,6 +74,7 @@ const languageOptions = [
   { label: 'TS', value: 'typescript' },
   { label: 'JS', value: 'javascript' },
   { label: 'JSON', value: 'json' },
+  { label: 'YAML', value: 'yaml' },
   { label: 'CSS', value: 'css' },
   { label: 'HTML', value: 'html' },
   { label: 'bash', value: 'bash' },

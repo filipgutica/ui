@@ -9,6 +9,7 @@ const languageLoaders = {
   json: () => import('shiki/langs/json.mjs'),
   typescript: () => import('shiki/langs/typescript.mjs'),
   vue: () => import('shiki/langs/vue.mjs'),
+  yaml: () => import('shiki/langs/yaml.mjs'),
 }
 
 const highlighter = createHighlighterCoreSync({

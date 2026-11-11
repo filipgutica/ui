@@ -485,7 +485,7 @@ export const componentDocs: ComponentDoc[] = [
     summary: 'Displays source code with optional syntax highlighting and clipboard copying.',
     usage: [
       'Use variant="default" for source files. For short commands, use variant="compact". UiExample uses variant="embedded" for the source under a preview.',
-      'For highlighting, choose vue, ts, typescript, js, javascript, json, css, html, bash, sh, or shell.',
+      'For highlighting, choose vue, ts, typescript, js, javascript, json, yaml, yml, css, html, bash, sh, or shell.',
       'If copying fails or the clipboard API is unavailable, select the code to copy it manually.',
     ],
     props: [

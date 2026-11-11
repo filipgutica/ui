@@ -11,7 +11,7 @@ const { compact = false, slug } = defineProps<{
   slug: string
 }>()
 
-type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'css' | 'html' | 'bash' | 'text'
+type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'yaml' | 'css' | 'html' | 'bash' | 'text'
 
 const hasControls = computed(() => !compact && !['tabs', 'example'].includes(slug))
 const label = ref('Inspect evidence')
