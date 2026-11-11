@@ -49,7 +49,7 @@
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
   }
 
-  .fg-tabs__tab:hover:where(:not(:disabled)) { background: var(--color-row-hover); color: var(--color-text); }
+  @media (hover: hover) { .fg-tabs__tab:hover:where(:not(:disabled)) { background: var(--color-row-hover); color: var(--color-text); } }
   /* The selected tab takes the navigation row's lifted fill. The fill is a ::before layer behind
    * the label, so it can glide between tabs as the segmented thumb does. */
   .fg-tabs__tab[aria-selected="true"] {

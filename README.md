@@ -248,7 +248,8 @@ project hue. Terminal captures keep the neutral `--color-terminal` palette.
 
 Compact shell or plain-text `UiCodeBlock` rows and untitled shell blocks are
 terminal commands. Their CSS prompt stays out of copied and accessible text.
-Typed source samples, including compact samples, use theme-matched syntax wells.
+Typed source samples, including compact samples, use theme-matched syntax panels
+inset in the code block's frame. After a copy, Copy shows a tick for 1.5s.
 Default blocks with a title are source samples, including shell scripts.
 
 Use `.fg-site-hero` on a tool-home intro section. Its direct `h1` uses the
@@ -284,9 +285,9 @@ on `:root`, because the dialog renders outside the panel.
 `command` slot to show a key as `<kbd>`, the `description` slot for `<kbd>` or
 `<code>`, and `commandHeader` and `descriptionHeader` to rename the columns. Each row gets a copy button named
 "Copy <command>" once the page is interactive; set `copyable` to `false` to
-remove them. A status message announces each copy and shows a fallback when
-the clipboard is unavailable. At 640px and below each command stacks above its
-description and wraps.
+remove them. A copied row shows a tick for 1.5s. A status message announces each
+copy and shows a fallback when the clipboard is unavailable. At 640px and below
+each command stacks above its description and wraps.
 
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
 numbered markers (each `li` holds an `h3` title and short paragraphs; mark the last

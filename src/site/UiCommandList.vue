@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
-import { useClipboardCopy } from '../use-clipboard-copy.js'
+import CommandListCopy from './CommandListCopy.vue'
 
 export interface UiCommandItem {
   command: string
@@ -35,16 +35,12 @@ defineSlots<{
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
 
-const { copied, pending, error, copy } = useClipboardCopy({
-  unavailableMessage: 'Clipboard unavailable. Select the command to copy it.',
-  failureMessage: 'Could not copy. Select the command to copy it.',
-})
-const lastCommand = ref('')
-const statusMessage = computed(() => error.value || (copied.value ? `${lastCommand.value} copied to clipboard.` : ''))
-
-const copyCommand = (command: string): Promise<void> => {
-  lastCommand.value = command
-  return copy(command)
+// One live region for the list: success is announced only, and a failure stays visible.
+const statusMessage = ref('')
+const failed = ref(false)
+const showResult = ({ command, error }: { command: string, error: string }): void => {
+  failed.value = error !== ''
+  statusMessage.value = error || `${command} copied to clipboard.`
 }
 </script>
 
@@ -87,38 +83,12 @@ const copyCommand = (command: string): Promise<void> => {
             v-if="copyable"
             class="fg-command-list__action"
           >
-            <button
+            <CommandListCopy
               v-if="mounted"
-              type="button"
-              class="fg-command-list__copy fg-quiet-action"
-              :disabled="pending"
-              :aria-label="`Copy ${item.command}`"
-              :title="`Copy ${item.command}`"
-              @click="copyCommand(item.command)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                aria-hidden="true"
-              >
-                <path
-                  v-if="copied && !error && lastCommand === item.command"
-                  d="m5 12 4 4L19 6"
-                />
-                <template v-else>
-                  <rect
-                    x="8"
-                    y="8"
-                    width="12"
-                    height="13"
-                    rx="2"
-                  />
-                  <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
-                </template>
-              </svg>
-            </button>
+              :command="item.command"
+              @start="statusMessage = ''"
+              @settle="error => showResult({ command: item.command, error })"
+            />
           </td>
         </tr>
       </tbody>
@@ -126,7 +96,7 @@ const copyCommand = (command: string): Promise<void> => {
     <!-- Success is shown by the row icon; a failure tells the reader what to do instead. -->
     <span
       class="fg-command-list__status"
-      :class="{ 'fg-site-sr-only': !error }"
+      :class="{ 'fg-site-sr-only': !failed }"
       role="status"
     >{{ statusMessage }}</span>
   </div>

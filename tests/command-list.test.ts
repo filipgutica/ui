@@ -59,7 +59,7 @@ describe('UiCommandList', () => {
     const status = wrapper.get('[role="status"]')
     expect(status.text()).toBe('wtree clean --dry-run copied to clipboard.')
     expect(status.classes()).toContain('fg-site-sr-only')
-    expect(wrapper.get('[aria-label="Copy wtree clean --dry-run"] path').attributes('d')).toBe('m5 12 4 4L19 6')
+    expect(wrapper.get('[aria-label="Copy wtree clean --dry-run"] path').attributes('d')).toBe('M3.5 8.5l3 3 6-7')
     expect(wrapper.find('[aria-label="Copy wtree ui"] rect').exists()).toBe(true)
   })
 
@@ -74,6 +74,6 @@ describe('UiCommandList', () => {
     const status = wrapper.get('[role="status"]')
     expect(status.text()).toBe('Could not copy. Select the command to copy it.')
     expect(status.classes()).not.toContain('fg-site-sr-only')
-    expect(wrapper.find('path[d="m5 12 4 4L19 6"]').exists()).toBe(false)
+    expect(wrapper.find('path[d="M3.5 8.5l3 3 6-7"]').exists()).toBe(false)
   })
 })

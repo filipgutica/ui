@@ -98,7 +98,7 @@
     color: var(--color-muted);
     text-decoration: none;
   }
-  .fg-site-footer a:hover { color: var(--color-text); text-decoration: underline; }
+  @media (hover: hover) { .fg-site-footer a:hover { color: var(--color-text); text-decoration: underline; } }
 
   /* Legend: a dl of what a capture shows, with one div per dt and dd pair. Columns are at
    * least --site-legend-column wide (default --sidebar); a page can lower it to fit more. */
@@ -190,8 +190,8 @@
   .fg-site-projects__trigger { border-radius: var(--radius-field); font-family: var(--font-mono); }
   .fg-site-projects__trigger::before { content: '~/' / ''; color: var(--color-project); }
   .fg-site-projects__trigger::-webkit-details-marker { display: none; }
-  /* :where keeps the open tint below the quiet action's press. */
-  :where(.fg-site-projects[open]) > .fg-site-projects__trigger { background: color-mix(in srgb, currentColor 12%, transparent); }
+  /* The open menu keeps the quiet action's hover tint. :where keeps it below the press. */
+  :where(.fg-site-projects[open]) > .fg-site-projects__trigger { background: color-mix(in srgb, currentColor 6%, transparent); }
   .fg-site-projects__chevron { transition: transform var(--duration-fast) var(--ease-out); }
   .fg-site-projects[open] .fg-site-projects__chevron { transform: rotate(180deg); }
   .fg-site-projects__menu {
@@ -223,7 +223,7 @@
     text-decoration: none;
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
   }
-  .fg-site-nav a:hover { background: var(--color-row-hover); color: var(--color-text); }
+  @media (hover: hover) { .fg-site-nav a:hover { background: var(--color-row-hover); color: var(--color-text); } }
   .fg-site-nav a[aria-current="page"] {
     background: var(--color-nav-current);
     box-shadow: var(--shadow-nav-current);
@@ -843,7 +843,7 @@
     .fg-site-header__links:not(:has(> :nth-child(3))) { overflow-x: visible; gap: var(--space-3); padding: 0; }
     .fg-site-header__links:not(:has(> :nth-child(3))) a { padding-inline: 0; }
     .fg-site-header__links:not(:has(> :nth-child(3))) a:focus-visible { outline-offset: var(--focus-offset); }
-    .fg-site-header__links:not(:has(> :nth-child(3))) a:hover { background: none; }
+    @media (hover: hover) { .fg-site-header__links:not(:has(> :nth-child(3))) a:hover { background: none; } }
     .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] {
       background: none;
       box-shadow: none;

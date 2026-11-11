@@ -523,7 +523,8 @@ test('copies code exactly and follows editor theme colors', async ({ page, conte
     element.style.setProperty('--color-code', '#123456')
     element.style.setProperty('--color-code-text', '#abcdef')
   })
-  await expect(block).toHaveCSS('background-color', 'rgb(18, 52, 86)')
+  // The source panel takes the code colour; the frame around it is a raised surface.
+  await expect(block.locator('pre')).toHaveCSS('background-color', 'rgb(18, 52, 86)')
   await expect(block).toHaveCSS('color', 'rgb(171, 205, 239)')
 })
 
