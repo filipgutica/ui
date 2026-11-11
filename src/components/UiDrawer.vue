@@ -12,11 +12,13 @@ import {
 export interface UiDrawerProps {
   open: boolean
   title: string
+  /** The close button's accessible name, such as "Close menu". */
+  closeLabel?: string
 }
 
 defineOptions({ inheritAttrs: false })
 
-const { open, title } = defineProps<UiDrawerProps>()
+const { open, title, closeLabel = 'Close drawer' } = defineProps<UiDrawerProps>()
 
 const emit = defineEmits<{
   (event: 'update:open', value: boolean): void
@@ -55,7 +57,7 @@ defineSlots<{
           </DialogTitle>
           <DialogClose
             class="fg-drawer__close fg-quiet-action"
-            aria-label="Close drawer"
+            :aria-label="closeLabel"
           >
             <svg
               viewBox="0 0 24 24"

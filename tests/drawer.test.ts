@@ -49,6 +49,21 @@ const openDrawer = async (wrapper: ReturnType<typeof createDrawer>) => {
 }
 
 describe('UiDrawer', () => {
+  it('names the close button Close drawer unless closeLabel names it', async () => {
+    for (const [closeLabel, name] of [[undefined, 'Close drawer'], ['Close menu', 'Close menu']] as const) {
+      const wrapper = mount(UiDrawer, {
+        attachTo: document.body,
+        props: { open: true, title: 'Menu', ...(closeLabel ? { closeLabel } : {}) },
+        slots: { default: 'Links' },
+      })
+      await settleDialog()
+
+      expect(document.querySelector('.fg-drawer__close')?.getAttribute('aria-label')).toBe(name)
+      wrapper.unmount()
+      await settleDialog()
+    }
+  })
+
   it('requests state changes without overriding the controlled open prop', async () => {
     const wrapper = mount(UiDrawer, {
       attachTo: document.body,

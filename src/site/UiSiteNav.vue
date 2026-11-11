@@ -136,11 +136,7 @@ const centre = (box: HTMLElement, row: HTMLElement): void => {
 const openAutoFocus = (event: Event): void => {
   const how = opening
   opening = undefined
-  if (!(event.target instanceof HTMLElement)) return
-  // UiDrawer names its close button "Close drawer"; the site menu's says what it closes. The drawer
-  // mounts its content on every open and never patches this static label, so it holds while open.
-  if (headerShell.value) event.target.querySelector('.fg-drawer__close')?.setAttribute('aria-label', 'Close menu')
-  if (!how) return
+  if (!how || !(event.target instanceof HTMLElement)) return
   event.preventDefault()
   const dialog = event.target
   const body = dialog.querySelector<HTMLElement>('.fg-drawer__body')
@@ -465,7 +461,8 @@ onUnmounted(() => {
       <UiDrawer
         v-model:open="open"
         title="Menu"
-        class="fg-site-rail__drawer"
+        close-label="Close menu"
+        class="fg-site-rail__drawer fg-site-rail__drawer--menu"
         @open-auto-focus="openAutoFocus"
         @close-auto-focus="closeAutoFocus"
       >

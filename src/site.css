@@ -380,6 +380,8 @@
   }
   /* The picker sits 8px below its label, as the grid gap sets. */
   .fg-site-rail__appearance > .fg-site-rail__group-label { margin-block-end: 0; }
+  /* The site menu's width includes its 1px edge, so it is the catalogue's 272px. */
+  .fg-drawer__content.fg-site-rail__drawer--menu { box-sizing: border-box; }
   /* The drawer focuses itself on a tap, so no ring shows; the rows draw their own. */
   .fg-drawer__content.fg-site-rail__drawer:focus-visible { outline: none; }
 

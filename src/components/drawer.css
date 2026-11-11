@@ -13,8 +13,6 @@
     z-index: 51;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    /* The width includes the 1px edge, as the catalogue's drawer does. */
-    box-sizing: border-box;
     width: min(calc(var(--sidebar) + 48px), calc(100vw - var(--space-12)));
     height: 100vh;
     height: 100dvh;
