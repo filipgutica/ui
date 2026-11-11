@@ -42,6 +42,7 @@ const languageAliases: Record<string, string> = {
   vue: 'vue', ts: 'typescript', typescript: 'typescript',
   js: 'javascript', javascript: 'javascript', json: 'json',
   css: 'css', html: 'html', bash: 'bash', sh: 'bash', shell: 'bash',
+  yaml: 'yaml', yml: 'yaml',
 }
 
 watch(() => [code, language] as const, async ([source, requestedLanguage], _, onCleanup) => {

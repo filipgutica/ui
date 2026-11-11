@@ -109,6 +109,19 @@ describe('UiCodeBlock', () => {
     expect(wrapper.get('code').element.textContent).toBe('const value = "<div>"')
     wrapper.unmount()
   })
+  it('highlights YAML keys, strings, numbers, booleans, and comments under either extension', async () => {
+    const code = '# Runs\nname: "vanilla"\njobs: 2\nshared: true'
+    const wrapper = mount(UiCodeBlock, { props: { code, language: 'yaml' } })
+    const tokens = (role: string) => wrapper.findAll(`[style*="--color-syntax-${role}"]`).map(token => token.text())
+    await vi.waitFor(() => expect(tokens('tag')).toEqual(['name', 'jobs', 'shared']))
+    expect(tokens('comment').join('')).toContain('Runs')
+    expect(tokens('string').join('')).toBe('vanilla')
+    expect(tokens('number')).toEqual(['2', 'true'])
+    expect(wrapper.get('code').element.textContent).toBe(code)
+    await wrapper.setProps({ language: 'yml' })
+    await vi.waitFor(() => expect(tokens('tag')).toEqual(['name', 'jobs', 'shared']))
+    wrapper.unmount()
+  })
   it('renders markup as text and copies the exact current source', async () => {
     const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
     const code = '<script>alert("example")</script>\n  next line\n'
