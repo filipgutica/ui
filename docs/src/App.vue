@@ -72,9 +72,11 @@ watch(route, async () => {
     class="skip-link"
     href="#main-content"
   >Skip to content</a>
+  <!-- The docs site publishes projects.json itself, so it reads its own copy, and dev serves the source file. -->
   <UiSiteHeader
     project="ui"
     :links="projectLinks"
+    projects-url="./projects.json"
   >
     <UiSiteAppearancePicker
       :model-value="activeInstalledTheme ? undefined : schemeChoice"

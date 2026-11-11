@@ -18,6 +18,8 @@ describe('release configuration', () => {
     ['feat: add control', 'minor'],
     ['feat!: replace control API', 'major'],
     ['feat: replace control API\n\nBREAKING CHANGE: consumers must migrate', 'major'],
+    // A change to the shared project list alone ships through the docs deploy, not npm.
+    ['chore(site): add a site to the project list', null],
   ])('maps %s to a %s release', async (message, expectedRelease) => {
     await expect(releaseTypeFor(message)).resolves.toBe(expectedRelease)
   })

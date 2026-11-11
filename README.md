@@ -140,10 +140,10 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 </template>
 ```
 
-`project` is `wtree`, `annoterm`, `devps`, `pluginbench`, `workbench`, `filip-stack`, or `ui`. The project
-menu is a native disclosure that works without JavaScript; Escape closes it and
-returns focus to its button. `links` are a navigation strip: rows 44px tall with
-6px corners. A link with `current: true` gets `aria-current="page"` and the
+`project` is the site's id in [`src/site/projects.json`](src/site/projects.json),
+such as `wtree`, `devps`, or `ui`. The project menu is a native disclosure that
+works without JavaScript; Escape closes it and returns focus to its button.
+`links` are a navigation strip: rows 44px tall with 6px corners. A link with `current: true` gets `aria-current="page"` and the
 current-page fill. At 640px and below, three or more links take a second row below
 the project menu and the picker. One or two links stay beside the project name as
 text links, and a current one has accent text instead of the fill. Two short links
@@ -161,6 +161,30 @@ the root element.
 the operating system and other tabs, and is safe during server rendering and
 when storage is blocked. To avoid a flash of the wrong appearance, inline
 `siteThemeBootScript` in the document head.
+
+#### The project list
+
+The project menu lists every site from one file,
+[`src/site/projects.json`](src/site/projects.json). The docs deploy publishes it
+at `https://filipgutica.github.io/ui/projects.json`.
+
+- The server render and first paint use the copy built into the package, so a
+  page without JavaScript still has the full menu.
+- After mount the header loads the published file once per page, with a
+  3-second timeout. Every header on the page shares that request.
+- The header keeps only entries whose `id`, `label`, `href`, and `repository` are
+  non-empty strings, whose links are `https:` URLs, and whose `id` is unique, up
+  to 20 entries.
+- If the request fails or no entry is valid, the built-in list stays.
+- If the published list leaves out the current `project`, the menu still shows
+  it, in the place the built-in list gives it.
+
+To turn the request off and keep the built-in list, pass `:projects-url="null"`.
+To load a different file, pass its URL.
+
+```vue
+<UiSiteHeader project="wtree" :projects-url="null" />
+```
 
 ### Page components
 
@@ -368,3 +392,17 @@ To update the values, bump the package and rebuild:
 pnpm add -D -E @filipgutica/design-system@<version>
 pnpm themes:build
 ```
+
+### Change the project list
+
+To add, rename, or remove a site in the project menu, edit
+[`src/site/projects.json`](src/site/projects.json) and merge it with a
+`chore(site): …` commit, for example `chore(site): add Example to the project list`.
+
+- `chore` does not release to npm. `feat`, `fix`, `perf`, and breaking changes
+  do.
+- The Docs workflow runs on every push to `main` and publishes the file to
+  `https://filipgutica.github.io/ui/projects.json`. GitHub Pages caches it for
+  up to 10 minutes.
+- Sites load the published file, so they need no pull request. The package's
+  built-in copy catches up at the next release.

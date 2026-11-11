@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 import { expect, test, type Locator } from '@playwright/test'
 
 import { contrast } from '../tests/contrast.js'
@@ -1139,6 +1141,14 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
   await expect(trigger).not.toBeVisible()
 })
 
+
+test('publishes the shared project list at /projects.json', async ({ request }) => {
+  // Every site's UiSiteHeader loads this file from the deployed docs site.
+  const response = await request.get('/projects.json')
+  expect(response.status()).toBe(200)
+  expect(response.headers()['content-type']).toContain('application/json')
+  expect(await response.text()).toBe(readFileSync('src/site/projects.json', 'utf8'))
+})
 
 test('keeps the project menu current state distinct and restores keyboard focus', async ({ page }) => {
   for (const width of [320, 800, 1280]) {

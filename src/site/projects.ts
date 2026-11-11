@@ -1,14 +1,10 @@
-const projects = [
-  { id: 'annoterm', label: 'annoterm', href: 'https://filipgutica.github.io/annoterm/', repository: 'https://github.com/filipgutica/annoterm' },
-  { id: 'wtree', label: 'wtree', href: 'https://filipgutica.github.io/wtree/', repository: 'https://github.com/filipgutica/wtree' },
-  { id: 'devps', label: 'devps', href: 'https://filipgutica.github.io/devps/', repository: 'https://github.com/filipgutica/devps' },
-  { id: 'pluginbench', label: 'PluginBench', href: 'https://filipgutica.github.io/pluginbench/', repository: 'https://github.com/filipgutica/pluginbench' },
-  { id: 'workbench', label: 'Workbench', href: 'https://filipgutica.github.io/t3code/', repository: 'https://github.com/filipgutica/t3code' },
-  { id: 'filip-stack', label: 'Filip Stack', href: 'https://filipgutica.github.io/filip-stack/', repository: 'https://github.com/filipgutica/filip-stack' },
-  { id: 'ui', label: 'UI', href: 'https://filipgutica.github.io/ui/', repository: 'https://github.com/filipgutica/ui' },
-] as const
+import builtInProjects from './projects.json'
 
-export type SiteProjectId = (typeof projects)[number]['id']
+/**
+ * A site's id in the project list. Any string, so a site that is only in the published
+ * list, and not yet in this package's copy, still works.
+ */
+export type SiteProjectId = string
 
 export interface SiteProject {
   readonly id: SiteProjectId
@@ -17,5 +13,76 @@ export interface SiteProject {
   readonly repository: string
 }
 
-/** Every site in the family, in the order the project menu lists them. */
-export const SITE_PROJECTS: readonly SiteProject[] = projects
+/**
+ * Every site in the family, in the order the project menu lists them. This is the copy built
+ * into the package. `UiSiteHeader` replaces it with the published list once mounted.
+ */
+export const SITE_PROJECTS: readonly SiteProject[] = builtInProjects
+
+/** Where ui's docs site publishes `src/site/projects.json`. */
+export const SITE_PROJECTS_URL = 'https://filipgutica.github.io/ui/projects.json'
+
+const MAX_PROJECTS = 20
+const TIMEOUT_MS = 3000
+
+const isText = (value: unknown): value is string => typeof value === 'string' && value.trim() !== ''
+
+const isHttpsUrl = (value: unknown): value is string => {
+  if (typeof value !== 'string') return false
+  try {
+    return new URL(value).protocol === 'https:'
+  } catch {
+    // Not a URL, so the entry is dropped.
+    return false
+  }
+}
+
+const toProject = (value: unknown): SiteProject | undefined => {
+  if (typeof value !== 'object' || value === null) return undefined
+  const { id, label, href, repository } = value as Record<string, unknown>
+  if (!isText(id) || !isText(label) || !isHttpsUrl(href) || !isHttpsUrl(repository)) return undefined
+  return { id, label, href, repository }
+}
+
+/** Keeps the valid entries with unique ids, up to the cap. Undefined when none remain. */
+const parseProjects = (value: unknown): readonly SiteProject[] | undefined => {
+  if (!Array.isArray(value)) return undefined
+  const ids = new Set<string>()
+  const projects: SiteProject[] = []
+  for (const entry of value) {
+    const project = toProject(entry)
+    if (!project || ids.has(project.id)) continue
+    ids.add(project.id)
+    projects.push(project)
+    if (projects.length === MAX_PROJECTS) break
+  }
+  return projects.length > 0 ? projects : undefined
+}
+
+const fetchProjects = async (url: string): Promise<readonly SiteProject[] | undefined> => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  try {
+    // A plain GET with no credentials, so GitHub Pages' `Access-Control-Allow-Origin: *` covers it.
+    const response = await fetch(url, { signal: controller.signal })
+    return response.ok ? parseProjects(await response.json()) : undefined
+  } catch {
+    // Offline, blocked, timed out, or not JSON. The built-in list keeps serving the menu.
+    return undefined
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+// One request per URL for the whole page, shared by every header that reads it.
+const requests = new Map<string, Promise<readonly SiteProject[] | undefined>>()
+
+/** Loads the published list once per page. Resolves to undefined when the built-in list should stay. */
+export const loadSiteProjects = (url: string): Promise<readonly SiteProject[] | undefined> => {
+  let request = requests.get(url)
+  if (!request) {
+    request = fetchProjects(url)
+    requests.set(url, request)
+  }
+  return request
+}

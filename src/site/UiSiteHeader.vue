@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, useSlots } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useSlots } from 'vue'
 
-import type { SiteProjectId } from './projects.js'
+import type { SiteProject } from './projects.js'
 
 import { useSiteAppearance } from './appearance.js'
-import { SITE_PROJECTS } from './projects.js'
+import { loadSiteProjects, SITE_PROJECTS, SITE_PROJECTS_URL } from './projects.js'
 import { useSiteHeaderShell } from './site-shell.js'
 import UiSiteAppearancePicker from './UiSiteAppearancePicker.vue'
 
@@ -16,20 +16,38 @@ export interface UiSiteLink {
 }
 
 export interface UiSiteHeaderProps {
-  /** The site this header belongs to. It is marked as current in the project menu. */
-  project: SiteProjectId
+  /** The site this header belongs to, by its id in the project list. It is marked as current in the project menu. */
+  project: string
   /** Page links shown beside the appearance control, such as a user guide or releases. */
   links?: readonly UiSiteLink[]
+  /**
+   * Where the project menu loads the published project list after mount. Defaults to the list
+   * ui's docs site publishes. `null` keeps the list built into the package and fetches nothing.
+   */
+  projectsUrl?: string | null
 }
 
-const { project, links = [] } = defineProps<UiSiteHeaderProps>()
+const { project, links = [], projectsUrl = SITE_PROJECTS_URL } = defineProps<UiSiteHeaderProps>()
 
 defineSlots<{
   /** Replaces the System, Light, and Dark picker with a page-specific appearance control. */
   default?(): unknown
 }>()
 
-const currentLabel = computed(() => SITE_PROJECTS.find(({ id }) => id === project)?.label ?? project)
+// The server render and first paint use the built-in list; the published list replaces it after mount.
+const loadedProjects = shallowRef<readonly SiteProject[]>(SITE_PROJECTS)
+
+// A site missing from the published list keeps its own entry, where the built-in list has it.
+const projects = computed(() => {
+  const list = loadedProjects.value
+  if (list.some(({ id }) => id === project)) return list
+  const index = SITE_PROJECTS.findIndex(({ id }) => id === project)
+  const own = SITE_PROJECTS[index]
+  if (!own) return list
+  return [...list.slice(0, index), own, ...list.slice(index)]
+})
+
+const currentLabel = computed(() => projects.value.find(({ id }) => id === project)?.label ?? project)
 
 // Without a slot the header owns the shared picker. The page's own control
 // must not also write to the shared choice.
@@ -63,6 +81,11 @@ const onDocumentPointerdown = (event: PointerEvent): void => {
 
 onMounted(() => {
   mounted.value = true
+  if (projectsUrl) {
+    void loadSiteProjects(projectsUrl).then((list) => {
+      if (list) loadedProjects.value = list
+    })
+  }
   document.addEventListener('pointerdown', onDocumentPointerdown)
   // A section rail with headerMenu puts its phone Find and Menu buttons in the bar, and repeats
   // the links and the picker in its drawer. The getter keeps the links reactive.
@@ -108,7 +131,7 @@ onBeforeUnmount(() => {
           aria-label="Projects"
         >
           <a
-            v-for="item in SITE_PROJECTS"
+            v-for="item in projects"
             :key="item.id"
             :href="item.href"
             :aria-current="item.id === project ? 'page' : undefined"

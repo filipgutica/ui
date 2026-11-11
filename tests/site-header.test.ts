@@ -1,6 +1,6 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { renderToString } from 'vue/server-renderer'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createSSRApp, h, nextTick } from 'vue'
 
 import { SITE_APPEARANCE_KEY, SITE_PROJECTS, UiSiteHeader } from '../src/site/index.js'
@@ -107,6 +107,118 @@ describe('site header', () => {
     menu.open = true
     outside.dispatchEvent(new Event('pointerdown', { bubbles: true }))
     expect(menu.open).toBe(false)
+    wrapper.unmount()
+  })
+})
+
+describe('site header project list', () => {
+  const remote = [
+    { id: 'wtree', label: 'wtree', href: 'https://filipgutica.github.io/wtree/', repository: 'https://github.com/filipgutica/wtree' },
+    { id: 'newsite', label: 'New site', href: 'https://filipgutica.github.io/newsite/', repository: 'https://github.com/filipgutica/newsite' },
+  ]
+
+  // Loaded lists are shared per URL for the page, so each test reads its own URL.
+  let urls = 0
+  const nextUrl = () => `https://example.test/projects-${++urls}.json`
+
+  const stubFetch = (respond: () => Promise<Response>) => {
+    const fetchMock = vi.fn(respond)
+    vi.stubGlobal('fetch', fetchMock)
+    return fetchMock
+  }
+  const respondWith = (body: unknown) => () => Promise.resolve(Response.json(body))
+
+  const mountHeader = (props: { project?: string, projectsUrl: string | null }) =>
+    mount(UiSiteHeader, { attachTo: document.body, props: { project: 'wtree', ...props } })
+
+  const menuLabels = (wrapper: ReturnType<typeof mountHeader>) =>
+    wrapper.findAll('nav[aria-label="Projects"] a').map(link => link.text())
+
+  const builtInLabels = SITE_PROJECTS.map(({ label }) => label)
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    document.body.innerHTML = ''
+  })
+
+  it('renders the built-in list first and the published list once it loads', async () => {
+    const url = nextUrl()
+    const fetchMock = stubFetch(respondWith(remote))
+    const wrapper = mountHeader({ projectsUrl: url })
+
+    expect(menuLabels(wrapper)).toEqual(builtInLabels)
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledWith(url, expect.anything())
+    expect(menuLabels(wrapper)).toEqual(['wtree', 'New site'])
+    expect(wrapper.get('a[aria-current="page"]').text()).toBe('wtree')
+    wrapper.unmount()
+  })
+
+  it('drops entries with an unsafe link, a duplicate id, or a missing field', async () => {
+    stubFetch(respondWith([
+      ...remote,
+      { id: 'script', label: 'Script', href: 'javascript:alert(1)', repository: 'https://github.com/filipgutica/script' },
+      { id: 'plain', label: 'Plain', href: 'http://filipgutica.github.io/plain/', repository: 'https://github.com/filipgutica/plain' },
+      { id: 'newsite', label: 'Copy', href: 'https://filipgutica.github.io/copy/', repository: 'https://github.com/filipgutica/copy' },
+      { id: 'nolabel', href: 'https://filipgutica.github.io/nolabel/', repository: 'https://github.com/filipgutica/nolabel' },
+      { id: '', label: 'No id', href: 'https://filipgutica.github.io/noid/', repository: 'https://github.com/filipgutica/noid' },
+    ]))
+    const wrapper = mountHeader({ projectsUrl: nextUrl() })
+    await flushPromises()
+
+    expect(menuLabels(wrapper)).toEqual(['wtree', 'New site'])
+    expect(wrapper.find('a[href^="javascript:"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it.each([
+    ['the request fails', () => Promise.reject(new TypeError('Failed to fetch'))],
+    ['the response is not 200', () => Promise.resolve(new Response(JSON.stringify(remote), { status: 404 }))],
+    ['the body is not JSON', () => Promise.resolve(new Response('<!doctype html>', { status: 200 }))],
+    ['no entry is valid', respondWith([{ id: 'script', label: 'Script', href: 'javascript:alert(1)', repository: 'javascript:alert(1)' }])],
+  ])('keeps the built-in list when %s', async (_case, respond) => {
+    stubFetch(respond)
+    const wrapper = mountHeader({ projectsUrl: nextUrl() })
+    await flushPromises()
+
+    expect(menuLabels(wrapper)).toEqual(builtInLabels)
+    wrapper.unmount()
+  })
+
+  it('fetches nothing when projectsUrl is null', async () => {
+    const fetchMock = stubFetch(respondWith(remote))
+    const wrapper = mountHeader({ projectsUrl: null })
+    await flushPromises()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(menuLabels(wrapper)).toEqual(builtInLabels)
+    wrapper.unmount()
+  })
+
+  it('shares one request between headers on the same page', async () => {
+    const url = nextUrl()
+    const fetchMock = stubFetch(respondWith(remote))
+    const first = mountHeader({ projectsUrl: url })
+    const second = mountHeader({ project: 'newsite', projectsUrl: url })
+    await flushPromises()
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(menuLabels(first)).toEqual(['wtree', 'New site'])
+    expect(menuLabels(second)).toEqual(['wtree', 'New site'])
+    expect(second.get('summary').attributes('aria-label')).toBe('Project: New site')
+    first.unmount()
+    second.unmount()
+  })
+
+  it('keeps the current project where the built-in list has it when the published list leaves it out', async () => {
+    stubFetch(respondWith([SITE_PROJECTS[0], ...remote]))
+    // devps is third in the built-in list.
+    const wrapper = mountHeader({ project: 'devps', projectsUrl: nextUrl() })
+    await flushPromises()
+
+    expect(menuLabels(wrapper)).toEqual(['annoterm', 'wtree', 'devps', 'New site'])
+    expect(wrapper.get('a[aria-current="page"]').text()).toBe('devps')
     wrapper.unmount()
   })
 })
