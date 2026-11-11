@@ -130,6 +130,29 @@ describe('UiSiteNav', () => {
     expect(document.activeElement).toBe(destination)
     expect(destination.tabIndex).toBe(-1)
   })
+
+  it('stops tracking a Find field once the drawer that held it closes', async () => {
+    const viewport = mockViewport({ mobile: false })
+    const wrapper = mount(UiSiteNav, { attachTo: document.body, props: { label: 'On this page', groups, find: { label: 'Find a section' } } })
+    await nextTick()
+    viewport.resize({ mobile: true })
+    await nextTick()
+
+    for (let round = 0; round < 4; round += 1) {
+      await wrapper.get('button').trigger('click')
+      await settleDialog()
+      expect(document.querySelector('[role="dialog"] .fg-site-find__input')).not.toBeNull()
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await settleDialog()
+      expect(document.querySelector('[role="dialog"]')).toBeNull()
+    }
+
+    // The component's own record of its fields, read through the test instance, not a public API.
+    const { findFields } = wrapper.vm as unknown as { findFields: Iterable<HTMLInputElement> | Map<string, HTMLInputElement> }
+    const tracked = findFields instanceof Map ? [...findFields.values()] : [...findFields]
+    expect(tracked.length).toBeLessThanOrEqual(2)
+    expect(tracked.every(field => field.isConnected)).toBe(true)
+  })
 })
 
 describe('UiSiteNav with headerMenu', () => {

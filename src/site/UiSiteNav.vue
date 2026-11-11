@@ -210,13 +210,14 @@ const shortcuts = useStorage(SHORTCUTS_KEY, true, undefined, {
 const findFields = new Set<HTMLInputElement>()
 const trackFindField = (el: unknown): void => {
   if (el instanceof HTMLInputElement) findFields.add(el)
+  // Vue unmounts a field before its element leaves the page, so forget detached fields after that.
+  else void nextTick(() => findFields.forEach(field => field.isConnected || findFields.delete(field)))
 }
 const findField = (): HTMLInputElement | undefined => {
   let field: HTMLInputElement | undefined
   for (const candidate of findFields) {
-    if (!candidate.isConnected) findFields.delete(candidate)
     // The newest field is the rail's when it mounts while the drawer closes.
-    else field = candidate
+    if (candidate.isConnected) field = candidate
   }
   return field
 }
@@ -279,6 +280,7 @@ const onShortcut = (event: KeyboardEvent): void => {
   } else if (mobile.value) openMenu({ toFind: true, select: true })
 }
 
+const [DefineSearchIcon, ReuseSearchIcon] = createReusableTemplate<{ iconClass?: string }>()
 const [DefineFind, ReuseFind] = createReusableTemplate()
 const [DefineEmpty, ReuseEmpty] = createReusableTemplate()
 const [DefineFoot, ReuseFoot] = createReusableTemplate()
@@ -307,6 +309,27 @@ onUnmounted(() => {
     :role="find ? 'complementary' : undefined"
     :aria-label="find ? label : undefined"
   >
+    <!-- The magnifier, shared by the Find field and the phone Find button. -->
+    <DefineSearchIcon v-slot="{ iconClass }">
+      <svg
+        :class="iconClass"
+        viewBox="0 0 16 16"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <circle
+          cx="7"
+          cy="7"
+          r="4.5"
+        />
+        <path d="M10.5 10.5 14 14" />
+      </svg>
+    </DefineSearchIcon>
     <!-- With Find, the rail is a named aside, so the field and the shortcut switch sit in a landmark. -->
     <!-- Find needs JavaScript, so it renders only once the page is interactive. -->
     <DefineFind>
@@ -315,24 +338,7 @@ onUnmounted(() => {
         class="fg-site-find"
       >
         <div class="fg-site-find__field">
-          <svg
-            class="fg-site-find__icon"
-            viewBox="0 0 16 16"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <circle
-              cx="7"
-              cy="7"
-              r="4.5"
-            />
-            <path d="M10.5 10.5 14 14" />
-          </svg>
+          <ReuseSearchIcon icon-class="fg-site-find__icon" />
           <input
             :ref="trackFindField"
             v-model="query"
@@ -432,23 +438,7 @@ onUnmounted(() => {
           aria-haspopup="dialog"
           @click="openMenu({ toFind: true })"
         >
-          <svg
-            viewBox="0 0 16 16"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <circle
-              cx="7"
-              cy="7"
-              r="4.5"
-            />
-            <path d="M10.5 10.5 14 14" />
-          </svg>
+          <ReuseSearchIcon />
         </UiButton>
         <!-- detail is 0 for a click made with Enter or Space, and 1 or more for a tap or a mouse click. -->
         <UiButton
