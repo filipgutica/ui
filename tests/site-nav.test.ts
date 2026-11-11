@@ -150,8 +150,8 @@ describe('UiSiteNav with headerMenu', () => {
     await nextTick()
   }
 
-  it('keeps each app\'s phone buttons in its own header', async () => {
-    mockViewport({ mobile: true })
+  it('keeps each app\'s phone buttons and Find focus in its own header and rail', async () => {
+    const viewport = mockViewport({ mobile: true })
     const first = mountShell()
     await settle()
     const second = mountShell()
@@ -163,6 +163,16 @@ describe('UiSiteNav with headerMenu', () => {
       expect(bar?.querySelector('button[aria-label="Menu"]')).not.toBeNull()
       expect(container.querySelector('.fg-site-rail')?.hasAttribute('data-in-header')).toBe(true)
     }
+
+    // Find focus crosses the breakpoint within the second app, both ways.
+    const secondFind = () => second.container.querySelector<HTMLElement>('.fg-site-header__bar button[aria-label="Find a section"]')
+    secondFind()?.focus()
+    viewport.resize({ mobile: false })
+    await settle()
+    expect(document.activeElement).toBe(second.container.querySelector('.fg-site-find__input'))
+    viewport.resize({ mobile: true })
+    await settle()
+    expect(document.activeElement).toBe(secondFind())
 
     // The first app keeps its header menu while the second one leaves.
     second.app.unmount()

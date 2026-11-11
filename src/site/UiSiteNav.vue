@@ -205,7 +205,21 @@ const shortcuts = useStorage(SHORTCUTS_KEY, true, undefined, {
   serializer: { read: raw => raw !== 'off', write: value => (value ? 'on' : 'off') },
 })
 
-const findField = (): HTMLInputElement | null => document.querySelector<HTMLInputElement>(`[aria-describedby="${statusId}"]`)
+// The Find field renders in the rail or in the drawer, and in both while the drawer animates
+// closed. This component tracks its own fields, so another app's Find never takes focus.
+const findFields = new Set<HTMLInputElement>()
+const trackFindField = (el: unknown): void => {
+  if (el instanceof HTMLInputElement) findFields.add(el)
+}
+const findField = (): HTMLInputElement | undefined => {
+  let field: HTMLInputElement | undefined
+  for (const candidate of findFields) {
+    if (!candidate.isConnected) findFields.delete(candidate)
+    // The newest field is the rail's when it mounts while the drawer closes.
+    else field = candidate
+  }
+  return field
+}
 const firstMatch = (field: HTMLElement): HTMLAnchorElement | null | undefined => field
   .closest('.fg-site-rail__content')
   ?.querySelector<HTMLAnchorElement>('.fg-site-rail__group:not([hidden]) a:not([hidden])')
@@ -320,6 +334,7 @@ onUnmounted(() => {
             <path d="M10.5 10.5 14 14" />
           </svg>
           <input
+            :ref="trackFindField"
             v-model="query"
             class="fg-input fg-site-find__input"
             data-size="md"
