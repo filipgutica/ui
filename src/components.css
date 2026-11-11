@@ -446,7 +446,6 @@
       background: transparent;
       cursor: pointer;
     }
-    .fg-select:not([multiple]):not([size]) option + option { margin-block-start: 1px; }
     .fg-select:not([multiple]):not([size]) option[value=""] { color: var(--color-input-placeholder); }
     /* Group labels are quiet mono captions; grouped options keep the same columns as the rest. */
     .fg-select:not([multiple]):not([size]) optgroup {
@@ -458,15 +457,17 @@
       font: var(--weight-regular) var(--text-md) / var(--leading) var(--font-ui);
     }
     .fg-select:not([multiple]):not([size]) optgroup option:first-of-type { margin-block-start: 0.375rem; }
-    .fg-select:not([multiple]):not([size]) option:checked { font-weight: var(--weight-medium); background: color-mix(in srgb, var(--color-accent) 8%, var(--color-input-bg)); }
     /* Pointer hover only fills the row; the focus ring marks the keyboard position. Inset: the picker scrolls.
        Every picker fill mixes into the input fill, so the input text stays readable on imported themes. */
     .fg-select:not([multiple]):not([size]) option:hover:not(:disabled) { background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg)); }
-    .fg-select:not([multiple]):not([size]) option:checked:hover:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 12%, var(--color-input-bg)); }
-    .fg-select:not([multiple]):not([size]) option:focus-visible:not(:checked) { background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg)); }
-    .fg-select:not([multiple]):not([size]) option:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
+    .fg-select:not([multiple]):not([size]) option:focus-visible {
+      background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg));
+      outline: var(--focus-width) solid var(--color-focus);
+      outline-offset: calc(var(--focus-width) * -1);
+    }
     .fg-select:not([multiple]):not([size]) option:disabled { color: var(--color-input-placeholder); opacity: 0.58; cursor: not-allowed; }
-    .fg-select:not([multiple]):not([size]) option::checkmark { order: 1; margin-inline-start: auto; visibility: hidden; color: var(--color-input-text); }
+    /* The checked option takes no fill: the accent check at the trailing edge carries the state. */
+    .fg-select:not([multiple]):not([size]) option::checkmark { order: 1; margin-inline-start: auto; visibility: hidden; color: var(--color-accent); }
     .fg-select:not([multiple]):not([size]) option:checked::checkmark { visibility: visible; }
     @media (pointer: fine) {
       .fg-select:not([multiple]):not([size]) option { min-height: var(--control-sm); }

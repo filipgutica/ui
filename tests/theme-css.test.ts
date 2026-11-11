@@ -49,9 +49,9 @@ describe.each([
     expect(contrast(tokens[foreground]!, tokens[background]!)).toBeGreaterThanOrEqual(3)
   })
 
-  it.each([0.08, 0.12])('keeps select text and its checkmark readable on the %s accent tint', ratio => {
-    const fill = mix(tokens['--color-accent']!, tokens['--color-input-bg']!, ratio)
-    expect(contrast(tokens['--color-text']!, fill)).toBeGreaterThanOrEqual(4.5)
+  // The checked option has no fill, so its accent check carries the state on the picker and on a hovered row.
+  it.each([0, 0.08])('keeps the select check visible on the picker with a %s text tint', ratio => {
+    const fill = mix(tokens['--color-text']!, tokens['--color-input-bg']!, ratio)
     expect(contrast(tokens['--color-accent']!, fill)).toBeGreaterThanOrEqual(3)
   })
 

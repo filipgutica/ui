@@ -772,15 +772,11 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   // Pointer hover fills a row; only the keyboard position draws the focus ring.
   await select.press('Space')
   const checked = select.locator('option:checked')
-  const color = await checked.evaluate(element => getComputedStyle(element).backgroundColor)
-  await expect(checked).toHaveCSS('font-weight', '500')
-  expect(color).not.toBe(picker.background)
   await expect(checked).toHaveCSS('outline-style', 'solid')
-  await checked.hover()
-  expect(await checked.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(color)
   const hovered = select.locator('option').first()
   await hovered.hover()
   await expect(hovered).toHaveCSS('outline-style', 'none')
+  expect(await hovered.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)')
   // The check sits at the trailing edge, so every option's text starts at the row's 12px padding.
   const starts = await select.locator('option').evaluateAll(options => options.map((option) => {
     const range = document.createRange()
@@ -790,6 +786,13 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   expect(new Set(starts)).toEqual(new Set([12]))
   await page.keyboard.press('ArrowDown')
   await expect(select.locator('option:focus-visible')).toHaveCSS('outline-style', 'solid')
+  // Focus has left it. As in the catalogue, the checked option takes no fill and regular weight, and its accent check
+  // carries the state. Rows touch, with no gap between them.
+  await expect(checked).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(checked).toHaveCSS('font-weight', '400')
+  expect(await checked.evaluate(element => getComputedStyle(element, '::checkmark').color)).toBe(accent)
+  const rows = await select.locator('option').evaluateAll(options => options.map(option => option.getBoundingClientRect()))
+  for (let index = 1; index < rows.length; index += 1) expect(rows[index]!.top).toBeCloseTo(rows[index - 1]!.bottom, 1)
   await page.keyboard.press('Escape')
   await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('none')
   // A consumer supplies the empty-value first option; UiSelect adds no placeholder API.
@@ -825,7 +828,8 @@ test('keeps picker rows readable when an imported theme inverts the input fill',
   const select = page.locator('.playground-stage > .fg-select')
   await select.selectOption('passed')
   await select.press('Space')
-  // Option fills are opaque, so canvas resolves each color to hex without an underlay.
+  // Option fills are opaque, so canvas resolves each color to hex without an underlay. An unfilled
+  // row, such as the checked one, shows the picker's fill.
   const rowContrast = async (option: Locator) => {
     const { color, background } = await option.evaluate(element => {
       const context = document.createElement('canvas').getContext('2d')!
@@ -835,7 +839,10 @@ test('keeps picker rows readable when an imported theme inverts the input fill',
         return '#' + [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(channel => channel.toString(16).padStart(2, '0')).join('')
       }
       const style = getComputedStyle(element)
-      return { color: hex(style.color), background: hex(style.backgroundColor) }
+      const fill = style.backgroundColor === 'rgba(0, 0, 0, 0)'
+        ? getComputedStyle(element.closest('select')!, '::picker(select)').backgroundColor
+        : style.backgroundColor
+      return { color: hex(style.color), background: hex(fill) }
     })
     return contrast(color, background)
   }

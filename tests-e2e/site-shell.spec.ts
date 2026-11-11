@@ -97,6 +97,18 @@ test.describe('desktop', () => {
     await expect(status(page)).toHaveText('7 tokens')
   })
 
+  test('sets rail rows in the UI face, and Find replaces the visible rail heading', async ({ page }) => {
+    await page.goto(fixture)
+    const face = (selector: string) => page.locator(selector).first().evaluate(element => getComputedStyle(element).fontFamily)
+    expect(await face('.fg-site-rail__nav a')).toBe(await face('body'))
+    expect(await face('.fg-site-projects__menu a')).toMatch(/Mono/)
+    // The heading still names the navigation.
+    await expect(page.getByRole('navigation', { name: 'On this page' })).toBeVisible()
+    expect((await page.locator('.fg-site-rail__label').boundingBox())!.height).toBeLessThanOrEqual(1)
+    // The shortcut switch label is --text-sm, as the rail footer is.
+    await expect(page.locator('.fg-site-rail__foot label')).toHaveCSS('font-size', '13px')
+  })
+
   test('marks the current header link as a navigation strip row', async ({ page }) => {
     await page.goto(fixture)
     const current = page.locator('.fg-site-header__links a[aria-current="page"]')
@@ -124,7 +136,17 @@ test.describe('phone', () => {
   test('the header is one sticky row with the project menu, Find, and a round Menu button', async ({ page }) => {
     await page.goto(fixture)
     const header = page.locator('.fg-site-header')
-    expect((await header.boundingBox())!.height).toBeLessThanOrEqual(65)
+    // The catalogue's row: 44px controls, --space-3 above and below, and a 1px subtle rule.
+    expect((await header.boundingBox())!.height).toBeCloseTo(69, 0)
+    const subtle = await header.evaluate((element) => {
+      const probe = document.createElement('span')
+      probe.style.color = 'var(--color-border-subtle)'
+      element.append(probe)
+      const color = getComputedStyle(probe).color
+      probe.remove()
+      return color
+    })
+    await expect(header).toHaveCSS('border-bottom-color', subtle)
     const menu = page.getByRole('button', { name: 'Menu', exact: true })
     const findButton = page.getByRole('button', { name: 'Find a section' })
     await expect(menu).toHaveAttribute('aria-haspopup', 'dialog')
@@ -159,9 +181,23 @@ test.describe('phone', () => {
     await page.keyboard.press('Escape')
     await expect(drawer).toBeHidden()
     await expect(menu).toBeFocused()
-    // A tap focuses the drawer itself, so no ring shows.
+    // A tap focuses the drawer itself, and no ring shows, even after a keyboard close.
     await menu.click()
     await expect(drawer).toBeFocused()
+    await expect(drawer).toHaveCSS('outline-style', 'none')
+    // The catalogue's drawer: 272px wide, named close, blocks 28px apart, and the picker 8px below its label.
+    expect((await drawer.boundingBox())!.width).toBeCloseTo(272, 0)
+    await expect(drawer.getByRole('button', { name: 'Close menu' })).toBeVisible()
+    const gaps = await drawer.evaluate((element) => {
+      const box = (selector: string) => element.querySelector(selector)!.getBoundingClientRect()
+      return {
+        pagesToAppearance: box('.fg-site-rail__appearance').top - box('.fg-site-rail__pages').bottom,
+        appearanceToRows: box('.fg-site-rail__nav').top - box('.fg-site-rail__appearance').bottom,
+        labelToPicker: box('.fg-site-rail__appearance .fg-segmented').top - box('.fg-site-rail__appearance > .fg-site-rail__group-label').bottom,
+        groups: box('.fg-site-rail__group + .fg-site-rail__group').top - box('.fg-site-rail__group').bottom,
+      }
+    })
+    expect(gaps).toEqual({ pagesToAppearance: 28, appearanceToRows: 28, labelToPicker: 8, groups: 16 })
     await drawer.getByRole('link', { name: 'Install' }).click()
     await expect(drawer).toBeHidden()
     await expect(page.locator('#install')).toBeFocused()

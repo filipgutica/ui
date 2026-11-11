@@ -165,7 +165,7 @@
     gap: 0.125rem;
     padding: 0.125rem;
   }
-  .fg-site-header__links.fg-site-nav a { flex: none; min-height: var(--control-lg); font-family: var(--font-ui); white-space: nowrap; }
+  .fg-site-header__links.fg-site-nav a { flex: none; min-height: var(--control-lg); white-space: nowrap; }
   /* The phone Find and Menu buttons of a UiSiteNav with headerMenu. Icon-only, so the button's
    * round corner stays. */
   .fg-site-header__bar { display: flex; flex: none; gap: var(--space-2); }
@@ -218,7 +218,7 @@
     padding-inline: var(--space-3);
     border-radius: var(--radius-inline);
     color: var(--color-muted);
-    font-family: var(--font-mono);
+    font-family: var(--font-ui);
     font-size: var(--text-sm);
     text-decoration: none;
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
@@ -241,7 +241,7 @@
     background: var(--color-accent);
   }
   /* Rows inside the floating project menu sit --space-1 inside its 16px corner, so they are concentric with it. */
-  .fg-site-projects__menu a { border-radius: calc(var(--radius-panel) - var(--space-1)); }
+  .fg-site-projects__menu a { border-radius: calc(var(--radius-panel) - var(--space-1)); font-family: var(--font-mono); }
   /* In the section rail, the current section takes the current-page look, without the pip. It keeps
    * aria-current="location"; only the look changes. */
   .fg-site-rail__nav a[aria-current="location"] {
@@ -292,7 +292,7 @@
     font-weight: var(--weight-semibold);
   }
   .fg-site-rail__group { display: grid; gap: 2px; }
-  .fg-site-rail__group + .fg-site-rail__group { margin-top: var(--space-3); }
+  .fg-site-rail__group + .fg-site-rail__group { margin-top: var(--space-2); }
   .fg-site-rail__group-label { margin-block-end: var(--space-1); }
   /* With headerMenu on a phone, the rail lives in the header's Menu drawer, so nothing stays in place. */
   .fg-site-rail[data-in-header] { display: none; }
@@ -345,6 +345,17 @@
     color: var(--color-muted);
     font-size: var(--text-sm);
   }
+  .fg-site-rail__foot .fg-switch[data-size] { font-size: var(--text-sm); }
+  .fg-site-rail__foot .fg-switch__text label { color: var(--color-muted); }
+  /* With Find, the field leads the rail, so the nav's heading is hidden but still names it. */
+  .fg-site-rail__content:has(> .fg-site-find) .fg-site-rail__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   /* The Menu drawer holds Find, the header's links under Pages, its appearance picker, then the
    * rows. Find stays at the top of the drawer while the rows scroll under it. */
   .fg-drawer__body .fg-site-find {
@@ -356,17 +367,21 @@
     background: var(--color-surface-raised);
   }
   .fg-drawer__body .fg-site-find__field { max-width: none; }
-  .fg-site-rail__pages { display: grid; gap: 0.125rem; margin-block-end: var(--space-4); }
+  /* Blocks in the drawer sit 28px apart: the catalogue's 16px margin plus its 12px rail gap. */
+  .fg-site-rail__pages { display: grid; gap: 0.125rem; margin-block-end: calc(var(--space-4) + var(--space-3)); }
   .fg-site-rail__pages > .fg-site-rail__group-label { margin-block-end: var(--space-1); }
-  .fg-site-rail__pages a { font-family: var(--font-ui); }
   .fg-site-rail__appearance {
     display: grid;
     justify-items: start;
     gap: var(--space-2);
-    margin-block-end: var(--space-4);
+    margin-block-end: calc(var(--space-4) + var(--space-3));
     padding-block-end: var(--space-4);
     border-bottom: 1px solid var(--color-border-subtle);
   }
+  /* The picker sits 8px below its label, as the grid gap sets. */
+  .fg-site-rail__appearance > .fg-site-rail__group-label { margin-block-end: 0; }
+  /* The drawer focuses itself on a tap, so no ring shows; the rows draw their own. */
+  .fg-drawer__content.fg-site-rail__drawer:focus-visible { outline: none; }
 
   /* Capture panel (UiCapture): tabs in the header, the capture as the body, and the
    * command and caption as the footer. The screen uses a dark terminal palette by
@@ -786,16 +801,17 @@
     /* With headerMenu the rows stay open in place without JavaScript, so the summary has nothing to do. */
     .fg-site-rail[data-header-menu] .fg-site-rail__summary { display: none; }
     /* Phone header (UiSiteNav headerMenu): one sticky row with the project menu, then Find and Menu.
-     * The header's links and picker move into the Menu drawer. In-page jumps land --space-4 below the
-     * row, which is --space-16 tall plus its 1px rule. */
-    :root:has(.fg-site-header__bar > *) { scroll-padding-top: calc(var(--space-16) + 1px + var(--space-4)); }
-    .fg-site-header:has(.fg-site-header__bar > *) { position: sticky; top: 0; }
+     * The header's links and picker move into the Menu drawer. The row is the 44px controls with
+     * --space-3 above and below plus its 1px subtle rule, and in-page jumps land --space-4 below it. */
+    :root:has(.fg-site-header__bar > *) { scroll-padding-top: calc(var(--control-lg) + 2 * var(--space-3) + 1px + var(--space-4)); }
+    .fg-site-header:has(.fg-site-header__bar > *) { position: sticky; top: 0; border-bottom-color: var(--color-border-subtle); }
+    .fg-site-header__inner:has(> .fg-site-header__bar > *) { padding-block: var(--space-3); }
     .fg-site-header__inner:has(> .fg-site-header__bar > *) { flex-wrap: nowrap; }
     .fg-site-header__inner:has(> .fg-site-header__bar > *) :is(.fg-site-header__links, .fg-site-header__appearance) { display: none; }
     .fg-site-header__inner:has(> .fg-site-header__bar > *) .fg-site-projects { min-width: 0; }
     /* The row sits inside the scroll inset, so its controls cancel it; otherwise focusing one scrolls the page. */
     .fg-site-header__inner:has(> .fg-site-header__bar > *) :is(.fg-site-header__bar > *, .fg-site-projects__trigger) {
-      scroll-margin-top: calc(-1 * (var(--space-16) + 1px + var(--space-4)));
+      scroll-margin-top: calc(-1 * (var(--control-lg) + 2 * var(--space-3) + 1px + var(--space-4)));
     }
     /* The drawer title already shows the label; the heading still names the nav. */
     .fg-drawer__content .fg-site-rail__label {
