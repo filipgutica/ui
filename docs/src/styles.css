@@ -117,7 +117,7 @@ pre,
   font-weight: var(--weight-medium);
   text-decoration: none;
 }
-.docs-link:hover { color: var(--color-text); }
+@media (hover: hover) { .docs-link:hover { color: var(--color-text); } }
 .button-row { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
 .intro .button-row { align-items: center; gap: var(--space-6); margin-top: 0; }
 .intro .fg-button { min-height: var(--control-lg); }
@@ -137,7 +137,7 @@ pre,
 .home-preview__field { flex: 0 1 12rem; }
 .home-preview__alert { flex: 1 1 8rem; min-width: 0; }
 .home-preview__caption { color: var(--color-muted); font-family: var(--font-mono); font-size: var(--text-sm); text-decoration: none; }
-.home-preview__caption:hover { color: var(--color-text); text-decoration: underline; }
+@media (hover: hover) { .home-preview__caption:hover { color: var(--color-text); text-decoration: underline; } }
 /* Keep the status dots without forcing the alert onto a second desktop row. */
 .home-preview__row .fg-badge { gap: var(--space-1); }
 .home-preview__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
@@ -169,7 +169,7 @@ pre,
 .api-table thead th { color: var(--color-muted); background: var(--color-surface); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .api-table tbody tr:last-child > * { border-bottom: 0; }
 .api-table tbody tr { transition: background-color var(--duration-fast) ease; }
-.api-table tbody tr:hover { background: var(--color-row-hover); }
+@media (hover: hover) { .api-table tbody tr:hover { background: var(--color-row-hover); } }
 .api-table tbody th { font-weight: var(--weight-semibold); }
 .api-table code { font-size: var(--text-sm); }
 .api-table code,
@@ -288,7 +288,7 @@ pre,
 .theme-empty-state { margin: 0; padding: var(--space-8); border: 1px dashed var(--color-border); border-radius: var(--radius-panel); color: var(--color-muted); text-align: center; }
 .theme-results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); max-height: 24rem; margin: 0; padding: 0; overflow: auto; list-style: none; }
 .theme-results li { position: relative; display: grid; min-height: 8.75rem; align-content: start; gap: var(--space-2); padding: var(--space-3) var(--space-3) 3.25rem; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-panel); background: var(--color-surface); }
-.theme-results li:hover { background: var(--color-row-hover); }
+@media (hover: hover) { .theme-results li:hover { background: var(--color-row-hover); } }
 .theme-result__heading { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); align-items: center; }
 .theme-result__heading > div { display: grid; min-width: 0; }
 .theme-result__heading strong,

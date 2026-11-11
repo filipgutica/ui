@@ -2,6 +2,7 @@
 import { computed, ref, shallowRef, watch } from 'vue'
 
 import { useClipboardCopy } from '../use-clipboard-copy.js'
+import CopyIcon from './CopyIcon.vue'
 
 export interface UiCodeBlockProps {
   code: string
@@ -71,15 +72,11 @@ const { copied, pending, error, copy } = useClipboardCopy({
   unavailableMessage: 'Clipboard unavailable. Select the code to copy it.',
   failureMessage: 'Could not copy. Select the code to copy it.',
 })
-const copySucceeded = computed(() => copied.value && !error.value)
-const hiddenSuccess = computed(() => iconOnly.value && copySucceeded.value && !highlightingError.value)
-const statusMessage = computed(() => {
-  if (error.value) return error.value
-  if (iconOnly.value && highlightingError.value) {
-    return copied.value ? `Code copied to clipboard. ${highlightingError.value}` : highlightingError.value
-  }
-  return copied.value ? 'Code copied to clipboard.' : highlightingError.value
-})
+// Copy shows a tick while copied holds. Success is announced, not shown: its message is visually
+// hidden, and it blanks while a copy is in flight so a repeat copy is announced again.
+const announced = computed(() => copied.value && !pending.value)
+// Failures and the highlighting fallback stay visible.
+const visibleMessage = computed(() => error.value || highlightingError.value)
 
 const copyCode = (): Promise<void> => copy(code)
 </script>
@@ -111,33 +108,13 @@ const copyCode = (): Promise<void> => copy(code)
           type="button"
           class="fg-code-block__copy fg-quiet-action"
           :disabled="pending"
+          :data-copied="copied ? '' : undefined"
           aria-label="Copy code"
-          :title="iconOnly ? (copySucceeded ? 'Copied' : 'Copy code') : undefined"
+          :title="iconOnly ? 'Copy code' : undefined"
           @click="copyCode"
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            aria-hidden="true"
-          >
-            <path
-              v-if="iconOnly && copySucceeded"
-              d="m5 12 4 4L19 6"
-            />
-            <template v-else>
-              <rect
-                x="8"
-                y="8"
-                width="12"
-                height="13"
-                rx="2"
-              />
-              <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
-            </template>
-          </svg>
-          <span v-if="variant === 'default'">{{ copySucceeded ? 'Copied' : 'Copy' }}</span>
+          <CopyIcon :copied="copied" />
+          <span v-if="variant === 'default'">Copy</span>
         </button>
       </div>
     </div>
@@ -161,7 +138,10 @@ const copyCode = (): Promise<void> => copy(code)
     <span
       class="fg-code-block__status"
       role="status"
-      :data-state="hiddenSuccess ? 'success' : undefined"
-    >{{ statusMessage }}</span>
+      :data-state="announced && !visibleMessage ? 'success' : undefined"
+    ><span
+      v-if="announced"
+      class="fg-code-block__success"
+    >Code copied to clipboard. </span>{{ visibleMessage }}</span>
   </div>
 </template>

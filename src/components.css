@@ -12,19 +12,27 @@
     line-height: var(--leading);
   }
 
+  /* A frame that holds the header, with the source in an inset panel (.fg-code-block__pre). */
   .fg-code-block {
+    position: relative;
     min-width: 0;
     max-width: 100%;
     overflow: hidden;
-    border: 1px solid transparent;
+    padding: var(--space-1);
+    border: 1px solid var(--color-border-subtle);
     box-shadow: var(--shadow-surface);
     border-radius: var(--radius-panel);
-    background: var(--color-code);
+    background: var(--color-surface-raised);
     color: var(--color-code-text);
   }
-  /* Commands stay dark and carry the project hue; captures use the neutral terminal tokens. */
+  /* The header sits on the frame, so the frame drops its top padding under one. */
+  .fg-code-block[data-variant="default"] { padding-top: 0; }
+  /* Commands stay dark and carry the project hue; captures use the neutral terminal tokens.
+   * The source panel is the plate darkened, so it reads as a panel on the plate. */
   .fg-code-block[data-command="true"] {
+    --color-code: color-mix(in srgb, var(--color-command-bg, var(--color-terminal)) 55%, var(--color-terminal));
     --color-code-text: var(--color-terminal-text);
+    /* Muted text, such as Copy at rest, takes the caption colour. */
     --color-muted: var(--color-terminal-caption-text);
     /* The plate's ring takes the dark-theme accent, 7:1 or more on --color-command-bg in both page themes. */
     --color-focus: var(--color-project-dark);
@@ -42,7 +50,7 @@
     border-color: var(--color-command-border, var(--color-terminal-border));
     background: var(--color-command-bg, var(--color-terminal));
   }
-  .fg-code-block[data-command="true"] .fg-code-block__header { background: transparent; border-color: var(--color-command-border, var(--color-terminal-border)); }
+  .fg-code-block[data-command="true"] .fg-code-block__header { color: var(--color-terminal-caption-text); }
   .fg-code-block[data-command="true"] .fg-code-block__line::before {
     content: '$ ' / '';
     flex: none;
@@ -55,9 +63,7 @@
     align-items: center;
     gap: var(--space-3);
     min-height: 2.5rem;
-    padding: 0.35rem var(--space-3);
-    border-bottom: 1px solid var(--color-border-subtle);
-    background: var(--color-surface-raised);
+    padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
     font-size: var(--text-xs);
   }
   .fg-code-block__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
@@ -71,16 +77,28 @@
     min-width: var(--control-lg);
     min-height: var(--control-lg);
     padding: var(--space-1) 0.4rem;
-    color: inherit;
   }
-  /* The code block has its own palette, so its Copy keeps the plate's text colour on hover. */
-  .fg-code-block .fg-code-block__copy:hover:where(:not(:disabled)) { color: inherit; }
+  /* Copy is muted at rest. The code block has its own palette, so on hover and while the tick
+   * shows (data-copied) it takes the block's text colour. */
+  .fg-code-block .fg-code-block__copy { color: var(--color-muted); }
+  .fg-code-block .fg-code-block__copy[data-copied] { color: var(--color-code-text); }
+  @media (hover: hover) { .fg-code-block .fg-code-block__copy:hover:where(:not(:disabled)) { color: var(--color-code-text); } }
   .fg-code-block__copy svg { width: 1rem; height: 1rem; }
   /* Inset: the code block clips its content. */
   .fg-code-block__pre:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
   .fg-code-block .fg-code-block__copy:focus-visible { outline-offset: calc(var(--focus-width) * -1); }
   .fg-figure__plate:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
-  .fg-code-block__pre { margin: 0; padding: var(--space-4); overflow: auto; max-height: 32rem; tab-size: 2; }
+  /* The source is an inset panel. It sits --space-1 inside the frame, so its corners are concentric with the frame's. */
+  .fg-code-block__pre {
+    margin: 0;
+    padding: var(--space-4);
+    overflow: auto;
+    max-height: 32rem;
+    border: 1px solid transparent;
+    border-radius: calc(var(--radius-panel) - var(--space-1));
+    background: var(--color-code);
+    tab-size: 2;
+  }
   .fg-code-block__pre, .fg-code-block__pre code { font-family: var(--font-mono); font-size: var(--text-code); line-height: 1.65; }
   .fg-code-block__pre code { display: block; color: inherit; }
   /* iOS Safari enlarges some lines of wide wrapped text; code keeps one size, with each prompt on its line's baseline. */
@@ -93,19 +111,19 @@
   .fg-code-block__status:not(:empty) { display: block; padding: var(--space-2) var(--space-3); font-size: var(--text-xs); }
   /* Compact and embedded blocks put an icon-only Copy beside the code instead of in a header row. */
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) {
-    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
   }
+  /* The compact panel fills the row beside Copy, so it sits --space-1 from the frame and from Copy
+   * on every side, and centres its line. */
+  .fg-code-block[data-variant="compact"]:has(> .fg-code-block__header) { column-gap: var(--space-1); }
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__header {
     grid-column: 2;
     grid-row: 1;
     min-height: 0;
-    padding: var(--space-1);
-    border: 0;
-    background: transparent;
+    padding: 0;
   }
+  .fg-code-block[data-variant="embedded"] .fg-code-block__header { padding: var(--space-1); }
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__actions {
     gap: var(--space-1);
     margin-left: 0;
@@ -119,14 +137,16 @@
     grid-row: 1;
     min-width: 0;
   }
-  .fg-code-block[data-variant="compact"] .fg-code-block__pre { padding: var(--space-2) var(--space-3); }
+  .fg-code-block[data-variant="compact"] .fg-code-block__pre { align-content: center; padding: var(--space-2) var(--space-3); }
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__status:not(:empty) {
     grid-column: 1 / -1;
     padding: var(--space-2) var(--space-3);
     font-size: var(--text-sm);
     overflow-wrap: anywhere;
   }
-  .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__status[data-state="success"] {
+  /* Success shows as the tick on Copy, so its message is for the live region alone. */
+  .fg-code-block[data-variant] .fg-code-block__status[data-state="success"],
+  .fg-code-block__success {
     position: absolute;
     top: 0;
     left: 0;
@@ -137,13 +157,17 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  /* Embedded source sits inside a frame that draws the edge, so the block has no edge, corners, or depth of its own. */
+  /* Embedded source sits inside a frame that draws the edge, so the block has no edge, corners,
+   * padding, or depth of its own, and its panel is flush, filling the frame below the stage's hairline. */
   .fg-code-block[data-variant="embedded"] {
     align-items: start;
+    padding: 0;
     border: 0;
     border-radius: 0;
+    background: var(--color-code);
     box-shadow: none;
   }
+  .fg-code-block[data-variant="embedded"] .fg-code-block__pre { border: 0; border-radius: 0; }
 
   /* An example frame: the live preview on the page canvas, its source below one hairline. */
   .fg-example {
@@ -195,9 +219,10 @@
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
   }
-  /* :where keeps hover and press at their old weight, so component colour rules still win. */
-  .fg-quiet-action:hover:where(:not(:disabled)) { color: var(--color-text); background: color-mix(in srgb, currentColor 12%, transparent); }
-  .fg-quiet-action:active:where(:not(:disabled)) { background: color-mix(in srgb, currentColor 18%, transparent); }
+  /* :where keeps hover and press at their old weight, so component colour rules still win.
+   * The press stays outside the hover query: it shows only while a finger or button is down. */
+  @media (hover: hover) { .fg-quiet-action:hover:where(:not(:disabled)) { color: var(--color-text); background: color-mix(in srgb, currentColor 6%, transparent); } }
+  .fg-quiet-action:active:where(:not(:disabled)) { background: color-mix(in srgb, currentColor 12%, transparent); }
 
   .fg-button {
     --fg-button-shadow: var(--shadow-raise);
@@ -220,8 +245,10 @@
     text-decoration: none;
   }
 
-  .fg-button:hover:not(:disabled) {
-    background: var(--color-button-hover);
+  @media (hover: hover) {
+    .fg-button:hover:not(:disabled) {
+      background: var(--color-button-hover);
+    }
   }
 
   /* A pressed primary keeps the hover fill, which moves away from its text, and the sink shadow
@@ -307,14 +334,18 @@
     background: var(--color-control-thumb);
   }
 
-  .fg-button[data-variant="secondary"]:hover:not(:disabled) {
-    color: var(--color-text);
-    background: color-mix(in srgb, var(--color-text) 8%, var(--color-control-thumb));
+  @media (hover: hover) {
+    .fg-button[data-variant="secondary"]:hover:not(:disabled) {
+      color: var(--color-text);
+      background: color-mix(in srgb, var(--color-text) 8%, var(--color-control-thumb));
+    }
   }
 
-  .fg-button[data-variant="ghost"]:hover:not(:disabled) {
-    color: var(--color-text);
-    background: var(--color-row-hover);
+  @media (hover: hover) {
+    .fg-button[data-variant="ghost"]:hover:not(:disabled) {
+      color: var(--color-text);
+      background: var(--color-row-hover);
+    }
   }
 
   .fg-button[data-variant="ghost"] {
@@ -334,8 +365,10 @@
     color: var(--color-danger-button-text, color-mix(in srgb, var(--color-error) 85%, var(--color-text)));
   }
 
-  .fg-button[data-variant="danger"]:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-error) 10%, var(--color-error-surface));
+  @media (hover: hover) {
+    .fg-button[data-variant="danger"]:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--color-error) 10%, var(--color-error-surface));
+    }
   }
 
   .fg-button[data-variant="text"] {
@@ -350,9 +383,11 @@
     box-shadow: none;
   }
 
-  .fg-button[data-variant="text"]:hover:not(:disabled) {
-    color: var(--color-link);
-    background: transparent;
+  @media (hover: hover) {
+    .fg-button[data-variant="text"]:hover:not(:disabled) {
+      color: var(--color-link);
+      background: transparent;
+    }
   }
 
   /* A press sinks the button 1px into the page and darkens its fill, so the click reads at a glance. */
@@ -459,7 +494,7 @@
     .fg-select:not([multiple]):not([size]) optgroup option:first-of-type { margin-block-start: 0.375rem; }
     /* Pointer hover only fills the row; the focus ring marks the keyboard position. Inset: the picker scrolls.
        Every picker fill mixes into the input fill, so the input text stays readable on imported themes. */
-    .fg-select:not([multiple]):not([size]) option:hover:not(:disabled) { background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg)); }
+    @media (hover: hover) { .fg-select:not([multiple]):not([size]) option:hover:not(:disabled) { background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg)); } }
     .fg-select:not([multiple]):not([size]) option:focus-visible {
       background: color-mix(in srgb, var(--color-input-text) 8%, var(--color-input-bg));
       outline: var(--focus-width) solid var(--color-focus);
@@ -513,7 +548,7 @@
     appearance: none;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 2.5l7 7m0-7l-7 7' stroke='black' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
   }
-  .fg-input[type="search"]:where(:not(:disabled))::-webkit-search-cancel-button:hover { background: var(--color-text); }
+  @media (hover: hover) { .fg-input[type="search"]:where(:not(:disabled))::-webkit-search-cancel-button:hover { background: var(--color-text); } }
 
   .fg-field {
     display: grid;
@@ -637,8 +672,10 @@
     transition: background-color var(--duration-fast) var(--ease-out);
   }
 
-  .fg-radio-card:hover:not([data-disabled], [data-state="checked"]) {
-    background: color-mix(in srgb, var(--color-surface-muted) 45%, var(--color-surface-raised));
+  @media (hover: hover) {
+    .fg-radio-card:hover:not([data-disabled], [data-state="checked"]) {
+      background: color-mix(in srgb, var(--color-surface-muted) 45%, var(--color-surface-raised));
+    }
   }
 
   /* Depth and a check badge distinguish the choice without an accent ring. */
@@ -877,7 +914,7 @@
   .fg-toggle-button[data-size="md"] { min-height: var(--control-md); font-size: var(--text-md); }
   .fg-toggle-button[data-size="lg"] { min-height: var(--control-lg); font-size: var(--text-lg); }
 
-  .fg-toggle-button:hover:not(:disabled, [aria-pressed="true"]) { border-color: var(--color-border); }
+  @media (hover: hover) { .fg-toggle-button:hover:not(:disabled, [aria-pressed="true"]) { border-color: var(--color-border); } }
   /* The switch carries the on state; the card takes the selected rows' faint tint and a faint accent hairline. */
   .fg-toggle-button[aria-pressed="true"] {
     border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
@@ -923,8 +960,10 @@
   .fg-segmented[data-icon-only="true"] .fg-segmented__item { width: var(--fg-segmented-item); padding: 0; }
   /* The thumb is inset inside each full-size button, so it floats on the track and the hit target keeps its size. */
   .fg-segmented__item::before { content: ""; position: absolute; inset: 2px; z-index: -2; border-radius: var(--radius-control); pointer-events: none; }
-  .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }
-  .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"])::before { background: color-mix(in srgb, var(--fg-segmented-thumb) 45%, transparent); }
+  @media (hover: hover) {
+    .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }
+    .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"])::before { background: color-mix(in srgb, var(--fg-segmented-thumb) 45%, transparent); }
+  }
   /* The accent label marks the pressed choice: 4.5:1 for text and 3:1 for an icon on its thumb.
    * An imported theme whose accent falls short sets --color-segmented-current-text. */
   .fg-segmented__item[aria-pressed="true"] { color: var(--color-segmented-current-text, var(--color-accent)); }
@@ -1290,8 +1329,8 @@
     .fg-input:focus-visible,
     .fg-select:focus-visible { outline: var(--focus-width) solid Highlight; outline-offset: -1px; }
     /* The masked cross is its background, which would otherwise take the field's Canvas fill. */
-    .fg-input[type="search"]::-webkit-search-cancel-button,
-    .fg-input[type="search"]:where(:not(:disabled))::-webkit-search-cancel-button:hover { forced-color-adjust: none; background: CanvasText; }
+    .fg-input[type="search"]::-webkit-search-cancel-button { forced-color-adjust: none; background: CanvasText; }
+    @media (hover: hover) { .fg-input[type="search"]:where(:not(:disabled))::-webkit-search-cancel-button:hover { forced-color-adjust: none; background: CanvasText; } }
     /* A status badge's tone dot is a fill, which forced colors drop; draw it in the text colour. */
     .fg-badge[data-tone]:not([data-tone="neutral"])::before { forced-color-adjust: none; background: CanvasText; }
   }

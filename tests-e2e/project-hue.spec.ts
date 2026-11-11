@@ -15,6 +15,8 @@ const colorsFor = (locator: Locator) => locator.evaluate(element => {
   const style = getComputedStyle(element)
   return {
     background: hex(style.backgroundColor),
+    // A code block's source sits on its panel, inside the plate.
+    panel: hex(getComputedStyle(element.querySelector('pre') ?? element).backgroundColor),
     text: hex(style.color),
     accent: hex(style.getPropertyValue('--color-accent')),
     prompt: hex(getComputedStyle(element.querySelector('.fg-code-block__line') ?? element, '::before').color),
@@ -38,9 +40,10 @@ test('tints command plates with the project hue while captures stay neutral', as
       }, { project, prompt })
       const colors = await colorsFor(command)
       expect(colors.background).not.toBe(original.background)
-      expect(contrast(colors.text, colors.background)).toBeGreaterThanOrEqual(4.5)
+      // Source text and the prompt sit on the panel; the header and Copy at rest sit on the plate.
+      expect(contrast(colors.text, colors.panel)).toBeGreaterThanOrEqual(4.5)
       expect(contrast(colors.caption, colors.background)).toBeGreaterThanOrEqual(4.5)
-      expect(contrast(colors.prompt, colors.background)).toBeGreaterThanOrEqual(3)
+      expect(contrast(colors.prompt, colors.panel)).toBeGreaterThanOrEqual(3)
       await expect(page.locator('.fg-capture__screen').first()).toHaveCSS('background-color', 'rgb(10, 12, 14)')
       await expect(page.locator('.fg-capture__caption').first()).toHaveCSS('background-color', 'rgb(19, 23, 26)')
     }

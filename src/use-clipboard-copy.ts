@@ -10,8 +10,9 @@ export interface ClipboardCopyOptions {
 }
 
 export interface ClipboardCopy {
-  /** True for a short time after a successful copy. */
+  /** True for 1.5s after the last successful copy settles; a failure clears it at once. */
   copied: Readonly<Ref<boolean>>
+  /** True while any copy is in flight. */
   pending: Readonly<Ref<boolean>>
   /** The last failure message, cleared when a new copy starts. */
   error: Readonly<Ref<string>>
@@ -23,24 +24,33 @@ export const useClipboardCopy = ({ unavailableMessage, failureMessage }: Clipboa
   const copied = ref(false)
   const pending = ref(false)
   const error = ref('')
-  const { start: resetCopied } = useTimeoutFn(() => { copied.value = false }, 1500, { immediate: false })
+  // One timer per instance; VueUse stops it when the owning component unmounts.
+  const { start: holdCopied, stop: stopHolding } = useTimeoutFn(() => { copied.value = false }, 1500, { immediate: false })
+  const fail = (message: string): void => {
+    copied.value = false
+    stopHolding()
+    error.value = message
+  }
+  let inFlight = 0
 
   const copy = async (text: string): Promise<void> => {
     error.value = ''
-    copied.value = false
     if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
-      error.value = unavailableMessage
+      fail(unavailableMessage)
       return
     }
+    inFlight += 1
     pending.value = true
     try {
       await navigator.clipboard.writeText(text)
+      // A repeat or overlapping copy keeps the tick, and restarts its 1.5s once this copy settles.
       copied.value = true
-      resetCopied()
+      holdCopied()
     } catch {
-      error.value = failureMessage
+      fail(failureMessage)
     } finally {
-      pending.value = false
+      inFlight -= 1
+      pending.value = inFlight > 0
     }
   }
 

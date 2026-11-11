@@ -38,7 +38,7 @@ describe('UiCodeBlock', () => {
     await flushPromises()
     expect(write).toHaveBeenLastCalledWith(code)
     expect(wrapper.get('[role="status"]').text()).toBe('Code copied to clipboard.')
-    expect(copy.attributes('title')).toBe('Copied')
+    expect(copy.attributes('title')).toBe('Copy code')
     expect(copy.attributes('aria-label')).toBe('Copy code')
     await wrapper.setProps({ copyable: false })
     expect(wrapper.find('.fg-code-block__copy').exists()).toBe(false)
@@ -59,7 +59,9 @@ describe('UiCodeBlock', () => {
     expect(wrapper.get('[role="status"]').text()).toContain('Syntax highlighting unavailable')
     expect(wrapper.get('[role="status"]').text()).toContain('Code copied to clipboard.')
     expect(wrapper.get('[role="status"]').attributes('data-state')).toBeUndefined()
-    expect(wrapper.get('button').attributes('title')).toBe('Copied')
+    // The error stays visible; the success message beside it is for the live region alone.
+    expect(wrapper.get('.fg-code-block__success').text()).toBe('Code copied to clipboard.')
+    expect(wrapper.get('button').attributes('title')).toBe('Copy code')
     wrapper.unmount()
   })
 
@@ -137,7 +139,7 @@ describe('UiCodeBlock', () => {
     expect(copy.attributes('title')).toBe('Copy code')
     await copy.trigger('click')
     await flushPromises()
-    expect(copy.attributes('title')).toBe('Copied')
+    expect(copy.attributes('title')).toBe('Copy code')
     expect(wrapper.get('[role="status"]').text()).toBe('Code copied to clipboard.')
     expect(wrapper.get('[role="status"]').attributes('data-state')).toBe('success')
     wrapper.unmount()
