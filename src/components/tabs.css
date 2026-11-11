@@ -45,8 +45,8 @@
     font-weight: var(--weight-medium);
     white-space: nowrap;
     cursor: pointer;
-    /* The selected tab shares the navigation row's current fill, so it shares its motion too. */
-    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+    /* Hover fades the tab's own fill and colour; the selected fill and its shadow are on ::before. */
+    transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
   }
 
   .fg-tabs__tab:hover:where(:not(:disabled)) { background: var(--color-row-hover); color: var(--color-text); }

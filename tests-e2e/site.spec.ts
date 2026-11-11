@@ -291,6 +291,7 @@ test('gives each site control the corner of its role', async ({ page }) => {
     document.body.prepend(skip)
   })
   await expect(page.locator('.fg-site-skip')).toHaveCSS('border-radius', '10px')
+  await expect(page.locator('.fg-site-skip')).toHaveCSS('text-decoration-line', 'none')
 
   // On phones the labelled contents trigger takes the field corner too.
   await page.setViewportSize({ width: 390, height: 900 })
@@ -319,6 +320,22 @@ test('gives the rail section in view the current-page look without a pip', async
   expect(current.background).toBe(current.expected.background)
   expect(current.shadow).toBe(current.expected.shadow)
   expect(current.pip).toBe('none')
+
+  // The rail's links scroll and clip, so every row sits inside the scroller with room for the
+  // lifted shadow on each side, including below the last row.
+  const room = await page.locator('.fg-site-rail__content').first().evaluate((content) => {
+    const box = content.getBoundingClientRect()
+    const rows = [...content.querySelectorAll('a')].map(row => row.getBoundingClientRect())
+    const last = rows.at(-1)!
+    return {
+      start: Math.min(...rows.map(row => row.left - box.left)),
+      end: Math.min(...rows.map(row => box.right - row.right)),
+      below: content.scrollHeight - (last.bottom - box.top + content.scrollTop),
+    }
+  })
+  expect(room.start).toBeGreaterThanOrEqual(2)
+  expect(room.end).toBeGreaterThanOrEqual(2)
+  expect(room.below).toBeGreaterThanOrEqual(2)
 })
 
 test('marks the pressed appearance choice in forced-colors mode', async ({ page }) => {
