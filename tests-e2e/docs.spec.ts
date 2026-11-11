@@ -740,8 +740,8 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
     return fill
   })
   expect(picker.background).toBe(raisedFill)
-  // A picker sits one radius step outside the field.
-  expect(picker.radius).toBe('12px')
+  // A picker is a floating layer, so it takes the panel corner.
+  expect(picker.radius).toBe('16px')
   const accent = await select.evaluate(element => {
     const probe = document.createElement('span')
     probe.style.color = 'var(--color-accent)'
@@ -752,7 +752,8 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   })
   await expect(select).toHaveCSS('border-top-color', accent)
   await expect(select.locator('option').first()).toHaveCSS('height', '30px')
-  await expect(select.locator('option').first()).toHaveCSS('border-radius', '8px')
+  // Option rows sit --space-1 inside the 16px picker, so they are concentric with it.
+  await expect(select.locator('option').first()).toHaveCSS('border-radius', '12px')
   await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('matrix(-1, 0, 0, -1, 0, 0)')
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
@@ -955,6 +956,69 @@ test('slides the segmented thumb from the previous option and settles on the pre
   await expect(control.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true')
   expect(await runningAnimations(), 'reduced motion changes the choice at once').toBe(0)
   expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
+})
+
+test('glides the selected tab fill from the previous tab and settles on the new one', async ({ page }) => {
+  await page.goto('/#/sandbox/tabs')
+  const list = page.locator('.playground-stage .fg-tabs__list')
+  const tabs = list.getByRole('tab')
+  // The fill's page edges: the selected tab's ::before layer.
+  const fillEdges = (index: number) => tabs.nth(index).evaluate((element) => {
+    const rect = element.getBoundingClientRect()
+    const fill = getComputedStyle(element, '::before')
+    return { left: rect.left + parseFloat(fill.left), right: rect.right - parseFloat(fill.right) }
+  })
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  expect(await list.evaluate(element => element.getAnimations({ subtree: true }).length), 'no glide on first paint').toBe(0)
+  const previous = await fillEdges(0)
+
+  await tabs.nth(1).click()
+  await list.evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => {
+    animation.pause()
+    animation.currentTime = 0
+  }))
+  // The new fill leaves from the tab that was selected.
+  const start = await fillEdges(1)
+  expect(start.left).toBeCloseTo(previous.left, 0)
+  expect(start.right).toBeCloseTo(previous.right, 0)
+
+  // Once the glide ends, the fill sits on the new tab and the list keeps no slide.
+  await list.evaluate(element => element.getAnimations({ subtree: true }).forEach(animation => animation.finish()))
+  const end = await tabs.nth(1).evaluate((element) => {
+    const rect = element.getBoundingClientRect()
+    const fill = getComputedStyle(element, '::before')
+    return { left: rect.left + parseFloat(fill.left), right: rect.right - parseFloat(fill.right), tabLeft: rect.left, tabRight: rect.right }
+  })
+  expect(end.left).toBeCloseTo(end.tabLeft, 0)
+  expect(end.right).toBeCloseTo(end.tabRight, 0)
+  await expect(list).not.toHaveAttribute('data-slide')
+
+  // Reduced motion selects without a glide.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await tabs.nth(0).click()
+  await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true')
+  expect(await list.evaluate(element => element.getAnimations({ subtree: true }).length)).toBe(0)
+})
+
+test('gives slider and progress tracks and score pips the pill corner', async ({ page }) => {
+  for (const [slug, selector] of [['progress', '.fg-progress'], ['slider', '.fg-slider__track'], ['score', '.fg-score__pip']] as const) {
+    await page.goto(`/#/sandbox/${slug}`)
+    await expect(page.locator(`.playground-stage ${selector}`).first(), slug).toHaveCSS('border-radius', '999px')
+  }
+})
+
+test('draws a status badge tone dot in the system text colour in forced colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto('/#/sandbox/badge')
+  await page.getByLabel('Tone', { exact: true }).selectOption('success')
+  const badge = page.locator('.playground-stage .fg-badge').first()
+  const dot = await badge.evaluate((element) => {
+    const style = getComputedStyle(element, '::before')
+    return { adjust: style.forcedColorAdjust, background: style.backgroundColor, text: getComputedStyle(element).color }
+  })
+  expect(dot.adjust).toBe('none')
+  // CanvasText is the forced text colour, so the dot matches the badge label.
+  expect(dot.background).toBe(dot.text)
 })
 
 test('renders usable slider tracks in documentation examples', async ({ page }) => {

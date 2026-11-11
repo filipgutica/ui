@@ -177,7 +177,9 @@
     list-style: none;
     user-select: none;
   }
-  .fg-site-projects__trigger { font-family: var(--font-mono); }
+  /* It keeps the quiet-action tint, but it opens a menu and does not act, so it takes the field
+   * corner, as a select does. */
+  .fg-site-projects__trigger { border-radius: var(--radius-field); font-family: var(--font-mono); }
   .fg-site-projects__trigger::before { content: '~/' / ''; color: var(--color-project); }
   .fg-site-projects__trigger::-webkit-details-marker { display: none; }
   /* :where keeps the open tint below the quiet action's press. */
@@ -206,7 +208,7 @@
     min-height: var(--row);
     align-items: center;
     padding-inline: var(--space-3);
-    border-radius: var(--radius-field);
+    border-radius: var(--radius-inline);
     color: var(--color-muted);
     font-family: var(--font-mono);
     font-size: var(--text-sm);
@@ -230,6 +232,16 @@
     border-radius: var(--radius-pill);
     background: var(--color-accent);
   }
+  /* Rows inside the floating project menu sit --space-1 inside its 16px corner, so they are concentric with it. */
+  .fg-site-projects__menu a { border-radius: calc(var(--radius-panel) - var(--space-1)); }
+  /* In the section rail, the current section takes the current-page look, without the pip. It keeps
+   * aria-current="location"; only the look changes. */
+  .fg-site-rail__nav a[aria-current="location"] {
+    background: var(--color-nav-current);
+    box-shadow: var(--shadow-nav-current);
+    color: var(--color-nav-current-text, var(--color-accent));
+  }
+  .fg-site-rail__nav a[aria-current="location"]::before { content: none; }
   @media (pointer: fine) {
     /* Project switcher items keep their existing menu density. */
     .fg-site-nav:not(.fg-site-projects__menu) a { min-height: var(--row-compact); }
@@ -241,6 +253,7 @@
   @media (forced-colors: active) {
     .fg-site-nav a[aria-current="page"] { border-inline-start: 2px solid Highlight; }
     .fg-site-nav a[aria-current="location"]::before { forced-color-adjust: none; background: Highlight; }
+    .fg-site-rail__nav a[aria-current="location"] { border-inline-start: 2px solid Highlight; }
   }
 
   /* Focus is an accent outline outside the control, which forced-colors mode keeps. An
@@ -577,7 +590,8 @@
     top: -100%;
     left: var(--space-4);
     padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-control);
+    /* A one-line control that is not an action, so it takes the field corner. */
+    border-radius: var(--radius-field);
     color: var(--color-text);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-dialog);
@@ -659,6 +673,8 @@
       text-align: start;
       align-items: center;
       padding-inline: var(--space-3);
+      /* They show the page's contents and do not act, so they take the field corner, not the button pill. */
+      border-radius: var(--radius-field);
       list-style: none;
     }
     /* Without JavaScript the list opens in place. The summary is a secondary button (fg-button)
