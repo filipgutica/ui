@@ -583,7 +583,7 @@ test('keeps selected tabs lifted, readable, and stable on docs and terminal surf
   }
 })
 
-test('keeps site explanations readable and navigation compact only for fine pointers', async ({ page, browser }) => {
+test('keeps site explanations readable and navigation rows 36px tall, 44px at phone width', async ({ page, browser }) => {
   await page.goto(fixture)
   await expect(page.locator('.fg-site-hero')).toHaveCSS('row-gap', '24px')
   const text = await page.locator('main').evaluate(element => getComputedStyle(element).color)
@@ -591,7 +591,8 @@ test('keeps site explanations readable and navigation compact only for fine poin
     await expect(page.locator(selector).first()).toHaveCSS('color', text)
   }
   await expect(page.locator('.fg-site-meta').first()).not.toHaveCSS('color', text)
-  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('min-height', '30px')
+  // Rail rows match the catalogue's --row, with a fine pointer too.
+  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('min-height', '36px')
   const touch = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } })
   const touchPage = await touch.newPage()
   await touchPage.goto(fixture)
