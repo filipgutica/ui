@@ -162,7 +162,7 @@ the operating system and other tabs, and is safe during server rendering and
 when storage is blocked. To avoid a flash of the wrong appearance, inline
 `siteThemeBootScript` in the document head.
 
-#### The project list
+### The project list
 
 The project menu lists every site from one file,
 [`src/site/projects.json`](src/site/projects.json). The docs deploy publishes it
