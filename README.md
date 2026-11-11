@@ -140,7 +140,7 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 </template>
 ```
 
-`project` is `wtree`, `annoterm`, `devps`, `workbench`, `filip-stack`, or `ui`. The project
+`project` is `wtree`, `annoterm`, `devps`, `pluginbench`, `workbench`, `filip-stack`, or `ui`. The project
 menu is a native disclosure that works without JavaScript; Escape closes it and
 returns focus to its button. `links` are a navigation strip: rows 44px tall with
 6px corners. A link with `current: true` gets `aria-current="page"` and the
