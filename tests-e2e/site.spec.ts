@@ -210,7 +210,12 @@ test('colors captures with the default terminal palette unless the site sets its
 
 test('keeps one or two header links on the phone menu row as text links, outside the docs shell', async ({ page }) => {
   const links = page.getByRole('navigation', { name: 'Site links', exact: true })
-  for (const width of [375, 390]) {
+  // The rows that the project menu, the links, and the header controls sit on.
+  const headerRows = () => page.evaluate(() => new Set(
+    [...document.querySelectorAll('.fg-site-projects, .fg-site-header__links, .fg-site-header__end > :not(.fg-site-header__links)')]
+      .map(element => Math.round(element.getBoundingClientRect().top)),
+  ).size)
+  for (const width of [360, 375, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/')
     await expect(links.getByRole('link')).toHaveCount(2)
@@ -221,6 +226,33 @@ test('keeps one or two header links on the phone menu row as text links, outside
     expect(Math.abs(linksBox.y + linksBox.height / 2 - (menu.y + menu.height / 2)), `links beside the menu at ${width}px`).toBeLessThanOrEqual(2)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `page fits at ${width}px`).toBe(true)
     expect(await links.evaluate(element => element.scrollWidth <= element.clientWidth), `links fit at ${width}px`).toBe(true)
+  }
+  for (const width of [320, 360, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/')
+    // Text links have no padding, so the ring sits outside them, and no ancestor clips it.
+    const link = links.getByRole('link').first()
+    await link.focus()
+    await expect(link).toHaveCSS('outline-offset', '3px')
+    const clippedBy = await link.evaluate((element) => {
+      const style = getComputedStyle(element)
+      const ring = Number.parseFloat(style.outlineOffset) + Number.parseFloat(style.outlineWidth)
+      const box = element.getBoundingClientRect()
+      const clippers: string[] = []
+      for (let node = element.parentElement; node; node = node.parentElement) {
+        const { overflowX, overflowY } = getComputedStyle(node)
+        if (overflowX === 'visible' && overflowY === 'visible') continue
+        const edge = node.getBoundingClientRect()
+        if (box.left - ring < edge.left || box.right + ring > edge.right || box.top - ring < edge.top || box.bottom + ring > edge.bottom) clippers.push(node.className || node.tagName)
+      }
+      return clippers
+    })
+    expect(clippedBy, `focus ring clipped at ${width}px`).toEqual([])
+    // Two long links never push the header past two rows: only the picker wraps.
+    await links.getByRole('link').nth(0).evaluate(element => { element.textContent = 'Documentation' })
+    await links.getByRole('link').nth(1).evaluate(element => { element.textContent = 'Release notes' })
+    expect(await headerRows(), `header rows with long links at ${width}px`).toBeLessThanOrEqual(2)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `page fits with long links at ${width}px`).toBe(true)
   }
   // A current link takes the accent and medium weight, with no fill, shadow, or pip.
   const current = links.getByRole('link').first()

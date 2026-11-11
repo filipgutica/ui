@@ -144,8 +144,11 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 menu is a native disclosure that works without JavaScript; Escape closes it and
 returns focus to its button. `links` are a navigation strip: rows 44px tall with
 6px corners. A link with `current: true` gets `aria-current="page"` and the
-current-page fill. At 640px and below, two or more links take a second row below
-the project menu and the picker. Inside `.fg-site-docs`, at 640px and below, the
+current-page fill. At 640px and below, three or more links take a second row below
+the project menu and the picker. One or two links stay beside the project name as
+text links, and a current one has accent text instead of the fill. Two short links
+keep the header to one row down to 360px. At 320px and narrower, or with longer
+links, the picker wraps to a second row. Inside `.fg-site-docs`, at 640px and below, the
 header hides `links` so it fits one row, so repeat those destinations in the footer.
 A `UiSiteNav` with `headerMenu` moves them into its Menu drawer instead. Without a
 default slot the header renders a System, Light, and Dark picker, built on

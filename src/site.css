@@ -834,9 +834,15 @@
     .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__links { order: 1; flex-basis: 100%; }
     /* One or two links stay on the project menu's row as plain text links: no strip or row padding,
      * no hover fill, and the current page in the accent without a fill. With no strip to scroll, the
-     * links' focus rings are not clipped. */
-    .fg-site-header__links:not(:has(> :nth-child(3))) { overflow-x: visible; gap: var(--space-4); padding: 0; }
+     * links take the outward focus ring. Without the phone Find and Menu buttons, the menu, the links,
+     * and the picker wrap as one line of items 12px apart: the ui docs header fits one row at 360px,
+     * and long links send only the picker to the second row. */
+    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) { column-gap: var(--space-3); }
+    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) .fg-site-header__end { display: contents; }
+    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) .fg-site-projects { margin-inline-end: auto; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) { overflow-x: visible; gap: var(--space-3); padding: 0; }
     .fg-site-header__links:not(:has(> :nth-child(3))) a { padding-inline: 0; }
+    .fg-site-header__links:not(:has(> :nth-child(3))) a:focus-visible { outline-offset: var(--focus-offset); }
     .fg-site-header__links:not(:has(> :nth-child(3))) a:hover { background: none; }
     .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] {
       background: none;
