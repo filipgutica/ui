@@ -144,10 +144,14 @@ const closeAutoFocus = (event: Event): void => {
     event.preventDefault()
     focusFirstLink()
   } else {
+    event.preventDefault()
+    // A page that moved focus itself while the drawer closed keeps it there, as a hash router
+    // that focuses the heading of the page a row opened.
+    const active = document.activeElement
+    const moved = active && active !== document.body && !(event.target instanceof Node && event.target.contains(active))
     // The trigger sits above the page, so returning focus to it must keep the reader's position,
     // as after the / shortcut opened the drawer mid-page.
-    event.preventDefault()
-    toggle()?.focus({ preventScroll: true })
+    if (!moved) toggle()?.focus({ preventScroll: true })
   }
 }
 

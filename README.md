@@ -253,7 +253,9 @@ in place under it.
 The drawer opens from the left. It holds Find, pinned at the top, then the
 groups. A keyboard open focuses the current row, a tap focuses the drawer, and
 `/` opens it with Find focused. It closes on navigation and focuses the
-destination section; otherwise focus returns to the trigger. A tap or a click
+destination section; otherwise focus returns to the trigger, unless the page
+moved focus itself while the drawer closed, as a router that focuses the new
+page's heading does. A tap or a click
 outside it closes it, in Safari and other WebKit browsers too; a press that
 starts inside it does not. Focus follows the
 visible control across the breakpoint.
@@ -283,7 +285,7 @@ Section headings in `.fg-site-docs` and `.fg-site-prose` use the terminal
 identity's decorative `## ` mark, with `0.08em` tracking. Set `--heading-mark`
 on a page or section to change it; `--heading-mark: none` removes it. The
 default is `--heading-mark: "## "`. The mark is excluded from accessible text.
-Navigation rows in the rail, the drawer, and the docs navigation are `--row`
+Navigation rows in the rail and the drawer are `--row`
 (2.25rem) tall, and `--control-lg` at 800px and below.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
