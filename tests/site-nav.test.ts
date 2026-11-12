@@ -110,6 +110,12 @@ describe('UiSiteNav', () => {
     const trigger = wrapper.get('button')
     expect(trigger.text()).toBe('On this page: wtree ui')
     expect(document.activeElement).toBe(trigger.element)
+
+    // Back on desktop, focus moves from the trigger to the rail's first row.
+    viewport.resize({ mobile: false })
+    await nextTick()
+    await nextTick()
+    expect(document.activeElement).toBe(wrapper.get('.fg-site-nav a').element)
   })
 
   it('closes the drawer on navigation and focuses the destination section', async () => {
@@ -156,8 +162,16 @@ describe('UiSiteNav', () => {
 })
 
 describe('UiSiteNav with headerMenu', () => {
-  // A site header and a rail with headerMenu and Find, as one app in its own container.
-  const mountShell = () => {
+  it('keeps every row in place without scripts, with no disclosure to open', async () => {
+    const container = document.createElement('div')
+    container.innerHTML = await renderToString(createSSRApp({ render: () => h(UiSiteNav, { label: 'On this page', groups, headerMenu: true }) }))
+
+    expect(container.querySelector('details')?.hasAttribute('open')).toBe(true)
+    expect(container.querySelector('.fg-site-rail')?.hasAttribute('data-header-menu')).toBe(true)
+  })
+
+  it('shows the labelled trigger on phones and puts nothing in the site header', async () => {
+    mockViewport({ mobile: true })
     const container = document.body.appendChild(document.createElement('div'))
     const app = createApp({
       render: () => [
@@ -166,66 +180,11 @@ describe('UiSiteNav with headerMenu', () => {
       ],
     })
     app.mount(container)
-    return { app, container }
-  }
-  const settle = async () => {
     await nextTick()
     await nextTick()
-  }
 
-  it('keeps each app\'s phone buttons and Find focus in its own header and rail', async () => {
-    const viewport = mockViewport({ mobile: true })
-    const first = mountShell()
-    await settle()
-    const second = mountShell()
-    await settle()
-
-    for (const { container } of [first, second]) {
-      const bar = container.querySelector('.fg-site-header__bar')
-      expect(bar?.querySelectorAll('button')).toHaveLength(2)
-      expect(bar?.querySelector('button[aria-label="Menu"]')).not.toBeNull()
-      expect(container.querySelector('.fg-site-rail')?.hasAttribute('data-in-header')).toBe(true)
-    }
-
-    // Find focus crosses the breakpoint within the second app, both ways.
-    const secondFind = () => second.container.querySelector<HTMLElement>('.fg-site-header__bar button[aria-label="Find a section"]')
-    secondFind()?.focus()
-    viewport.resize({ mobile: false })
-    await settle()
-    expect(document.activeElement).toBe(second.container.querySelector('.fg-site-find__input'))
-    viewport.resize({ mobile: true })
-    await settle()
-    expect(document.activeElement).toBe(secondFind())
-
-    // The first app keeps its header menu while the second one leaves.
-    second.app.unmount()
-    await settle()
-    expect(first.container.querySelector('.fg-site-header__bar button[aria-label="Menu"]')).not.toBeNull()
-    expect(first.container.querySelector('.fg-site-rail__toggle')).toBeNull()
-    first.app.unmount()
-  })
-
-  it('moves focus between the phone Find button and the desktop Find field across the breakpoint', async () => {
-    const viewport = mockViewport({ mobile: true })
-    const { app, container } = mountShell()
-    await settle()
-
-    container.querySelector<HTMLElement>('.fg-site-header__bar button[aria-label="Find a section"]')?.focus()
-    viewport.resize({ mobile: false })
-    await settle()
-    const field = container.querySelector<HTMLInputElement>('.fg-site-find__input')
-    expect(field).not.toBeNull()
-    expect(document.activeElement).toBe(field)
-
-    viewport.resize({ mobile: true })
-    await settle()
-    expect(document.activeElement).toBe(container.querySelector('.fg-site-header__bar button[aria-label="Find a section"]'))
-
-    // The Menu button and the rows still trade focus.
-    container.querySelector<HTMLElement>('.fg-site-header__bar button[aria-label="Menu"]')?.focus()
-    viewport.resize({ mobile: false })
-    await settle()
-    expect(document.activeElement).toBe(container.querySelector('.fg-site-rail__nav a'))
+    expect(container.querySelector('.fg-site-rail button.fg-site-rail__toggle')?.textContent?.trim()).toBe('On this page: wtree ui')
+    expect(container.querySelectorAll('.fg-site-header button:not(.fg-segmented__item)')).toHaveLength(0)
     app.unmount()
   })
 })

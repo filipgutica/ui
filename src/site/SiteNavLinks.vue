@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  /** Above the rows: Find, and in the phone Menu drawer the header's links and appearance. */
+  /** Above the rows: Find. */
   before?(): unknown
   /** After the groups, inside the navigation: Find's empty state. */
   empty?(): unknown

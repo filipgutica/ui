@@ -421,20 +421,14 @@ test('marks the pressed appearance choice in forced-colors mode', async ({ page 
   expect(await color(pressed)).not.toBe(await color(other))
 })
 
-test('keeps the phone header on one row and names the section menu after its label', async ({ page }) => {
+test('keeps three or more docs-shell header links on phones and names the section menu after its label', async ({ page }) => {
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(fixture)
-    // Role queries skip hidden elements, so find the header links by class.
-    const headerLinks = page.locator('.fg-site-header__links a')
-    await expect(headerLinks).toHaveCount(3)
-    await expect(headerLinks.first()).toBeHidden()
-    // Every hidden header destination is still reachable from a visible link.
-    for (const href of await headerLinks.evaluateAll(links => links.map(link => link.getAttribute('href')))) {
-      await expect(page.locator(`a[href="${href}"]:visible`), `${href} at ${width}px`).not.toHaveCount(0)
-    }
-    // One row: the header keeps its 64px minimum height plus its 1px border.
-    expect((await page.locator('.fg-site-header').boundingBox())?.height).toBeLessThanOrEqual(65)
+    // Three or more links stay in the header on phones, as the strip row; the drawer does not repeat them.
+    const headerLinks = page.getByRole('navigation', { name: 'Site links', exact: true }).getByRole('link')
+    await expect(headerLinks).toHaveText(['Guide', 'GitHub', 'Releases'])
+    for (const link of await headerLinks.all()) await expect(link).toBeVisible()
     const toggle = page.getByRole('button', { name: /^On this page/ })
     await expect(toggle).toHaveText('On this page: Install')
     await page.goto(`${fixture}#commands`)
@@ -448,7 +442,9 @@ test('keeps the phone header on one row and names the section menu after its lab
     await expect(page.getByRole('dialog', { name: 'On this page', exact: true })).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(toggle).toBeFocused()
-    expect(await page.locator('h1').evaluate(element => element.getBoundingClientRect().top)).toBeLessThanOrEqual(150)
+    // The heading follows the trigger closely: the rail's --space-2 and main's --space-6 apart.
+    const toggleBottom = await toggle.evaluate(element => element.getBoundingClientRect().bottom)
+    expect(await page.locator('h1').evaluate(element => element.getBoundingClientRect().top) - toggleBottom).toBeLessThanOrEqual(40)
   }
 })
 

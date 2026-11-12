@@ -1113,10 +1113,10 @@ test('supports keyboard selection on the themes page', async ({ page }) => {
 test('navigates with the mobile drawer and restores focus on dismissal', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/#/components/dialog')
-  const trigger = page.getByRole('button', { name: /^Browse components:/ })
+  const trigger = page.getByRole('button', { name: /^Components:/ })
   expect((await trigger.boundingBox())?.x ?? 390).toBeLessThan(60)
   await trigger.click()
-  const drawer = page.getByRole('dialog', { name: 'Browse components', exact: true })
+  const drawer = page.getByRole('dialog', { name: 'Components', exact: true })
   await expect(drawer).toBeVisible()
   // The drawer slides in, so wait for it to settle at the edge.
   await expect.poll(async () => (await drawer.boundingBox())?.x).toBe(0)
@@ -1133,7 +1133,7 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
   await drawer.getByRole('link', { name: 'Themes', exact: true }).click()
   await expect(page).toHaveURL(/#\/themes$/)
   await expect(page.locator('h1')).toHaveText('Themes')
-  await expect(trigger).toHaveText('Themes')
+  await expect(trigger).toHaveText('Components: Themes')
   await trigger.click()
   await expect(drawer.getByRole('link', { name: 'Themes', exact: true })).toHaveAttribute('aria-current', 'page')
   await page.setViewportSize({ width: 1280, height: 844 })
@@ -1217,17 +1217,30 @@ test('keeps status labels readable on their colored fills in both appearances', 
   }
 })
 
+test('names the phone trigger after the list and keeps it on one line at 320px, under the project menu', async ({ page }) => {
+  for (const width of [320, 660, 700, 800]) {
+    await page.setViewportSize({ width, height: 700 })
+    await page.goto('/#/')
+    const trigger = page.getByRole('button', { name: /^Components:/ })
+    await expect(trigger).toHaveText('Components: Introduction')
+    const bounds = (await trigger.boundingBox())!
+    expect(bounds.height, `trigger height at ${width}px`).toBeCloseTo(44, 0)
+    // It starts where the project menu does.
+    expect(bounds.x, `trigger x at ${width}px`).toBeCloseTo((await page.locator('.fg-site-projects').boundingBox())!.x, 0)
+  }
+})
+
 test('keeps component browsing reachable after scrolling on phones and tablets', async ({ page }) => {
   for (const width of [320, 800]) {
     await page.setViewportSize({ width, height: 700 })
     await page.goto('/#/components/button')
     await page.getByRole('heading', { name: 'Props', exact: true }).scrollIntoViewIfNeeded()
-    const trigger = page.getByRole('button', { name: /^Browse components:/ })
+    const trigger = page.getByRole('button', { name: /^Components:/ })
     const bounds = await trigger.boundingBox()
     expect(bounds?.y ?? -1).toBeGreaterThanOrEqual(0)
     expect((bounds?.y ?? 700) + (bounds?.height ?? 0)).toBeLessThanOrEqual(700)
     await trigger.click()
-    await expect(page.getByRole('dialog', { name: 'Browse components', exact: true })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Components', exact: true })).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(trigger).toBeFocused()
   }
@@ -1256,9 +1269,9 @@ test('grows small and medium controls to the touch height at tablet width', asyn
 test('leaves the mobile drawer open after a modified navigation click', async ({ page, context }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/#/components/dialog')
-  const trigger = page.getByRole('button', { name: /^Browse components:/ })
+  const trigger = page.getByRole('button', { name: /^Components:/ })
   await trigger.click()
-  const drawer = page.getByRole('dialog', { name: 'Browse components', exact: true })
+  const drawer = page.getByRole('dialog', { name: 'Components', exact: true })
   await expect.poll(async () => (await drawer.boundingBox())?.x).toBe(0)
   const opened = context.waitForEvent('page')
   await drawer.getByRole('link', { name: 'Button', exact: true }).click({ modifiers: ['ControlOrMeta'] })

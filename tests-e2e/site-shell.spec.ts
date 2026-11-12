@@ -3,13 +3,27 @@ import { fileURLToPath } from 'node:url'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
-import type { Page } from '@playwright/test'
+import type { Browser, Locator, Page } from '@playwright/test'
 
-// The site fixture with the rail's phone header menu and Find, as the catalogue's shell has them.
-const fixture = `/@fs${fileURLToPath(new URL('./fixtures/site.html', import.meta.url))}?shell&find`
+// The site fixture with headerMenu and Find on the rail, as the catalogue's shell has them.
+const site = `/@fs${fileURLToPath(new URL('./fixtures/site.html', import.meta.url))}`
+const fixture = `${site}?shell&find`
+// The design system site's header: a long project name and five pages, with Find on the rail.
+const pagesFixture = `${site}?pages&find`
 const railLinks = (page: Page) => page.locator('.fg-site-rail__nav a:visible')
 const find = (page: Page) => page.getByRole('searchbox', { name: 'Find a section' })
 const status = (page: Page) => page.locator('.fg-site-find [role="status"]')
+const trigger = (page: Page) => page.getByRole('button', { name: /^On this page/ })
+const box = async (locator: Locator) => (await locator.boundingBox())!
+// The computed --color-text, read from a probe in the element's context.
+const textColor = (locator: Locator) => locator.evaluate((element) => {
+  const probe = document.createElement('span')
+  probe.style.color = 'var(--color-text)'
+  element.append(probe)
+  const color = getComputedStyle(probe).color
+  probe.remove()
+  return color
+})
 
 test.describe('desktop', () => {
   test.use({ viewport: { width: 1280, height: 900 } })
@@ -125,90 +139,233 @@ test.describe('desktop', () => {
     })
     await expect(current).toHaveCSS('background-color', fill)
     await expect(page.locator('.fg-site-header__links a:not([aria-current])').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
-    // The phone buttons are not on the page at this width.
-    await expect(page.locator('.fg-site-header__bar')).toBeEmpty()
+  })
+
+  test('keeps the desktop header and rail where they were before the phone shell changed', async ({ page }) => {
+    await page.goto(fixture)
+    // Layout constants measured on main before the change; they do not depend on text widths.
+    expect(await box(page.locator('.fg-site-header'))).toEqual({ x: 32, y: 0, width: 1216, height: 65 })
+    const projects = await box(page.locator('.fg-site-projects'))
+    expect([projects.x, projects.y, projects.height]).toEqual([32, 10, 44])
+    expect(await box(page.locator('.fg-site-header .fg-segmented'))).toEqual({ x: 1114, y: 9, width: 134, height: 46 })
+    for (const link of await page.locator('.fg-site-header__links a').all()) expect((await box(link)).y).toBe(10)
+    const rail = await box(page.locator('.fg-site-rail'))
+    expect([rail.x, rail.y, rail.width]).toEqual([32, 65, 224])
+    const main = await box(page.locator('main'))
+    expect([main.x, main.y, main.width]).toEqual([288, 65, 960])
+    await expect(find(page)).toBeVisible()
+    await expect(trigger(page)).toHaveCount(0)
   })
 })
 
 test.describe('phone', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
-  test('the header is one sticky row with the project menu, Find, and a round Menu button', async ({ page }) => {
-    await page.goto(fixture)
-    const header = page.locator('.fg-site-header')
-    // The catalogue's row: 44px controls, --space-3 above and below, and a 1px subtle rule.
-    expect((await header.boundingBox())!.height).toBeCloseTo(69, 0)
-    const subtle = await header.evaluate((element) => {
-      const probe = document.createElement('span')
-      probe.style.color = 'var(--color-border-subtle)'
-      element.append(probe)
-      const color = getComputedStyle(probe).color
-      probe.remove()
-      return color
+  for (const width of [390, 320]) {
+    test(`stacks the switcher and picker, then the strip, then the trigger 8px below the rule at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 })
+      await page.goto(pagesFixture)
+      const header = page.locator('.fg-site-header')
+      const projects = await box(page.locator('.fg-site-projects'))
+      const picker = await box(header.locator('.fg-segmented'))
+      const strip = await box(page.getByRole('navigation', { name: 'Site links' }))
+      const rule = await box(header)
+      const button = await box(trigger(page))
+      const inner = await box(header.locator('.fg-site-header__inner'))
+      const gutter = await header.locator('.fg-site-header__inner').evaluate(element => Number.parseFloat(getComputedStyle(element).paddingInlineStart))
+      const columnGap = await header.locator('.fg-site-header__inner').evaluate(element => Number.parseFloat(getComputedStyle(element).columnGap))
+      // The picker shares the first row only where the switcher and the picker both fit.
+      const fits = projects.width + columnGap + picker.width <= inner.width - 2 * gutter
+      if (fits) {
+        expect(Math.abs(picker.y + picker.height / 2 - (projects.y + projects.height / 2))).toBeLessThanOrEqual(1)
+        expect(picker.x + picker.width).toBeCloseTo(inner.x + inner.width - gutter, 0)
+      } else {
+        // It wraps to its own row, at the start, --space-2 below the switcher.
+        expect(picker.x).toBeCloseTo(projects.x, 0)
+        expect(picker.y).toBeGreaterThanOrEqual(projects.y + projects.height + 8 - 1)
+      }
+      expect(fits, 'the design system site name and the picker fit at 390px, not at 320px').toBe(width === 390)
+      // The project name never truncates.
+      const name = page.locator('.fg-site-projects__trigger span')
+      await expect(name).toHaveText('Design system')
+      expect(await name.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+      // The strip takes the next row, --space-2 below the first rows and above the rule.
+      const rowsBottom = Math.max(projects.y + projects.height, picker.y + picker.height)
+      expect(strip.y - rowsBottom).toBeCloseTo(8, 0)
+      expect((await box(page.getByRole('navigation', { name: 'Site links' }).getByRole('link').first())).x).toBeCloseTo(projects.x, 0)
+      expect(rule.y + rule.height - 1 - (strip.y + strip.height)).toBeCloseTo(8, 0)
+      // The rule below the header is a solid 1px line in the text colour.
+      await expect(header).toHaveCSS('border-bottom-style', 'solid')
+      await expect(header).toHaveCSS('border-bottom-width', '1px')
+      await expect(header).toHaveCSS('border-bottom-color', await textColor(header))
+      // The labelled trigger sits at the start, --space-2 below the rule, and is the page's only one.
+      expect(button.y - (rule.y + rule.height)).toBeCloseTo(8, 0)
+      expect(button.x).toBeCloseTo(projects.x, 0)
+      await expect(trigger(page)).toHaveCount(1)
+      await expect(header.locator('button:not(.fg-segmented__item)')).toHaveCount(0)
+      await expect(page.getByRole('button', { name: 'Menu', exact: true })).toHaveCount(0)
+      await expect(page.getByRole('button', { name: 'Find a section' })).toHaveCount(0)
+      // The header is static: it scrolls away with the page.
+      await page.mouse.wheel(0, 600)
+      await expect.poll(() => header.evaluate(element => element.getBoundingClientRect().bottom)).toBeLessThan(0)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0)
     })
-    await expect(header).toHaveCSS('border-bottom-color', subtle)
-    const menu = page.getByRole('button', { name: 'Menu', exact: true })
-    const findButton = page.getByRole('button', { name: 'Find a section' })
-    await expect(menu).toHaveAttribute('aria-haspopup', 'dialog')
-    await expect(findButton).toHaveAttribute('aria-haspopup', 'dialog')
-    for (const button of [menu, findButton]) {
-      const box = (await button.boundingBox())!
-      expect([box.width, box.height]).toEqual([44, 44])
-      await expect(button).toHaveCSS('border-radius', '999px')
-    }
-    // The links and the picker move into the drawer; the rail leaves the page.
-    await expect(page.locator('.fg-site-header__links')).toBeHidden()
-    await expect(page.locator('.fg-site-header__appearance')).toBeHidden()
-    await expect(page.locator('.fg-site-rail')).toBeHidden()
-    await page.mouse.wheel(0, 1200)
-    await expect.poll(() => header.evaluate(element => element.getBoundingClientRect().top)).toBe(0)
+  }
+
+  test('fades the clipped strip and keeps at least 16px of a clipped link in view at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 })
+    await page.goto(pagesFixture)
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    await expect(strip).toHaveAttribute('data-clip', 'end')
+    await expect(strip).toHaveCSS('scrollbar-width', 'none')
+    const shown = await strip.evaluate((element) => {
+      const edge = element.getBoundingClientRect()
+      return [...element.querySelectorAll('a')].map((link) => {
+        const { left, right, width } = link.getBoundingClientRect()
+        return { label: link.textContent, width, inside: Math.min(right, edge.right) - Math.max(left, edge.left) }
+      })
+    })
+    expect(shown.some(({ inside, width }) => inside > 0 && inside < width - 0.5), 'a link is clipped at 320px').toBe(true)
+    for (const { label, inside, width } of shown) if (inside > 0 && inside < width - 0.5) expect(inside, `${label} shows ${inside}px`).toBeGreaterThanOrEqual(16)
+    // Scrolled to the end, only the start fades.
+    await strip.evaluate((element) => { element.scrollLeft = element.scrollWidth })
+    await expect(strip).toHaveAttribute('data-clip', 'start')
   })
 
-  test('Menu opens the drawer on the current row, and a link closes it and focuses the target', async ({ page }) => {
+  // annoterm, wtree, and devps assert this in their own site tests: a docs-shell page with two links
+  // hides them on phones, where the Source fact and the footer repeat them, and shows them above.
+  test('hides a tool site\'s two links on phones and shows them beside the picker above 640px', async ({ page }) => {
+    const links = page.getByRole('navigation', { name: 'Site links' })
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 })
+      await page.goto(`${site}?tool`)
+      await expect(links, `at ${width}px`).toBeHidden()
+      const projects = await box(page.locator('.fg-site-projects'))
+      const picker = await box(page.locator('.fg-site-header .fg-segmented'))
+      expect(Math.abs(picker.y + picker.height / 2 - (projects.y + projects.height / 2)), `picker beside annoterm at ${width}px`).toBeLessThanOrEqual(1)
+    }
+    for (const width of [768, 801, 1280]) {
+      await page.setViewportSize({ width, height: 844 })
+      await page.goto(`${site}?tool`)
+      await expect(links.getByRole('link'), `at ${width}px`).toHaveText(['GitHub', 'Releases'])
+      const picker = await box(page.locator('.fg-site-header .fg-segmented'))
+      const linksBox = await box(links)
+      expect(Math.abs(linksBox.y + linksBox.height / 2 - (picker.y + picker.height / 2)), `links beside the picker at ${width}px`).toBeLessThanOrEqual(1)
+    }
+  })
+
+  test('leaves the strip where the reader scrolled it when late web fonts load', async ({ page }) => {
+    let release = (): void => {}
+    const held = new Promise<void>((resolve) => { release = resolve })
+    await page.route('**/*.woff2', async (route) => {
+      await held
+      await route.continue()
+    })
+    await page.setViewportSize({ width: 320, height: 844 })
+    // The load event waits for the fonts, so do not wait for it.
+    await page.goto(`${site}?pages=4&find`, { waitUntil: 'domcontentloaded' })
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    await expect(strip).toHaveAttribute('data-clip', /start/)
+    const scrollLeft = () => strip.evaluate(element => element.scrollLeft)
+    expect(await scrollLeft()).toBeGreaterThan(0)
+    await strip.hover()
+    await page.mouse.wheel(-2000, 0)
+    await expect.poll(scrollLeft).toBe(0)
+    release()
+    await page.evaluate(() => document.fonts.ready)
+    await page.evaluate(() => new Promise(requestAnimationFrame))
+    expect(await scrollLeft()).toBe(0)
+    // The fade still follows the loaded face: at the start, only the end edge hides links.
+    expect(await strip.evaluate(element => element.scrollWidth - element.clientWidth)).toBeGreaterThan(12)
+    await expect(strip).toHaveAttribute('data-clip', 'end')
+  })
+
+  test('leaves a link that Tab revealed in view when late web fonts load', async ({ page }) => {
+    let release = (): void => {}
+    const held = new Promise<void>((resolve) => { release = resolve })
+    await page.route('**/*.woff2', async (route) => {
+      await held
+      await route.continue()
+    })
+    await page.setViewportSize({ width: 320, height: 844 })
+    await page.goto(`${site}?pages=4&find`, { waitUntil: 'domcontentloaded' })
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    await expect(strip).toHaveAttribute('data-clip', /start/)
+    // Tab from the top of the page until a link before the current one has focus.
+    const focusedEarlyLink = () => page.evaluate(() => {
+      const active = document.activeElement
+      return active instanceof HTMLAnchorElement && active.closest('.fg-site-header__links') !== null && !active.hasAttribute('aria-current')
+    })
+    for (let presses = 0; presses < 5 && !(await focusedEarlyLink()); presses += 1) await page.keyboard.press('Tab')
+    expect(await focusedEarlyLink()).toBe(true)
+    const before = await strip.evaluate(element => element.scrollLeft)
+    release()
+    await page.evaluate(() => document.fonts.ready)
+    await page.evaluate(() => new Promise(requestAnimationFrame))
+    expect(await strip.evaluate(element => element.scrollLeft)).toBe(before)
+    expect(await strip.evaluate((element) => {
+      const edge = element.getBoundingClientRect()
+      const link = document.activeElement!.getBoundingClientRect()
+      return link.left >= edge.left - 0.5 && link.right <= edge.right + 0.5
+    })).toBe(true)
+  })
+
+  test('starts the strip with a late current page in view, without moving the page', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 })
+    await page.goto(`${site}?pages=4&find`)
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    const current = strip.locator('[aria-current="page"]')
+    await expect(current).toHaveText('Product page example')
+    await page.evaluate(() => document.fonts.ready)
+    await expect.poll(async () => {
+      const edge = await box(strip)
+      const row = await box(current)
+      return row.x >= edge.x - 0.5 && row.x + row.width <= edge.x + edge.width + 0.5
+    }).toBe(true)
+    await expect(strip).toHaveAttribute('data-clip', /start/)
+    expect(await page.evaluate(() => [scrollX, scrollY])).toEqual([0, 0])
+  })
+
+  test('opens the drawer from the left with Find pinned above the groups, and no pages or appearance', async ({ page }) => {
     await page.goto(`${fixture}#commands`)
-    const menu = page.getByRole('button', { name: 'Menu', exact: true })
-    await menu.focus()
+    await expect(trigger(page)).toHaveAttribute('aria-haspopup', 'dialog')
+    // Focus it where the page is, as Tab would after a jump, so the section in view stays current.
+    await trigger(page).evaluate(element => element.focus({ preventScroll: true }))
     await page.keyboard.press('Enter')
-    const drawer = page.getByRole('dialog', { name: 'Menu' })
+    const drawer = page.getByRole('dialog', { name: 'On this page', exact: true })
     await expect(drawer).toBeVisible()
+    await expect.poll(async () => (await drawer.boundingBox())?.x).toBe(0)
+    // A keyboard open focuses the current row.
     const current = drawer.locator('.fg-site-rail__nav [aria-current="location"]')
     await expect(current).toHaveText('Commands')
     await expect(current).toBeFocused()
-    // The drawer holds Find, the pages, the appearance control, then the rail's groups.
-    await expect(drawer.locator('.fg-site-rail__content > *:visible')).toHaveCount(5)
-    await expect(drawer.getByRole('navigation', { name: 'Site links' }).getByRole('link')).toHaveText(['Guide', 'GitHub', 'Releases'])
-    await expect(drawer.getByRole('group', { name: 'Color theme' })).toBeVisible()
+    // Find, the groups, and the shortcut switch; the header keeps its pages and the picker.
+    await expect(drawer.getByRole('searchbox', { name: 'Find a section' })).toBeVisible()
+    await expect(drawer.locator('.fg-site-rail__nav a')).toHaveText(['Install', 'From review to agent', 'Start with the guide', 'Commands'])
+    await expect(drawer.getByRole('navigation', { name: 'Site links' })).toHaveCount(0)
+    await expect(drawer.getByRole('group', { name: 'Color theme' })).toHaveCount(0)
+    await expect(drawer.locator('.fg-drawer__body > .fg-site-rail__content > :visible')).toHaveCount(3)
+    // Find stays at the top of the body while the rows scroll under it.
+    await expect(drawer.locator('.fg-site-find')).toHaveCSS('position', 'sticky')
+    expect((await box(drawer)).width).toBeCloseTo(272, 0)
     await page.keyboard.press('Escape')
     await expect(drawer).toBeHidden()
-    await expect(menu).toBeFocused()
-    // A tap focuses the drawer itself, and no ring shows, even after a keyboard close.
-    await menu.click()
+    await expect(trigger(page)).toBeFocused()
+    // A tap focuses the drawer itself, and no ring shows.
+    await trigger(page).click()
     await expect(drawer).toBeFocused()
     await expect(drawer).toHaveCSS('outline-style', 'none')
-    // The catalogue's drawer: 272px wide, named close, blocks 28px apart, and the picker 8px below its label.
-    expect((await drawer.boundingBox())!.width).toBeCloseTo(272, 0)
-    await expect(drawer.getByRole('button', { name: 'Close menu' })).toBeVisible()
-    const gaps = await drawer.evaluate((element) => {
-      const box = (selector: string) => element.querySelector(selector)!.getBoundingClientRect()
-      return {
-        pagesToAppearance: box('.fg-site-rail__appearance').top - box('.fg-site-rail__pages').bottom,
-        appearanceToRows: box('.fg-site-rail__nav').top - box('.fg-site-rail__appearance').bottom,
-        labelToPicker: box('.fg-site-rail__appearance .fg-segmented').top - box('.fg-site-rail__appearance > .fg-site-rail__group-label').bottom,
-        groups: box('.fg-site-rail__group + .fg-site-rail__group').top - box('.fg-site-rail__group').bottom,
-      }
-    })
-    expect(gaps).toEqual({ pagesToAppearance: 28, appearanceToRows: 28, labelToPicker: 8, groups: 16 })
     await drawer.getByRole('link', { name: 'Install' }).click()
     await expect(drawer).toBeHidden()
     await expect(page.locator('#install')).toBeFocused()
     await expect(page).toHaveURL(/#install$/)
   })
 
-  test('Find opens the drawer on the field, and the first Escape clears the query instead of closing it', async ({ page }) => {
+  test('/ opens the drawer on Find, and the first Escape clears the query instead of closing it', async ({ page }) => {
     await page.goto(fixture)
-    const findButton = page.getByRole('button', { name: 'Find a section' })
-    await findButton.click()
-    const drawer = page.getByRole('dialog', { name: 'Menu' })
+    await page.keyboard.press('/')
+    const drawer = page.getByRole('dialog', { name: 'On this page', exact: true })
+    await expect(drawer).toBeVisible()
     await expect(find(page)).toBeFocused()
     await page.keyboard.type('comm')
     await expect(railLinks(page)).toHaveText(['Commands'])
@@ -217,67 +374,151 @@ test.describe('phone', () => {
     await expect(drawer).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(drawer).toBeHidden()
-    await expect(findButton).toBeFocused()
-    // The / shortcut opens the drawer on Find too.
-    await page.keyboard.press('/')
-    await expect(find(page)).toBeFocused()
+    await expect(trigger(page)).toBeFocused()
   })
 
-  test('opening the drawer or focusing a header control does not scroll the page', async ({ page }) => {
+  test('the trigger label follows the section, and a wrapped label grows the button', async ({ page }) => {
+    await page.goto(fixture)
+    await expect(trigger(page)).toHaveText('On this page: Install')
+    await page.goto(`${fixture}#commands`)
+    await expect(trigger(page)).toHaveText('On this page: Commands')
+    await expect(trigger(page)).toHaveAccessibleName('On this page: Commands')
+    // The glyph: 14×10, --space-3 before the label, on a 10px field corner.
+    await expect(trigger(page)).toHaveCSS('border-radius', '10px')
+    await expect(trigger(page)).toHaveCSS('column-gap', '12px')
+    expect(await trigger(page).evaluate((element) => {
+      const glyph = getComputedStyle(element, '::before')
+      return [glyph.width, glyph.height]
+    })).toEqual(['14px', '10px'])
+    expect((await box(trigger(page))).height).toBeCloseTo(44, 0)
+    await trigger(page).evaluate((element) => { element.textContent = 'On this page: a section name long enough to wrap onto a second line' })
+    const wrapped = await box(trigger(page))
+    const text = await trigger(page).evaluate((element) => {
+      const range = document.createRange()
+      range.selectNodeContents(element)
+      const { top, bottom } = range.getBoundingClientRect()
+      return { top, bottom }
+    })
+    expect(wrapped.height).toBeGreaterThan(44)
+    expect(text.top - wrapped.y).toBeGreaterThanOrEqual(8)
+    expect(wrapped.y + wrapped.height - text.bottom).toBeGreaterThanOrEqual(8)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  })
+
+  test('a tap opens the drawer on the drawer itself, even when Find has hidden the current row', async ({ page }) => {
+    await page.goto(fixture)
+    const drawer = page.getByRole('dialog', { name: 'On this page', exact: true })
+    await trigger(page).click()
+    await find(page).fill('comm')
+    await expect(drawer.locator('.fg-site-rail__nav [aria-current]:visible')).toHaveCount(0)
+    await drawer.getByRole('button', { name: 'Close drawer' }).click()
+    await expect(drawer).toBeHidden()
+    await trigger(page).click()
+    await expect(drawer).toBeFocused()
+    await expect(find(page)).not.toBeFocused()
+  })
+
+  test('clears the strip fade when late web fonts make the links fit', async ({ page }) => {
+    // Hold the fonts back, so the strip is first measured in the fallback face.
+    let release = (): void => {}
+    const held = new Promise<void>((resolve) => { release = resolve })
+    await page.route('**/*.woff2', async (route) => {
+      await held
+      await route.continue()
+    })
+    await page.setViewportSize({ width: 720, height: 844 })
+    // The load event waits for the fonts, so do not wait for it.
+    await page.goto(pagesFixture, { waitUntil: 'domcontentloaded' })
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    const overflow = () => strip.evaluate(element => element.scrollWidth - element.clientWidth)
+    await expect(strip).toHaveAttribute('data-clip', 'end')
+    expect(await overflow()).toBeGreaterThan(12)
+    release()
+    await page.evaluate(() => document.fonts.ready)
+    await expect.poll(overflow).toBeLessThanOrEqual(12)
+    await expect(strip).not.toHaveAttribute('data-clip')
+  })
+
+  test('opening the drawer mid-page and closing it keeps the reader\'s position', async ({ page }) => {
     await page.goto(`${fixture}#commands`)
     const before = await page.evaluate(() => scrollY)
     expect(before).toBeGreaterThan(0)
-    for (const control of [
-      page.getByRole('button', { name: 'Find a section' }),
-      page.getByRole('button', { name: 'Menu', exact: true }),
-      page.locator('.fg-site-projects__trigger'),
-    ]) {
-      await control.focus()
-      expect(await page.evaluate(() => scrollY)).toBe(before)
-    }
-    await page.getByRole('button', { name: 'Find a section' }).click()
+    await page.keyboard.press('/')
+    const drawer = page.getByRole('dialog', { name: 'On this page', exact: true })
     await expect(find(page)).toBeFocused()
     expect(await page.evaluate(() => scrollY)).toBe(before)
     await page.keyboard.press('Escape')
-    await page.getByRole('button', { name: 'Menu', exact: true }).click()
-    await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible()
+    await expect(drawer).toBeHidden()
+    // Focus returns to the trigger above the page without scrolling to it.
+    await expect(trigger(page)).toBeFocused()
     expect(await page.evaluate(() => scrollY)).toBe(before)
-  })
-
-  test('a section jump lands below the sticky header', async ({ page }) => {
-    await page.goto(`${fixture}#commands`)
-    const header = (await page.locator('.fg-site-header').boundingBox())!
-    const heading = (await page.locator('#commands').boundingBox())!
-    expect(heading.y).toBeGreaterThanOrEqual(header.y + header.height)
   })
 })
 
 test.describe('without JavaScript', () => {
-  for (const width of [390, 1280]) {
-    test(`every link is visible and Find is hidden at ${width}px`, async ({ browser, page }) => {
-      // The fixture's server markup, with the styles the dev server injected, loaded where scripts do not run.
-      await page.goto(`${fixture}&static`)
-      await expect(page.locator('.fg-site-rail')).toBeAttached()
-      const html = (await page.content()).replace(/<script\b[\s\S]*?<\/script>/g, '')
-      const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 900 } })
-      const noScript = await context.newPage()
-      await noScript.setContent(html)
+  // The fixture's server markup, with the styles the dev server injected, loaded where scripts do not run.
+  const staticPage = async ({ browser, page, query, width }: { browser: Browser; page: Page; query: string; width: number }) => {
+    await page.goto(`${site}?${query}&static`)
+    await expect(page.locator('.fg-site-rail')).toBeAttached()
+    const html = (await page.content()).replace(/<script\b[\s\S]*?<\/script>/g, '')
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 900 } })
+    const noScript = await context.newPage()
+    await noScript.setContent(html)
+    return { context, noScript }
+  }
+
+  for (const width of [320, 390, 1280]) {
+    test(`with headerMenu, every row stays in place and Find is hidden at ${width}px`, async ({ browser, page }) => {
+      const { context, noScript } = await staticPage({ browser, page, query: 'shell&find', width })
       const links = noScript.locator('.fg-site-rail__nav a')
       await expect(links).toHaveCount(4)
       for (const link of await links.all()) await expect(link).toBeVisible()
       await expect(noScript.locator('.fg-site-find')).toHaveCount(0)
-      await expect(noScript.locator('.fg-site-header__bar')).toBeHidden()
+      await expect(noScript.locator('.fg-site-rail__summary')).toBeHidden()
+      await expect(noScript.locator('.fg-site-rail button:visible')).toHaveCount(0)
       for (const link of await noScript.locator('.fg-site-header__links a').all()) await expect(link).toBeVisible()
+      // The rail stays between the header and main.
+      const rail = (await noScript.locator('.fg-site-rail').boundingBox())!
+      const header = (await noScript.locator('.fg-site-header').boundingBox())!
+      expect(rail.y).toBeGreaterThanOrEqual(header.y + header.height)
       await context.close()
     })
   }
+
+  test('a tool site\'s two links hide on phones and show above 640px', async ({ browser, page }) => {
+    for (const width of [320, 390, 768, 801, 1280]) {
+      const { context, noScript } = await staticPage({ browser, page, query: 'tool', width })
+      const links = noScript.getByRole('navigation', { name: 'Site links' })
+      if (width <= 640) await expect(links, `at ${width}px`).toBeHidden()
+      else await expect(links.getByRole('link'), `at ${width}px`).toHaveText(['GitHub', 'Releases'])
+      await context.close()
+    }
+  })
+
+  test('without headerMenu, the trigger is a details summary with a chevron at 390px', async ({ browser, page }) => {
+    const { context, noScript } = await staticPage({ browser, page, query: 'pages', width: 390 })
+    const summary = noScript.locator('details.fg-site-rail__menu > summary')
+    await expect(summary).toBeVisible()
+    await expect(summary).toHaveText('On this page: Install')
+    await expect(summary).toHaveCSS('border-radius', '10px')
+    expect(await summary.evaluate(element => getComputedStyle(element, '::after').transform)).not.toBe('none')
+    await expect(noScript.locator('.fg-site-rail__nav a').first()).toBeHidden()
+    await summary.click()
+    await expect(noScript.locator('.fg-site-rail__nav a').first()).toBeVisible()
+    // The header keeps its pages on the strip row.
+    await expect(noScript.locator('.fg-site-header__links a')).toHaveCount(5)
+    await expect(noScript.locator('.fg-site-header__links a').first()).toBeVisible()
+    await context.close()
+  })
 })
 
-for (const width of [390, 720, 1280]) {
+for (const width of [320, 390, 720, 1280]) {
   test(`no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
-    await page.goto(fixture)
-    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0)
+    for (const url of [fixture, pagesFixture, `${site}?tool`]) {
+      await page.goto(url)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), url).toBeLessThanOrEqual(0)
+    }
   })
 }
 
@@ -292,8 +533,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
       .map(({ id, nodes }) => `${id}: ${nodes.map(node => node.target.join(' ')).join(', ')}`)
     expect(await violations()).toEqual([])
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.getByRole('button', { name: 'Menu', exact: true }).click()
-    await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible()
+    await trigger(page).click()
+    await expect(page.getByRole('dialog', { name: 'On this page', exact: true })).toBeVisible()
     expect(await violations()).toEqual([])
     await context.close()
   })

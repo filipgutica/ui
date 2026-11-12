@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useSlots } from 'vue'
+import { useEventListener, useResizeObserver } from '@vueuse/core'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useSlots, useTemplateRef, watch } from 'vue'
 
 import type { ListedSiteProject, SiteProjectId } from './projects.js'
 
 import { useSiteAppearance } from './appearance.js'
 import { loadSiteProjects, SITE_PROJECTS, SITE_PROJECTS_URL } from './projects.js'
-import { useSiteHeaderShell } from './site-shell.js'
 import UiSiteAppearancePicker from './UiSiteAppearancePicker.vue'
 
 export interface UiSiteLink {
@@ -62,8 +62,43 @@ const appearance = useSlots().default ? undefined : useSiteAppearance()
 const mounted = ref(false)
 const menu = ref<HTMLDetailsElement>()
 const trigger = ref<HTMLElement>()
-const bar = ref<HTMLElement>()
-const siteHeaderShell = useSiteHeaderShell()
+
+// The site links scroll sideways where they do not fit, as on a phone. An edge that hides more
+// than 12px of them fades, so the reader can tell the strip scrolls; a smaller overflow is padding.
+const strip = useTemplateRef<HTMLElement>('strip')
+const clip = ref<string>()
+const measureClip = (): void => {
+  const element = strip.value
+  if (!element) return
+  const hidden = element.scrollWidth - element.clientWidth
+  const ends = [element.scrollLeft > 12 && 'start', hidden - element.scrollLeft > 12 && 'end'].filter(Boolean)
+  clip.value = ends.length > 0 ? ends.join(' ') : undefined
+}
+// The strip starts with the current page in view, centred where it can be. It scrolls only the
+// strip, at once, so the page never moves.
+const revealCurrent = (): void => {
+  const element = strip.value
+  const current = element?.querySelector<HTMLElement>('[aria-current="page"]')
+  if (!element || !current) return
+  const hidden = element.scrollWidth - element.clientWidth
+  if (hidden <= 0) return
+  const box = element.getBoundingClientRect()
+  const row = current.getBoundingClientRect()
+  const left = element.scrollLeft + (row.left + row.width / 2) - (box.left + box.width / 2)
+  element.scrollTo({ left: Math.min(Math.max(left, 0), hidden), behavior: 'instant' })
+}
+// Once the reader moves the strip, or Tab scrolls a link into view, it stays where it is.
+let moved = false
+const markMoved = (): void => {
+  moved = true
+}
+useResizeObserver(strip, measureClip)
+useEventListener(strip, 'scroll', measureClip, { passive: true })
+useEventListener(strip, ['wheel', 'pointerdown', 'touchstart', 'keydown', 'focusin'], markMoved, { passive: true })
+// New or renamed links, and web fonts that finish loading after mount, change what the strip clips
+// without resizing it. The font listeners are added on mount.
+watch(() => links, measureClip, { deep: true, flush: 'post' })
+let fonts: FontFaceSet | undefined
 
 const closeMenu = (): void => {
   if (menu.value) menu.value.open = false
@@ -91,13 +126,20 @@ onMounted(() => {
     })
   }
   document.addEventListener('pointerdown', onDocumentPointerdown)
-  // A section rail with headerMenu puts its phone Find and Menu buttons in the bar, and repeats
-  // the links and the picker in its drawer. The getter keeps the links reactive.
-  if (bar.value) siteHeaderShell.value = { bar: bar.value, get links() { return links }, appearance }
+  revealCurrent()
+  measureClip()
+  fonts = 'fonts' in document ? document.fonts : undefined
+  fonts?.addEventListener('loadingdone', measureClip)
+  // The fallback face's widths placed the current page; place it again in the loaded face, unless
+  // the reader has moved the strip since.
+  void fonts?.ready.then(() => {
+    if (!moved) revealCurrent()
+    measureClip()
+  })
 })
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocumentPointerdown)
-  if (siteHeaderShell.value?.bar === bar.value) siteHeaderShell.value = undefined
+  fonts?.removeEventListener('loadingdone', measureClip)
 })
 
 </script>
@@ -146,8 +188,10 @@ onBeforeUnmount(() => {
       <div class="fg-site-header__end">
         <nav
           v-if="links.length > 0"
+          ref="strip"
           class="fg-site-header__links fg-site-nav"
           aria-label="Site links"
+          :data-clip="clip"
         >
           <a
             v-for="link in links"
@@ -165,11 +209,6 @@ onBeforeUnmount(() => {
           />
         </slot>
       </div>
-      <!-- Empty unless a section rail with headerMenu puts its phone Find and Menu buttons here. -->
-      <div
-        ref="bar"
-        class="fg-site-header__bar"
-      />
     </div>
   </header>
 </template>

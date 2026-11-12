@@ -39,7 +39,7 @@ test('raises the current page in both themes with a distinct dark fill', async (
     for (const width of [375, 1280]) {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/#/components/button')
-      if (width === 375) await page.getByRole('button', { name: /^Browse components:/ }).click()
+      if (width === 375) await page.getByRole('button', { name: /^Components:/ }).click()
       const current = page.locator('.docs-navigation:visible a[aria-current="page"]')
       const state = await current.evaluate(element => {
         let parent = element.parentElement

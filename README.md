@@ -144,17 +144,30 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 such as `wtree`, `devps`, or `ui`. The project menu is a native disclosure that
 works without JavaScript; Escape closes it and returns focus to its button.
 `links` are a navigation strip: rows 44px tall with 6px corners. A link with `current: true` gets `aria-current="page"` and the
-current-page fill. At 640px and below, three or more links take a second row below
-the project menu and the picker. One or two links stay beside the project name as
-text links, and a current one has accent text instead of the fill. Two short links
-keep the header to one row down to 360px. At 320px and narrower, or with longer
-links, the picker wraps to a second row. Inside `.fg-site-docs`, at 640px and below, the
-header hides `links` so it fits one row, so repeat those destinations in the footer.
-A `UiSiteNav` with `headerMenu` moves them into its Menu drawer instead. Without a
-default slot the header renders a System, Light, and Dark picker, built on
-`UiSegmentedControl`. A page with its own appearance control passes it in the
-default slot and uses `useSiteAppearance({ applyToRoot: false })` when it owns
-the root element.
+current-page fill. Where the strip does not fit, it scrolls sideways and fades
+each edge that hides more than 12px of a link, with no scrollbar, and it starts
+scrolled to centre the current link. Without a default slot the header renders
+a System, Light, and Dark picker, built on `UiSegmentedControl`. A page with
+its own appearance control passes it in the default slot and uses
+`useSiteAppearance({ applyToRoot: false })` when it owns the root element.
+
+At 800px and below the header follows the design system's phone header. It is
+static, with `--space-2` above, below, and between its rows, and the project
+name never truncates.
+
+- **Three or more links.** The first row holds the project menu at the start
+  and the picker at the end. Where both do not fit, as at 320px with a long
+  project name, the picker wraps to its own row at the start; this is the rule,
+  not a fallback. The links take the next row as the strip, on every page, the
+  docs shell's included, and the drawer of a `UiSiteNav` does not repeat them.
+  Where the strip is 340px wide or less, its rows take 6px side padding, so a
+  clipped link keeps at least 16px in view under the fade.
+- **One or two links.** They stay beside the picker. At 640px and below they
+  become text links on the project menu's row, and a current one has accent
+  text instead of the fill. Two short links keep the header to one row down to
+  360px; at 320px, or with longer links, the picker wraps to a second row.
+  Inside `.fg-site-docs` they hide at 640px and below, so repeat those
+  destinations on the page, such as in a Source fact and the footer.
 
 `useSiteAppearance()` returns `choice`, the resolved `appearance`, and
 `chooseAppearance(value)`. The choice is stored under `tool-site-theme`, follows
@@ -225,9 +238,21 @@ interactive, then a drawer. The disclosure, the drawer button, and the drawer
 title all show `label`. When an item has `current: true`, the phone control
 also shows that page's name. Otherwise it shows the current section's name.
 The control's accessible name is its visible text, so it changes with the
-current page or section. The drawer closes on
-navigation and focuses the destination section, and focus follows the visible control across the
-breakpoint.
+current page or section.
+
+The phone control is the design system's labelled trigger. It is a secondary
+button at least `--control-lg` tall, with `--space-2` block padding, so a long
+label wraps and grows it. A 14×10 menu glyph sits `--space-3` before the label,
+and the button takes the 10px field corner. It sits at the start, `--space-2`
+below the header, and is the page's only navigation trigger. Without
+JavaScript it is a native `<details>` summary with a chevron, and the rows open
+in place under it.
+
+The drawer opens from the left. It holds Find, pinned at the top, then the
+groups. A keyboard open focuses the current row, a tap focuses the drawer, and
+`/` opens it with Find focused. It closes on navigation and focuses the
+destination section; otherwise focus returns to the trigger. Focus follows the
+visible control across the breakpoint.
 
 `find` adds a Find field above the rows, for long rails. It is off by default.
 `find.label` names the field, such as `Find a component`, and `find.noun` names a
@@ -243,16 +268,12 @@ sets `window.findScope` (the `UiSiteFindScope` type) before the reader types:
 `filter(words)` returns `{ count, one, many }` for the announcement, and
 `keeps(link)` gets each row's resolved `URL` and says whether it stays.
 
-`headerMenu` gives a page with `UiSiteHeader` the catalogue's phone header. At
-800px and below the header is one sticky row: the project menu, then round,
-icon-only Find (with `find`) and Menu buttons. Menu opens a drawer titled Menu
-that holds Find, the header's links under Pages, its appearance picker, and the
-rows. A keyboard open focuses the current row, a tap focuses the drawer, and
-Find focuses the field. Focusing a header control does not scroll the page, and
-in-page jumps land below the header. Without JavaScript the rows stay open in
-place and the header keeps its links. When the header has a default slot, that
-control stays in the header row. Without a `UiSiteHeader` the labelled trigger
-stays.
+`headerMenu` keeps its name, but it no longer puts Find and Menu buttons in the
+header: design system 1.0.8 replaced them with the labelled trigger, which every
+rail now shows. With `headerMenu`, at 800px and below and without JavaScript, the
+rows stay in place with every row shown and no disclosure, as the design
+system's section rail does. Without it they sit in the closed disclosure, as a
+page's contents list does. With JavaScript the two are the same.
 
 Section headings in `.fg-site-docs` and `.fg-site-prose` use the terminal
 identity's decorative `## ` mark, with `0.08em` tracking. Set `--heading-mark`
@@ -363,8 +384,7 @@ site's own rules win. That holds only when the site declares the layer order
 before importing `site.css`: `@import "tailwindcss"` does this, or start the
 stylesheet with `@layer base, components, utilities;`. To adopt the shell, delete
 the site's own frame, element base, `kbd`, footer, legend, and ANSI palette
-rules. Without `fg-site-docs`, the frame, element defaults, and phone header
-rules do not apply. These apply on every page: the `fg-site-footer` and
+rules. Without `fg-site-docs`, the frame and element defaults do not apply. These apply on every page: the `fg-site-footer` and
 `fg-site-legend` classes wherever a page uses them; the capture terminal palette
 for every `UiCapture`, in the `components` layer, so a site's own unlayered
 `.term` and ANSI rules and its `--t*` values still win; and `UiSiteNav`, whose
