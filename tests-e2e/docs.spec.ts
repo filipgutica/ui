@@ -1142,6 +1142,23 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
 })
 
 
+test('finds a component by name or alias in the list and keeps the matches after opening one', async ({ page }) => {
+  await page.goto('/#/components/button')
+  const rail = page.getByRole('complementary', { name: 'Components', exact: true })
+  const find = rail.getByRole('searchbox', { name: 'Find a component' })
+  await page.keyboard.press('/')
+  await expect(find).toBeFocused()
+  await find.fill('modal')
+  await expect(rail.locator('.fg-site-rail__nav a:visible')).toHaveText(['Dialog'])
+  await find.press('Enter')
+  await expect(page.locator('h1')).toHaveText('Dialog')
+  // The rows stay matched after the route marks a new current page.
+  await expect(rail.locator('.fg-site-rail__nav a:visible')).toHaveText(['Dialog'])
+  await expect(rail.getByRole('link', { name: 'Dialog', exact: true })).toHaveAttribute('aria-current', 'page')
+  await find.fill('zzz')
+  await expect(rail.getByText('No component matches')).toBeVisible()
+})
+
 test('publishes the shared project list at /projects.json', async ({ request }) => {
   // Every site's UiSiteHeader loads this file from the deployed docs site.
   const response = await request.get('/projects.json')

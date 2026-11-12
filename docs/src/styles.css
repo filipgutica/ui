@@ -53,25 +53,16 @@ pre,
   margin-inline: auto;
   grid-template-columns: var(--sidebar) minmax(0, 1fr);
 }
-.sidebar {
-  position: sticky;
+/* The component list is UiSiteNav, a section rail with Find. On desktop it fills the column below
+ * the header, and only its rows scroll. */
+.docs-rail {
   top: calc(var(--space-16) + 1px);
-  align-self: start;
   height: calc(100vh - var(--space-16) - 1px);
-  overflow: auto;
   padding: var(--space-8) var(--space-4) var(--space-12) var(--space-8);
-  border-right: 1px solid var(--color-border-subtle);
   background: var(--color-bg);
 }
-.docs-navigation { display: grid; gap: var(--space-6); }
-.nav-group { display: grid; gap: var(--space-1); }
-.nav-group h2 {
-  margin: 0 0 var(--space-1);
-  padding-inline: var(--space-3);
-  color: var(--color-muted);
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
+@media (min-width: 801px) {
+  .docs-rail .fg-site-rail__content { max-height: calc(100vh - var(--space-16) - 1px - var(--space-8) - var(--space-12)); }
 }
 
 .main-content { min-width: 0; }
@@ -305,27 +296,23 @@ pre,
 .theme-drop-zone > div { display: grid; gap: var(--space-1); }
 .theme-drop-zone span { color: var(--color-muted); font-size: var(--text-sm); }
 
-/* At 800px and below the component list moves into a drawer opened from this bar, whose trigger
- * sits --space-2 below the header. The bar stays in view, so browsing is one tap away on long pages. */
-.docs-mobilebar { display: none; padding: var(--space-2) var(--space-4) 0; }
-/* The trigger starts where the project menu does: the header's gutter widens above 680px. */
-@media (min-width: 681px) { .docs-mobilebar { padding-inline: var(--space-6); } }
-.fg-drawer__body .docs-navigation a { min-height: var(--control-lg); }
-
+/* At 800px and below the rail's trigger opens the list in a drawer. The trigger sits --space-2 below
+ * the header and stays in view, so browsing is one tap away on long pages. It starts where the
+ * project menu does: the header's gutter widens above 680px. */
 @media (max-width: 800px) {
   .docs-shell { display: block; }
-  .sidebar { display: none; }
   .fg-site-header { position: relative; z-index: 31; }
-  .docs-mobilebar {
-    display: block;
+  .docs-rail {
     position: sticky;
     top: 0;
     z-index: 30;
-    padding-block: var(--space-2);
+    height: auto;
+    padding: var(--space-2) var(--space-4);
+    border-inline-end: 0;
     border-bottom: 1px solid var(--color-border-subtle);
-    background: var(--color-bg);
   }
 }
+@media (min-width: 681px) and (max-width: 800px) { .docs-rail { padding-inline: var(--space-6); } }
 
 @media (max-width: 680px) {
   .content-page { padding: var(--space-6) var(--space-4) var(--space-12); }
