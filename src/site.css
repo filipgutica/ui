@@ -169,6 +169,20 @@
     padding: 0.125rem;
   }
   .fg-site-header__links.fg-site-nav a { flex: none; min-height: var(--control-lg); white-space: nowrap; }
+  /* Becoming current moves no link: a hidden copy of the label (data-label, with empty alternative
+   * text) at the current link's medium weight sets each link's width. It overlaps the label's line by
+   * -1lh, so the link keeps one line's height; as a flex column it stacks on the label, not beside it.
+   * Without lh there is no copy, and only the current link's width can change. */
+  @supports (margin-top: -1lh) {
+    .fg-site-header__links.fg-site-nav a[data-label] { flex-direction: column; align-items: stretch; justify-content: center; }
+    .fg-site-header__links.fg-site-nav a[data-label]::after {
+      content: attr(data-label) / "";
+      display: block;
+      margin-top: -1lh;
+      font-weight: var(--weight-medium);
+      visibility: hidden;
+    }
+  }
   .fg-site-header__links[data-clip="start"] { mask-image: linear-gradient(to right, transparent, #000 var(--space-6)); }
   .fg-site-header__links[data-clip="end"] { mask-image: linear-gradient(to right, #000 calc(100% - var(--space-6)), transparent); }
   .fg-site-header__links[data-clip="start end"] {

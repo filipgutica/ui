@@ -144,7 +144,9 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 such as `wtree`, `devps`, or `ui`. The project menu is a native disclosure that
 works without JavaScript; Escape closes it and returns focus to its button.
 `links` are a navigation strip: rows 44px tall with 6px corners. A link with `current: true` gets `aria-current="page"` and the
-current-page fill. Where the strip does not fit, it scrolls sideways and fades
+current-page fill. Each link is as wide as its label at the current link's
+medium weight, so changing the current link moves no other link; browsers
+without the `lh` unit skip this. Where the strip does not fit, it scrolls sideways and fades
 each edge that hides more than 12px of a link, with no scrollbar, and it starts
 scrolled to centre the current link. Without a default slot the header renders
 a System, Light, and Dark picker, built on `UiSegmentedControl`. A page with

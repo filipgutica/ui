@@ -208,6 +208,24 @@ test('colors captures with the default terminal palette unless the site sets its
   await expect(screen).toHaveCSS('color', 'rgb(230, 233, 235)')
 })
 
+test('keeps every header link in place whichever link is current', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 })
+  const links = page.getByRole('navigation', { name: 'Site links', exact: true })
+  const positions: number[][] = []
+  for (const current of [0, 1, 2, 3, 4]) {
+    await page.goto(`${fixture}?pages=${current}`)
+    await page.evaluate(() => document.fonts.ready)
+    await expect(links.getByRole('link').nth(current)).toHaveAttribute('aria-current', 'page')
+    expect(await links.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+    positions.push(await links.getByRole('link').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().x)))
+  }
+  for (const [current, xs] of positions.entries()) {
+    xs.forEach((x, index) => expect(Math.abs(x - positions[0]![index]!), `link ${index} with link ${current} current`).toBeLessThanOrEqual(0.5))
+  }
+  // The copy is hidden from assistive technology: each link's name is its label alone.
+  await expect(links.getByRole('link').first()).toHaveAccessibleName('Foundations')
+})
+
 test('keeps one or two header links on the phone menu row as text links, outside the docs shell', async ({ page }) => {
   const links = page.getByRole('navigation', { name: 'Site links', exact: true })
   // The rows that the project menu, the links, and the header controls sit on.
