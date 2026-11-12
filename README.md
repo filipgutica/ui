@@ -76,6 +76,11 @@ in `@filipgutica/ui`. Read the
 them for page navigation: they explain how each one behaves before and after
 hydration.
 
+Put [Breadcrumbs](https://filipgutica.github.io/ui/#/components/breadcrumbs)
+right above the h1 of every page below a site's home page. `UiBreadcrumbs`
+renders without JavaScript, and `site.css` sets the trail in the monospace
+font.
+
 ## Themes
 
 Import a VS Code JSON or JSONC theme in the browser:

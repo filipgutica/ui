@@ -6,6 +6,7 @@ import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize, UiFi
 import {
   UiAlert,
   UiBadge,
+  UiBreadcrumbs,
   UiButton,
   UiCard,
   UiCheckbox,
@@ -342,6 +343,16 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
           >Drawer documentation</a>
         </nav>
       </UiDrawer>
+
+      <UiBreadcrumbs
+        v-else-if="slug === 'breadcrumbs'"
+        label="Example breadcrumb"
+        :items="[
+          { label: 'Components', href: '#/' },
+          { label: 'Layout', href: '#/components/drawer' },
+          { label: 'Breadcrumbs' },
+        ]"
+      />
 
       <UiTabs
         v-else-if="slug === 'tabs'"

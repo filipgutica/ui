@@ -1,3 +1,4 @@
+@import './components/breadcrumbs.css';
 @import './components/drawer.css';
 @import './components/tabs.css';
 
@@ -1214,6 +1215,7 @@
   /* One focus ring for every control except fields: a --focus-width outline in the accent with a
    * --focus-offset gap, no glow, over the control's own raise or sink shadow. Links, navigation,
    * and tabs draw the same ring. */
+  .fg-breadcrumbs__link:focus-visible,
   .fg-button:focus-visible,
   .fg-checkbox__control:focus-visible,
   .fg-radio-card:focus-visible,

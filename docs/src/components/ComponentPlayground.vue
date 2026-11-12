@@ -13,7 +13,7 @@ const { compact = false, slug } = defineProps<{
 
 type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'yaml' | 'css' | 'html' | 'bash' | 'text'
 
-const hasControls = computed(() => !compact && !['tabs', 'example'].includes(slug))
+const hasControls = computed(() => !compact && !['breadcrumbs', 'tabs', 'example'].includes(slug))
 const label = ref('Inspect evidence')
 const controlSize = ref<UiControlSize>('md')
 const buttonVariant = ref<NonNullable<UiButtonProps['variant']>>('primary')

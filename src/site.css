@@ -267,6 +267,8 @@
   }
   .fg-site-rail__nav a[aria-current="location"]::before { content: none; }
   .fg-site-nav a code { font-family: var(--font-mono); font-size: var(--text-sm); }
+  /* On the folio sites the breadcrumb trail is mono, like the rail. */
+  .fg-breadcrumbs { font-family: var(--font-mono); }
 
   /* Forced colors drop fills and shadows. The current page and the rail's section in view take a
    * system border; any other in-page location keeps its pip, redrawn in the system highlight. */
