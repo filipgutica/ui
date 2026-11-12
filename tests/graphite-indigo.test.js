@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 
 import { tokens } from '@filipgutica/design-system'
 import { describe, expect, it } from 'vitest'
@@ -44,6 +44,35 @@ describe('Graphite Indigo files', () => {
       .map(([, name]) => name)
 
     expect(used.filter(name => !defined.has(name))).toEqual([])
+  })
+})
+
+// Every class-flavour theme the design system ships: Graphite Indigo, Pine, and Mauve.
+const themeFiles = readdirSync(resolve(process.cwd(), 'src/themes')).filter(file => file.endsWith('.css')).sort()
+
+describe('Class-flavour theme files', () => {
+  it('vendors every theme the design-system package ships, and nothing else', () => {
+    const shipped = readdirSync(dirname(createRequire(import.meta.url).resolve('@filipgutica/design-system/class/themes/graphite-indigo.css')))
+      .filter(file => file.endsWith('.css')).sort()
+
+    expect(themeFiles).toEqual(shipped)
+    expect(themeFiles.map(file => file.replace('.css', ''))).toEqual(Object.keys(tokens.themes).sort())
+  })
+
+  it('exports each theme as @filipgutica/ui/themes/<name>.css, and nothing else under themes', () => {
+    const { exports } = JSON.parse(read('package.json'))
+    const themeExports = Object.entries(exports).filter(([path]) => path.startsWith('./themes/'))
+
+    expect(Object.fromEntries(themeExports)).toEqual(Object.fromEntries(themeFiles.map(file => [`./themes/${file}`, `./src/themes/${file}`])))
+  })
+
+  it.each(themeFiles)('gives %s the same roles as Graphite Indigo, with one :root.dark block from its own tokens', (file) => {
+    const css = read(`src/themes/${file}`)
+
+    expect(variablesIn(css)).toEqual(variablesIn(read('src/themes/graphite-indigo.css')))
+    expect(css).not.toMatch(/@import[^;]*design-system/)
+    expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
+    expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain(`--color-bg: ${tokens.themes[file.replace('.css', '')].dark['color-bg']}`)
   })
 })
 

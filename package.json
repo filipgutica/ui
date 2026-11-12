@@ -39,6 +39,8 @@
     "./components.css": "./src/components.css",
     "./site.css": "./src/site.css",
     "./themes/graphite-indigo.css": "./src/themes/graphite-indigo.css",
+    "./themes/mauve.css": "./src/themes/mauve.css",
+    "./themes/pine.css": "./src/themes/pine.css",
     "./fonts.css": "./src/fonts.css",
     "./fonts/*": "./src/fonts/*"
   },
@@ -93,7 +95,7 @@
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
     "@eslint/js": "^10.0.1",
-    "@filipgutica/design-system": "1.0.8",
+    "@filipgutica/design-system": "1.0.9",
     "@playwright/test": "^1.62.1",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@tailwindcss/vite": "^4.3.3",
