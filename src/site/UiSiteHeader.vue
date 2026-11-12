@@ -198,6 +198,7 @@ onBeforeUnmount(() => {
             :key="link.href"
             :href="link.href"
             :aria-current="link.current ? 'page' : undefined"
+            :data-label="link.label"
           >{{ link.label }}</a>
         </nav>
         <slot>

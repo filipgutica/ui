@@ -40,7 +40,7 @@ test('raises the current page in both themes with a distinct dark fill', async (
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/#/components/button')
       if (width === 375) await page.getByRole('button', { name: /^Components:/ }).click()
-      const current = page.locator('.docs-navigation:visible a[aria-current="page"]')
+      const current = page.locator('.fg-site-rail__nav:visible a[aria-current="page"]')
       const state = await current.evaluate(element => {
         let parent = element.parentElement
         while (parent && getComputedStyle(parent).backgroundColor === 'rgba(0, 0, 0, 0)') parent = parent.parentElement

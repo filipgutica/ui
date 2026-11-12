@@ -208,6 +208,24 @@ test('colors captures with the default terminal palette unless the site sets its
   await expect(screen).toHaveCSS('color', 'rgb(230, 233, 235)')
 })
 
+test('keeps every header link in place whichever link is current', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 400 })
+  const links = page.getByRole('navigation', { name: 'Site links', exact: true })
+  const positions: number[][] = []
+  for (const current of [0, 1, 2, 3, 4]) {
+    await page.goto(`${fixture}?pages=${current}`)
+    await page.evaluate(() => document.fonts.ready)
+    await expect(links.getByRole('link').nth(current)).toHaveAttribute('aria-current', 'page')
+    expect(await links.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+    positions.push(await links.getByRole('link').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().x)))
+  }
+  for (const [current, xs] of positions.entries()) {
+    xs.forEach((x, index) => expect(Math.abs(x - positions[0]![index]!), `link ${index} with link ${current} current`).toBeLessThanOrEqual(0.5))
+  }
+  // The copy is hidden from assistive technology: each link's name is its label alone.
+  await expect(links.getByRole('link').first()).toHaveAccessibleName('Foundations')
+})
+
 test('keeps one or two header links on the phone menu row as text links, outside the docs shell', async ({ page }) => {
   const links = page.getByRole('navigation', { name: 'Site links', exact: true })
   // The rows that the project menu, the links, and the header controls sit on.
@@ -648,7 +666,7 @@ test('keeps site explanations readable and navigation rows 36px tall, 44px at ph
   await page.goto(fixture)
   await expect(page.locator('.fg-site-hero')).toHaveCSS('row-gap', '24px')
   const text = await page.locator('main').evaluate(element => getComputedStyle(element).color)
-  for (const selector of ['.fg-site-hero__lede', '.fg-site-legend dd', '.fg-command-list__description', '.fg-site-definitions dd', '.fg-site-steps__result']) {
+  for (const selector of ['.fg-site-hero__lede', '.fg-site-legend dd', '.fg-site-definitions dd', '.fg-site-steps__result']) {
     await expect(page.locator(selector).first()).toHaveCSS('color', text)
   }
   await expect(page.locator('.fg-site-meta').first()).not.toHaveCSS('color', text)
@@ -663,4 +681,37 @@ test('keeps site explanations readable and navigation rows 36px tall, 44px at ph
   await touchPage.locator('.playground-stage > .fg-select').click()
   await expect(touchPage.locator('.playground-stage > .fg-select option').first()).toHaveCSS('min-height', '44px')
   await touch.close()
+})
+
+test('draws command rows as the catalogue does: centred, ruled below, with a muted description', async ({ page }) => {
+  await page.goto(fixture)
+  const list = page.locator('.fg-command-list')
+  const muted = await list.evaluate((element) => {
+    const probe = element.appendChild(document.createElement('i'))
+    probe.style.color = 'var(--color-muted)'
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  })
+  const description = list.locator('.fg-command-list__description').first()
+  await expect(description).toHaveCSS('color', muted)
+  await expect(description).toHaveCSS('font-size', '13px')
+
+  const rows = list.locator('tbody tr')
+  for (const cell of await rows.first().locator('td').all()) {
+    await expect(cell).toHaveCSS('vertical-align', 'middle')
+    await expect(cell).toHaveCSS('border-top-width', '0px')
+    await expect(cell).toHaveCSS('border-bottom-width', '1px')
+  }
+  // The copy button sets the height: 44px, 4px above and below, and the rule.
+  for (const row of await rows.all()) expect((await row.boundingBox())?.height).toBe(53)
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  for (const row of await rows.all()) {
+    await expect(row).toHaveCSS('display', 'grid')
+    await expect(row).toHaveCSS('align-items', 'center')
+    await expect(row).toHaveCSS('padding-block', '8px')
+    await expect(row).toHaveCSS('border-top-width', '0px')
+    await expect(row).toHaveCSS('border-bottom-width', '1px')
+  }
 })

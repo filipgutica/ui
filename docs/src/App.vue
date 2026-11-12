@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { useMediaQuery } from '@vueuse/core'
-import { computed, nextTick, onBeforeUnmount, provide, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, provide, reactive, ref, watch, watchEffect } from 'vue'
 
-import { componentDocBySlug } from './component-docs.js'
-import DocsNavigation from './components/DocsNavigation.vue'
+import { componentDocBySlug, componentDocs } from './component-docs.js'
 import ComponentPage from './components/ComponentPage.vue'
 import HomePage from './components/HomePage.vue'
 import SandboxPage from './components/SandboxPage.vue'
 import ThemesPage from './components/ThemesPage.vue'
 import { createDocsTheme, docsThemeKey } from './docs-theme.js'
 import { parseDocsHash } from './router.js'
-import { UiSiteAppearancePicker, UiSiteHeader } from '../../src/site/index.js'
-import { UiButton, UiDrawer } from '../../src/index.js'
+import { UiSiteAppearancePicker, UiSiteHeader, UiSiteNav } from '../../src/site/index.js'
+import type { UiSiteNavGroup } from '../../src/site/index.js'
 
 const docsTheme = createDocsTheme()
 provide(docsThemeKey, docsTheme)
@@ -35,34 +33,47 @@ const selectedComponent = computed(() =>
     ? componentDocBySlug(route.value.slug)
     : undefined)
 
-const currentPageLabel = computed(() => selectedComponent.value?.title ?? (route.value.name === 'home' ? 'Introduction' : route.value.name === 'themes' ? 'Themes' : 'Page not found'))
-const navigationOpen = ref(false)
-// Keep in sync with the max-width: 800px rules for .docs-mobilebar in styles.css.
-const narrowViewport = useMediaQuery('(max-width: 800px)')
-let navigationSelected = false
+// Other names a reader may type in Find.
+const aliases: Partial<Record<string, string>> = {
+  'alert': 'banner callout notice',
+  'badge': 'tag chip label',
+  'code-block': 'snippet',
+  'dialog': 'modal',
+  'drawer': 'sheet sidebar menu',
+  'progress': 'loading bar',
+  'score': 'rating',
+  'segmented-control': 'toggle group',
+  'select': 'dropdown',
+  'slider': 'range',
+  'switch': 'toggle',
+}
+// Find keeps the rows it shows by object, so the rows are made once and only `current` changes.
+const navigation = reactive<UiSiteNavGroup[]>([
+  { items: [{ label: 'Introduction', href: '#/' }, { label: 'Themes', href: '#/themes' }] },
+  ...(['Actions', 'Forms', 'Feedback', 'Layout'] as const).map(category => ({
+    label: category,
+    items: componentDocs.filter(component => component.category === category).map(({ slug, title }) => ({
+      label: title,
+      href: `#/components/${slug}`,
+      ...(aliases[slug] ? { terms: aliases[slug] } : {}),
+    })),
+  })),
+])
+const currentHref = computed(() => {
+  if (route.value.name === 'home') return '#/'
+  if (route.value.name === 'themes') return '#/themes'
+  return selectedComponent.value ? `#/components/${selectedComponent.value.slug}` : undefined
+})
+watchEffect(() => {
+  for (const item of navigation.flatMap(group => group.items)) item.current = item.href === currentHref.value
+})
+
+const find = { label: 'Find a component', noun: 'component' } as const
+
 const focusHeading = (): void => {
   document.querySelector<HTMLElement>('#main-content h1')?.focus()
 }
-const onNavigationClick = (event: MouseEvent): void => {
-  if (!(event.target instanceof Element) || !event.target.closest('a')) return
-  // A modified click opens a new tab or window, so the drawer stays open (as in UiSiteNav).
-  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
-  navigationSelected = true
-  navigationOpen.value = false
-}
-const onDrawerCloseAutoFocus = (event: Event): void => {
-  if (navigationSelected || !narrowViewport.value) {
-    event.preventDefault()
-    focusHeading()
-  }
-  navigationSelected = false
-}
-watch(narrowViewport, (narrow) => {
-  if (!narrow) navigationOpen.value = false
-})
-
 watch(route, async () => {
-  navigationOpen.value = false
   await nextTick()
   focusHeading()
 })
@@ -86,36 +97,12 @@ watch(route, async () => {
   </UiSiteHeader>
 
   <div class="docs-shell">
-    <aside
-      class="sidebar"
-      aria-label="Component documentation"
-    >
-      <DocsNavigation :route="route" />
-    </aside>
-
-    <div class="docs-mobilebar">
-      <UiDrawer
-        v-model:open="navigationOpen"
-        title="Components"
-        @close-auto-focus="onDrawerCloseAutoFocus"
-      >
-        <template #trigger>
-          <!-- The section rail's labelled trigger, from site.css: the menu glyph, the field corner, and
-            block padding that lets a long label wrap. -->
-          <UiButton
-            class="fg-site-rail__toggle"
-            variant="secondary"
-            size="lg"
-          >
-            Components: {{ currentPageLabel }}
-          </UiButton>
-        </template>
-        <DocsNavigation
-          :route="route"
-          @click="onNavigationClick"
-        />
-      </UiDrawer>
-    </div>
+    <UiSiteNav
+      class="docs-rail"
+      label="Components"
+      :groups="navigation"
+      :find="find"
+    />
     <main
       id="main-content"
       class="main-content fg-site-prose"

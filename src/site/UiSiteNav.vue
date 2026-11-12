@@ -144,10 +144,14 @@ const closeAutoFocus = (event: Event): void => {
     event.preventDefault()
     focusFirstLink()
   } else {
+    event.preventDefault()
+    // A page that moved focus itself while the drawer closed keeps it there, as a hash router
+    // that focuses the heading of the page a row opened.
+    const active = document.activeElement
+    const moved = active && active !== document.body && !(event.target instanceof Node && event.target.contains(active))
     // The trigger sits above the page, so returning focus to it must keep the reader's position,
     // as after the / shortcut opened the drawer mid-page.
-    event.preventDefault()
-    toggle()?.focus({ preventScroll: true })
+    if (!moved) toggle()?.focus({ preventScroll: true })
   }
 }
 
@@ -271,16 +275,27 @@ const [DefineFind, ReuseFind] = createReusableTemplate()
 const [DefineEmpty, ReuseEmpty] = createReusableTemplate()
 const [DefineFoot, ReuseFoot] = createReusableTemplate()
 
+// The location changed under the drawer, as on browser Back or Forward, so it shows a page the
+// reader did not pick from it. Find keeps its query. Back and Forward fire popstate before
+// hashchange, so the drawer releases focus before a hash router focuses its new page.
+const closeOnLocationChange = (): void => {
+  open.value = false
+}
+
 onMounted(() => {
   media = matchMedia(MOBILE_QUERY)
   syncBreakpoint()
   enhanced.value = true
   media.addEventListener('change', syncBreakpoint)
   document.addEventListener('keydown', onShortcut)
+  window.addEventListener('popstate', closeOnLocationChange)
+  window.addEventListener('hashchange', closeOnLocationChange)
 })
 onUnmounted(() => {
   media?.removeEventListener('change', syncBreakpoint)
   document.removeEventListener('keydown', onShortcut)
+  window.removeEventListener('popstate', closeOnLocationChange)
+  window.removeEventListener('hashchange', closeOnLocationChange)
   clearTimeout(announce)
 })
 </script>

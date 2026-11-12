@@ -1142,6 +1142,60 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
 })
 
 
+test('finds a component by name or alias in the list and keeps the matches after opening one', async ({ page }) => {
+  await page.goto('/#/components/button')
+  const rail = page.getByRole('complementary', { name: 'Components', exact: true })
+  const find = rail.getByRole('searchbox', { name: 'Find a component' })
+  // At 1280px the placeholder and the shortcut switch's label each fit on one line.
+  await page.evaluate(() => document.fonts.ready)
+  // The placeholder as a value: the browser's own text box, with the room it keeps for its clear button.
+  const overflow = await find.evaluate((input: HTMLInputElement) => {
+    input.value = input.placeholder
+    const width = input.scrollWidth - input.clientWidth
+    input.value = ''
+    return width
+  })
+  expect(overflow).toBeLessThanOrEqual(0)
+  const label = rail.locator('.fg-site-rail__foot label')
+  expect((await label.boundingBox())!.height).toBeLessThanOrEqual(parseFloat(await label.evaluate(element => getComputedStyle(element).lineHeight)) + 0.5)
+  await page.keyboard.press('/')
+  await expect(find).toBeFocused()
+  await find.fill('modal')
+  await expect(rail.locator('.fg-site-rail__nav a:visible')).toHaveText(['Dialog'])
+  await find.press('Enter')
+  await expect(page.locator('h1')).toHaveText('Dialog')
+  // The rows stay matched after the route marks a new current page.
+  await expect(rail.locator('.fg-site-rail__nav a:visible')).toHaveText(['Dialog'])
+  await expect(rail.getByRole('link', { name: 'Dialog', exact: true })).toHaveAttribute('aria-current', 'page')
+  await find.fill('zzz')
+  await expect(rail.getByText('No component matches')).toBeVisible()
+})
+
+test('closes the mobile drawer on browser Back and Forward, keeps Find, and focuses the page heading', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/#/components/button')
+  // By CSS: while the drawer is open, the page behind it, the trigger included, is aria-hidden.
+  const trigger = page.locator('button.fg-site-rail__toggle')
+  const drawer = page.getByRole('dialog', { name: 'Components', exact: true })
+  await trigger.click()
+  await drawer.getByRole('link', { name: 'Dialog', exact: true }).click()
+  await expect(page.locator('h1')).toHaveText('Dialog')
+
+  await trigger.click()
+  await drawer.getByRole('searchbox', { name: 'Find a component' }).fill('butt')
+  await page.goBack()
+  await expect(drawer).toBeHidden()
+  await expect(page.locator('h1')).toHaveText('Button')
+  await expect(page.locator('h1')).toBeFocused()
+
+  await trigger.click()
+  await expect(drawer.getByRole('searchbox', { name: 'Find a component' })).toHaveValue('butt')
+  await page.goForward()
+  await expect(drawer).toBeHidden()
+  await expect(page.locator('h1')).toHaveText('Dialog')
+  await expect(page.locator('h1')).toBeFocused()
+})
+
 test('publishes the shared project list at /projects.json', async ({ request }) => {
   // Every site's UiSiteHeader loads this file from the deployed docs site.
   const response = await request.get('/projects.json')
@@ -1285,7 +1339,7 @@ test('keeps the page frame and dialog widths in pixels when the reader enlarges 
   await page.setViewportSize({ width: 1600, height: 900 })
   await page.goto('/#/sandbox/dialog')
   await page.evaluate(() => { document.documentElement.style.fontSize = '20px' })
-  expect((await page.locator('.docs-shell').boundingBox())?.width).toBe(224 + 960)
+  expect((await page.locator('.docs-shell').boundingBox())?.width).toBe(264 + 960)
   await page.locator('.playground-stage').getByRole('button', { name: 'Open dialog' }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
   expect((await page.getByRole('dialog').boundingBox())?.width).toBe(512)

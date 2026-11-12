@@ -15,6 +15,12 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    // Only where WebKit behaves differently: a tap outside the drawer.
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testMatch: 'drawer.spec.ts',
+    },
   ],
   webServer: {
     command: 'pnpm docs:dev --host 127.0.0.1 --port 5175',

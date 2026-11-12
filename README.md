@@ -144,7 +144,9 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 such as `wtree`, `devps`, or `ui`. The project menu is a native disclosure that
 works without JavaScript; Escape closes it and returns focus to its button.
 `links` are a navigation strip: rows 44px tall with 6px corners. A link with `current: true` gets `aria-current="page"` and the
-current-page fill. Where the strip does not fit, it scrolls sideways and fades
+current-page fill. Each link is as wide as its label at the current link's
+medium weight, so changing the current link moves no other link; browsers
+without the `lh` unit skip this. Where the strip does not fit, it scrolls sideways and fades
 each edge that hides more than 12px of a link, with no scrollbar, and it starts
 scrolled to centre the current link. Without a default slot the header renders
 a System, Light, and Dark picker, built on `UiSegmentedControl`. A page with
@@ -251,7 +253,12 @@ in place under it.
 The drawer opens from the left. It holds Find, pinned at the top, then the
 groups. A keyboard open focuses the current row, a tap focuses the drawer, and
 `/` opens it with Find focused. It closes on navigation and focuses the
-destination section; otherwise focus returns to the trigger. Focus follows the
+destination section; otherwise focus returns to the trigger, unless the page
+moved focus itself while the drawer closed, as a router that focuses the new
+page's heading does. Browser Back or Forward, or any other change to the
+location's hash, closes it and keeps the Find query. A tap or a click
+outside it closes it, in Safari and other WebKit browsers too; a press that
+starts inside it does not. Focus follows the
 visible control across the breakpoint.
 
 `find` adds a Find field above the rows, for long rails. It is off by default.
@@ -279,7 +286,7 @@ Section headings in `.fg-site-docs` and `.fg-site-prose` use the terminal
 identity's decorative `## ` mark, with `0.08em` tracking. Set `--heading-mark`
 on a page or section to change it; `--heading-mark: none` removes it. The
 default is `--heading-mark: "## "`. The mark is excluded from accessible text.
-Navigation rows in the rail, the drawer, and the docs navigation are `--row`
+Navigation rows in the rail and the drawer are `--row`
 (2.25rem) tall, and `--control-lg` at 800px and below.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
@@ -331,8 +338,11 @@ on `:root`, because the dialog renders outside the panel.
 `<code>`, and `commandHeader` and `descriptionHeader` to rename the columns. Each row gets a copy button named
 "Copy <command>" once the page is interactive; set `copyable` to `false` to
 remove them. A copied row shows a tick for 1.5s. A status message announces each
-copy and shows a fallback when the clipboard is unavailable. At 640px and below
-each command stacks above its description and wraps.
+copy and shows a fallback when the clipboard is unavailable. Rows follow the
+design-system catalogue's command list: cells are centred with 4px block
+padding, a rule sits below each row, and the description is muted at
+`--text-sm`. At 640px and below each command stacks above its description and
+wraps, with 8px block padding and the copy button centred beside both.
 
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
 numbered markers (each `li` holds an `h3` title and short paragraphs; mark the last
