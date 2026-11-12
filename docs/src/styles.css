@@ -308,6 +308,8 @@ pre,
 /* At 800px and below the component list moves into a drawer opened from this bar, whose trigger
  * sits --space-2 below the header. The bar stays in view, so browsing is one tap away on long pages. */
 .docs-mobilebar { display: none; padding: var(--space-2) var(--space-4) 0; }
+/* The trigger starts where the project menu does: the header's gutter widens above 680px. */
+@media (min-width: 681px) { .docs-mobilebar { padding-inline: var(--space-6); } }
 .fg-drawer__body .docs-navigation a { min-height: var(--control-lg); }
 
 @media (max-width: 800px) {

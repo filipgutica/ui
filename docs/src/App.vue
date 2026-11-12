@@ -96,7 +96,7 @@ watch(route, async () => {
     <div class="docs-mobilebar">
       <UiDrawer
         v-model:open="navigationOpen"
-        title="Browse components"
+        title="Components"
         @close-auto-focus="onDrawerCloseAutoFocus"
       >
         <template #trigger>
@@ -107,7 +107,7 @@ watch(route, async () => {
             variant="secondary"
             size="lg"
           >
-            Browse components: {{ currentPageLabel }}
+            Components: {{ currentPageLabel }}
           </UiButton>
         </template>
         <DocsNavigation
