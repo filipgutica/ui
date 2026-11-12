@@ -324,6 +324,19 @@ test.describe('phone', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   })
 
+  test('a tap opens the drawer on the drawer itself, even when Find has hidden the current row', async ({ page }) => {
+    await page.goto(fixture)
+    const drawer = page.getByRole('dialog', { name: 'On this page', exact: true })
+    await trigger(page).click()
+    await find(page).fill('comm')
+    await expect(drawer.locator('.fg-site-rail__nav [aria-current]:visible')).toHaveCount(0)
+    await drawer.getByRole('button', { name: 'Close drawer' }).click()
+    await expect(drawer).toBeHidden()
+    await trigger(page).click()
+    await expect(drawer).toBeFocused()
+    await expect(find(page)).not.toBeFocused()
+  })
+
   test('opening the drawer mid-page and closing it keeps the reader\'s position', async ({ page }) => {
     await page.goto(`${fixture}#commands`)
     const before = await page.evaluate(() => scrollY)

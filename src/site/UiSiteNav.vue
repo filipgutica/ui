@@ -124,11 +124,13 @@ const openAutoFocus = (event: Event): void => {
   const current = dialog.querySelector<HTMLElement>('.fg-site-rail__nav a[aria-current]:not([hidden])')
   if (body && current) centre(body, current)
   const field = dialog.querySelector<HTMLInputElement>('.fg-site-find__input')
-  if (field && (how.toFind || !current)) {
+  // A tap never focuses Find, even with no current row in view, so no on-screen keyboard opens.
+  if (how.byPointer) dialog.focus({ preventScroll: true })
+  else if (field && (how.toFind || !current)) {
     field.focus({ preventScroll: true })
     if (how.select) field.select()
-  } else if (how.byPointer || !current) dialog.focus({ preventScroll: true })
-  else current.focus({ preventScroll: true })
+  } else if (current) current.focus({ preventScroll: true })
+  else dialog.focus({ preventScroll: true })
 }
 
 const closeAutoFocus = (event: Event): void => {
