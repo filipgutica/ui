@@ -255,7 +255,8 @@ groups. A keyboard open focuses the current row, a tap focuses the drawer, and
 `/` opens it with Find focused. It closes on navigation and focuses the
 destination section; otherwise focus returns to the trigger, unless the page
 moved focus itself while the drawer closed, as a router that focuses the new
-page's heading does. A tap or a click
+page's heading does. Browser Back or Forward, or any other change to the
+location's hash, closes it and keeps the Find query. A tap or a click
 outside it closes it, in Safari and other WebKit browsers too; a press that
 starts inside it does not. Focus follows the
 visible control across the breakpoint.

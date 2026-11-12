@@ -1159,6 +1159,31 @@ test('finds a component by name or alias in the list and keeps the matches after
   await expect(rail.getByText('No component matches')).toBeVisible()
 })
 
+test('closes the mobile drawer on browser Back and Forward, keeps Find, and focuses the page heading', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/#/components/button')
+  // By CSS: while the drawer is open, the page behind it, the trigger included, is aria-hidden.
+  const trigger = page.locator('button.fg-site-rail__toggle')
+  const drawer = page.getByRole('dialog', { name: 'Components', exact: true })
+  await trigger.click()
+  await drawer.getByRole('link', { name: 'Dialog', exact: true }).click()
+  await expect(page.locator('h1')).toHaveText('Dialog')
+
+  await trigger.click()
+  await drawer.getByRole('searchbox', { name: 'Find a component' }).fill('butt')
+  await page.goBack()
+  await expect(drawer).toBeHidden()
+  await expect(page.locator('h1')).toHaveText('Button')
+  await expect(page.locator('h1')).toBeFocused()
+
+  await trigger.click()
+  await expect(drawer.getByRole('searchbox', { name: 'Find a component' })).toHaveValue('butt')
+  await page.goForward()
+  await expect(drawer).toBeHidden()
+  await expect(page.locator('h1')).toHaveText('Dialog')
+  await expect(page.locator('h1')).toBeFocused()
+})
+
 test('publishes the shared project list at /projects.json', async ({ request }) => {
   // Every site's UiSiteHeader loads this file from the deployed docs site.
   const response = await request.get('/projects.json')

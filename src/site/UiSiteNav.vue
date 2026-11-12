@@ -275,16 +275,27 @@ const [DefineFind, ReuseFind] = createReusableTemplate()
 const [DefineEmpty, ReuseEmpty] = createReusableTemplate()
 const [DefineFoot, ReuseFoot] = createReusableTemplate()
 
+// The location changed under the drawer, as on browser Back or Forward, so it shows a page the
+// reader did not pick from it. Find keeps its query. Back and Forward fire popstate before
+// hashchange, so the drawer releases focus before a hash router focuses its new page.
+const closeOnLocationChange = (): void => {
+  open.value = false
+}
+
 onMounted(() => {
   media = matchMedia(MOBILE_QUERY)
   syncBreakpoint()
   enhanced.value = true
   media.addEventListener('change', syncBreakpoint)
   document.addEventListener('keydown', onShortcut)
+  window.addEventListener('popstate', closeOnLocationChange)
+  window.addEventListener('hashchange', closeOnLocationChange)
 })
 onUnmounted(() => {
   media?.removeEventListener('change', syncBreakpoint)
   document.removeEventListener('keydown', onShortcut)
+  window.removeEventListener('popstate', closeOnLocationChange)
+  window.removeEventListener('hashchange', closeOnLocationChange)
   clearTimeout(announce)
 })
 </script>
