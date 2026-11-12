@@ -1146,6 +1146,18 @@ test('finds a component by name or alias in the list and keeps the matches after
   await page.goto('/#/components/button')
   const rail = page.getByRole('complementary', { name: 'Components', exact: true })
   const find = rail.getByRole('searchbox', { name: 'Find a component' })
+  // At 1280px the placeholder and the shortcut switch's label each fit on one line.
+  await page.evaluate(() => document.fonts.ready)
+  // The placeholder as a value: the browser's own text box, with the room it keeps for its clear button.
+  const overflow = await find.evaluate((input: HTMLInputElement) => {
+    input.value = input.placeholder
+    const width = input.scrollWidth - input.clientWidth
+    input.value = ''
+    return width
+  })
+  expect(overflow).toBeLessThanOrEqual(0)
+  const label = rail.locator('.fg-site-rail__foot label')
+  expect((await label.boundingBox())!.height).toBeLessThanOrEqual(parseFloat(await label.evaluate(element => getComputedStyle(element).lineHeight)) + 0.5)
   await page.keyboard.press('/')
   await expect(find).toBeFocused()
   await find.fill('modal')
@@ -1327,7 +1339,7 @@ test('keeps the page frame and dialog widths in pixels when the reader enlarges 
   await page.setViewportSize({ width: 1600, height: 900 })
   await page.goto('/#/sandbox/dialog')
   await page.evaluate(() => { document.documentElement.style.fontSize = '20px' })
-  expect((await page.locator('.docs-shell').boundingBox())?.width).toBe(224 + 960)
+  expect((await page.locator('.docs-shell').boundingBox())?.width).toBe(264 + 960)
   await page.locator('.playground-stage').getByRole('button', { name: 'Open dialog' }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
   expect((await page.getByRole('dialog').boundingBox())?.width).toBe(512)

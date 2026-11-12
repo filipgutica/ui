@@ -43,15 +43,21 @@ pre,
 }
 .skip-link:focus { transform: none; }
 
-/* The shared header aligns with the sidebar and article frame below it. */
-.fg-site-header { position: sticky; top: 0; --site-frame: calc(var(--sidebar) + var(--page-max)); }
+/* The component rail is 40px wider than --sidebar, so Find's placeholder fits beside the room the
+ * search field keeps for its clear button, and the shortcut switch's label fits on one line. The
+ * article keeps --page-max. In px, as --sidebar is, so the frame keeps its width when the reader
+ * enlarges text. */
+:root { --docs-rail: calc(var(--sidebar) + 40px); }
+
+/* The shared header aligns with the rail and article frame below it. */
+.fg-site-header { position: sticky; top: 0; --site-frame: calc(var(--docs-rail) + var(--page-max)); }
 
 .docs-shell {
   display: grid;
-  width: min(100%, calc(var(--sidebar) + var(--page-max)));
+  width: min(100%, calc(var(--docs-rail) + var(--page-max)));
   min-height: calc(100vh - var(--space-16));
   margin-inline: auto;
-  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  grid-template-columns: var(--docs-rail) minmax(0, 1fr);
 }
 /* The component list is UiSiteNav, a section rail with Find. On desktop it fills the column below
  * the header, and only its rows scroll. */
