@@ -18,15 +18,23 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
   html: screen(label),
 }))
 
-// ?shell gives the rail the phone header menu, and ?find gives it Find with grouped, searchable rows.
+// ?shell keeps the rail's rows in place without JavaScript (headerMenu), and ?find gives it Find with
+// grouped, searchable rows. ?pages gives the header the design system site's project and five pages,
+// which clip at 320px, and ?tool gives it a tool site's project and two links, as annoterm has.
 const params = new URLSearchParams(location.search)
 const shell = params.has('shell')
 const find = params.has('find') ? { label: 'Find a section', noun: 'section' } : undefined
-const links = [
-  { label: 'Guide', href: '#guide', current: shell },
-  { label: 'GitHub', href: '#github' },
-  { label: 'Releases', href: '#releases' },
-]
+const project = params.has('pages') ? 'design-system' : params.has('tool') ? 'annoterm' : 'ui'
+const links = params.has('pages')
+  ? ['Foundations', 'Components', 'Application example', 'Documentation example', 'Product page example']
+      .map((label, index) => ({ label, href: `#page-${index}`, current: index === 1 }))
+  : params.has('tool')
+    ? [{ label: 'GitHub', href: '#github' }, { label: 'Releases', href: '#releases' }]
+    : [
+        { label: 'Guide', href: '#guide', current: shell },
+        { label: 'GitHub', href: '#github' },
+        { label: 'Releases', href: '#releases' },
+      ]
 const groups = find
   ? [
       { label: 'Start', items: [{ label: 'Install', href: '#install', terms: 'brew setup' }, { label: 'From review to agent', href: '#start', terms: 'annoterm feedback' }] },
@@ -39,7 +47,7 @@ const groups = find
   <div class="fg-site-docs">
     <!-- The fixture keeps the built-in project list, so it needs no network. -->
     <UiSiteHeader
-      project="ui"
+      :project="project"
       :links="links"
       :projects-url="null"
     />

@@ -37,7 +37,8 @@ const selectedComponent = computed(() =>
 
 const currentPageLabel = computed(() => selectedComponent.value?.title ?? (route.value.name === 'home' ? 'Introduction' : route.value.name === 'themes' ? 'Themes' : 'Page not found'))
 const navigationOpen = ref(false)
-const narrowViewport = useMediaQuery('(max-width: 900px)')
+// Keep in sync with the max-width: 800px rules for .docs-mobilebar in styles.css.
+const narrowViewport = useMediaQuery('(max-width: 800px)')
 let navigationSelected = false
 const focusHeading = (): void => {
   document.querySelector<HTMLElement>('#main-content h1')?.focus()
@@ -99,24 +100,14 @@ watch(route, async () => {
         @close-auto-focus="onDrawerCloseAutoFocus"
       >
         <template #trigger>
+          <!-- The section rail's labelled trigger, from site.css: the menu glyph, the field corner, and
+            block padding that lets a long label wrap. -->
           <UiButton
-            class="navigation-trigger"
+            class="fg-site-rail__toggle"
             variant="secondary"
-            size="md"
-            :aria-label="`Browse components: ${currentPageLabel}`"
+            size="lg"
           >
-            <svg
-              viewBox="0 0 16 16"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              aria-hidden="true"
-            >
-              <path d="M2.5 4h11M2.5 8h11M2.5 12h11" />
-            </svg>
-            {{ currentPageLabel }}
+            Browse components: {{ currentPageLabel }}
           </UiButton>
         </template>
         <DocsNavigation

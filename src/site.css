@@ -156,22 +156,24 @@
   }
   /* Site links are a navigation strip: the navigation rows in one line, at the header's 44px, in the
    * UI face. It scrolls sideways when it must, and its 2px padding keeps the current row's lifted
-   * shadow whole. */
+   * shadow whole. UiSiteHeader names the edges that hide links in data-clip, and each fades over
+   * 24px; the fade shows the overflow, so no scrollbar shows, and a focused link scrolls clear of it. */
   .fg-site-header__links {
     display: flex;
     min-width: 0;
     max-width: 100%;
     overflow-x: auto;
+    scroll-padding-inline: var(--space-6);
+    scrollbar-width: none;
     gap: 0.125rem;
     padding: 0.125rem;
   }
   .fg-site-header__links.fg-site-nav a { flex: none; min-height: var(--control-lg); white-space: nowrap; }
-  /* The phone Find and Menu buttons of a UiSiteNav with headerMenu. Icon-only, so the button's
-   * round corner stays. */
-  .fg-site-header__bar { display: flex; flex: none; gap: var(--space-2); }
-  .fg-site-header__bar:empty { display: none; }
-  .fg-site-header__bar > .fg-site-header__bar-button[data-size] { width: var(--control-lg); padding: 0; }
-  .fg-site-header__bar-button svg { flex: none; }
+  .fg-site-header__links[data-clip="start"] { mask-image: linear-gradient(to right, transparent, #000 var(--space-6)); }
+  .fg-site-header__links[data-clip="end"] { mask-image: linear-gradient(to right, #000 calc(100% - var(--space-6)), transparent); }
+  .fg-site-header__links[data-clip="start end"] {
+    mask-image: linear-gradient(to right, transparent, #000 var(--space-6), #000 calc(100% - var(--space-6)), transparent);
+  }
 
   .fg-site-projects { position: relative; }
   .fg-site-projects__trigger {
@@ -294,8 +296,6 @@
   .fg-site-rail__group { display: grid; gap: 2px; }
   .fg-site-rail__group + .fg-site-rail__group { margin-top: var(--space-2); }
   .fg-site-rail__group-label { margin-block-end: var(--space-1); }
-  /* With headerMenu on a phone, the rail lives in the header's Menu drawer, so nothing stays in place. */
-  .fg-site-rail[data-in-header] { display: none; }
 
   /* Find (UiSiteNav find): a search field with a leading icon and a trailing / key hint. It filters
    * the rows below it; the empty state sits where the rows were. */
@@ -356,8 +356,7 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  /* The Menu drawer holds Find, the header's links under Pages, its appearance picker, then the
-   * rows. Find stays at the top of the drawer while the rows scroll under it. */
+  /* Find stays at the top of the drawer while the rows scroll under it. */
   .fg-drawer__body .fg-site-find {
     position: sticky;
     top: calc(-1 * var(--space-4));
@@ -367,21 +366,8 @@
     background: var(--color-surface-raised);
   }
   .fg-drawer__body .fg-site-find__field { max-width: none; }
-  /* Blocks in the drawer sit 28px apart: the catalogue's 16px margin plus its 12px rail gap. */
-  .fg-site-rail__pages { display: grid; gap: 0.125rem; margin-block-end: calc(var(--space-4) + var(--space-3)); }
-  .fg-site-rail__pages > .fg-site-rail__group-label { margin-block-end: var(--space-1); }
-  .fg-site-rail__appearance {
-    display: grid;
-    justify-items: start;
-    gap: var(--space-2);
-    margin-block-end: calc(var(--space-4) + var(--space-3));
-    padding-block-end: var(--space-4);
-    border-bottom: 1px solid var(--color-border-subtle);
-  }
-  /* The picker sits 8px below its label, as the grid gap sets. */
-  .fg-site-rail__appearance > .fg-site-rail__group-label { margin-block-end: 0; }
-  /* The site menu's width includes its 1px edge, so it is the catalogue's 272px. */
-  .fg-drawer__content.fg-site-rail__drawer--menu { box-sizing: border-box; }
+  /* The drawer's width includes its 1px edge, so it is the catalogue's 272px. */
+  .fg-drawer__content.fg-site-rail__drawer { box-sizing: border-box; }
   /* The drawer focuses itself on a tap, so no ring shows; the rows draw their own. */
   .fg-drawer__content.fg-site-rail__drawer:focus-visible { outline: none; }
 
@@ -755,6 +741,19 @@
   }
   /* Keep in sync with MOBILE_QUERY in UiSiteNav.vue. */
   @media (max-width: 800px) {
+    /* Phone header: static, with --space-2 above, below, and between rows. The project menu sits at
+     * the start of the first row and the picker at its end; where both do not fit, as at 320px, the
+     * picker wraps to its own row at the start. The project name never truncates. The site links
+     * take the next row, as a strip that scrolls with its fades. */
+    .fg-site-header__end { display: contents; }
+    .fg-site-projects { flex: none; margin-inline-end: auto; }
+    .fg-site-projects__trigger { white-space: nowrap; }
+    .fg-site-header__links {
+      order: 1;
+      flex-basis: 100%;
+      /* The strip queries its own width for the narrowest phones, below. */
+      container: site-links / inline-size;
+    }
     .fg-site-docs { grid-template-columns: minmax(0, 1fr); }
     .fg-site-docs > main { gap: var(--space-8); padding-top: var(--space-6); }
     .fg-site-rail {
@@ -776,6 +775,9 @@
       border-radius: var(--radius-field);
       list-style: none;
     }
+    /* Block padding lets a label that wraps grow the trigger and keep clear of its edges. It
+     * matches the sized button's padding in specificity and comes later, so it wins. */
+    :is(.fg-site-rail__summary, .fg-site-rail__toggle)[data-size] { padding-block: var(--space-2); }
     /* Without JavaScript the list opens in place. The summary is a secondary button (fg-button)
      * with a chevron; the drawer toggle is a secondary UiButton with a menu glyph. */
     .fg-site-rail__toggle::before {
@@ -798,23 +800,9 @@
     .fg-site-rail__menu > .fg-site-rail__content { padding-block: var(--space-4); }
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fg-site-rail__menu .fg-site-rail__group-label { grid-column: 1 / -1; }
-    .fg-site-rail__nav a,
-    .fg-site-rail__pages a { min-height: var(--control-lg); }
+    .fg-site-rail__nav a { min-height: var(--control-lg); }
     /* With headerMenu the rows stay open in place without JavaScript, so the summary has nothing to do. */
     .fg-site-rail[data-header-menu] .fg-site-rail__summary { display: none; }
-    /* Phone header (UiSiteNav headerMenu): one sticky row with the project menu, then Find and Menu.
-     * The header's links and picker move into the Menu drawer. The row is the 44px controls with
-     * --space-3 above and below plus its 1px subtle rule, and in-page jumps land --space-4 below it. */
-    :root:has(.fg-site-header__bar > *) { scroll-padding-top: calc(var(--control-lg) + 2 * var(--space-3) + 1px + var(--space-4)); }
-    .fg-site-header:has(.fg-site-header__bar > *) { position: sticky; top: 0; border-bottom-color: var(--color-border-subtle); }
-    .fg-site-header__inner:has(> .fg-site-header__bar > *) { padding-block: var(--space-3); }
-    .fg-site-header__inner:has(> .fg-site-header__bar > *) { flex-wrap: nowrap; }
-    .fg-site-header__inner:has(> .fg-site-header__bar > *) :is(.fg-site-header__links, .fg-site-header__appearance) { display: none; }
-    .fg-site-header__inner:has(> .fg-site-header__bar > *) .fg-site-projects { min-width: 0; }
-    /* The row sits inside the scroll inset, so its controls cancel it; otherwise focusing one scrolls the page. */
-    .fg-site-header__inner:has(> .fg-site-header__bar > *) :is(.fg-site-header__bar > *, .fg-site-projects__trigger) {
-      scroll-margin-top: calc(-1 * (var(--control-lg) + 2 * var(--space-3) + 1px + var(--space-4)));
-    }
     /* The drawer title already shows the label; the heading still names the nav. */
     .fg-drawer__content .fg-site-rail__label {
       position: absolute;
@@ -825,41 +813,15 @@
       white-space: nowrap;
     }
   }
+  /* On the narrowest phones the strip clips a link. Rows with 6px side padding keep at least 16px
+   * of it in view under the 24px fade, so the clip shows. */
+  @container site-links (max-width: 340px) {
+    .fg-site-header__links.fg-site-nav a { padding-inline: 0.375rem; }
+  }
   @media (max-width: 640px) {
-    /* Phones: three or more site links, as padded strip rows, do not fit beside the project menu and
-     * the picker, so the menu and the header controls share the first row and the links take the
-     * second. That keeps the header to two rows. */
-    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__end { display: contents; }
-    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-projects { margin-inline-end: auto; }
-    .fg-site-header__inner:has(.fg-site-header__links > :nth-child(3)) .fg-site-header__links { order: 1; flex-basis: 100%; }
-    /* One or two links stay on the project menu's row as plain text links: no strip or row padding,
-     * no hover fill, and the current page in the accent without a fill. With no strip to scroll, the
-     * links take the outward focus ring. Without the phone Find and Menu buttons, the menu, the links,
-     * and the picker wrap as one line of items 12px apart: the ui docs header fits one row at 360px,
-     * and long links send only the picker to the second row. */
-    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) { column-gap: var(--space-3); }
-    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) .fg-site-header__end { display: contents; }
-    .fg-site-header__inner:has(.fg-site-header__links):not(:has(.fg-site-header__links > :nth-child(3), > .fg-site-header__bar > *)) .fg-site-projects { margin-inline-end: auto; }
-    .fg-site-header__links:not(:has(> :nth-child(3))) { overflow-x: visible; gap: var(--space-3); padding: 0; }
-    .fg-site-header__links:not(:has(> :nth-child(3))) a { padding-inline: 0; }
-    .fg-site-header__links:not(:has(> :nth-child(3))) a:focus-visible { outline-offset: var(--focus-offset); }
-    @media (hover: hover) { .fg-site-header__links:not(:has(> :nth-child(3))) a:hover { background: none; } }
-    .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] {
-      background: none;
-      box-shadow: none;
-      color: var(--color-accent);
-    }
-    /* Forced colors: an underline marks the current page, as the system border would touch the text. */
-    @media (forced-colors: active) {
-      .fg-site-header__links:not(:has(> :nth-child(3))) a[aria-current="page"] { border-inline-start: 0; text-decoration: underline; }
-    }
     .fg-site-docs :where(h1) { font-size: 2rem; }
     .fg-site-hero > h1 { font-size: var(--text-display-sm); }
     .fg-site-docs { padding-inline: var(--space-4); }
-    /* Docs-shell pages keep one header row on phones and repeat these links in their footer. A page
-     * whose rail has headerMenu keeps them: without JavaScript they take a second row, and with it
-     * they move into the Menu drawer. */
-    .fg-site-docs:not(:has(.fg-site-rail[data-header-menu])) .fg-site-header__links { display: none; }
     /* Expand the link target without adding space between the text rows. A later link fact
      * moves a full target below the one before it, so their targets never overlap. */
     .fg-site-facts { row-gap: var(--space-2); }
@@ -910,7 +872,6 @@
   }
   @media (max-width: 680px) {
     .fg-site-prose :where(h1) { font-size: 2rem; }
-    .fg-site-header__end { gap: var(--space-2) var(--space-4); }
     .fg-site-projects__menu a { min-height: var(--control-lg); }
     .fg-site-definitions { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-1); }
     .fg-site-definitions dd + dt { margin-top: var(--space-3); }

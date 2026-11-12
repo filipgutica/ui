@@ -8,9 +8,7 @@ import UiButton from '../components/UiButton.vue'
 import UiDrawer from '../components/UiDrawer.vue'
 import UiSwitch from '../components/UiSwitch.vue'
 import { useActiveSection } from '../use-active-section.js'
-import { useSiteHeaderShell } from './site-shell.js'
 import SiteNavLinks from './SiteNavLinks.vue'
-import UiSiteAppearancePicker from './UiSiteAppearancePicker.vue'
 
 export interface UiSiteNavItem {
   label: string
@@ -30,7 +28,7 @@ export interface UiSiteNavGroup {
 }
 
 export interface UiSiteNavFind {
-  /** The field's accessible name and placeholder, and the phone Find button's name, such as "Find a component". */
+  /** The field's accessible name and placeholder, such as "Find a component". */
   label: string
   /** What a row is, for the empty state: "No component matches “query”." Defaults to "section". */
   noun?: string
@@ -43,9 +41,9 @@ export interface UiSiteNavProps {
   /** Adds a Find field above the rows that filters them as the reader types, with a `/` shortcut. */
   find?: UiSiteNavFind
   /**
-   * At 800px and below, puts icon-only Find and Menu buttons in the `UiSiteHeader` row instead of
-   * the labelled trigger. The Menu drawer holds Find, the header's links and appearance picker, and
-   * the rows. Without a site header on the page, the labelled trigger stays.
+   * Keeps every row in place at 800px and below when the page has no JavaScript, as a section
+   * rail does, instead of a closed disclosure. With JavaScript it changes nothing: every rail
+   * shows the labelled trigger that opens the drawer.
    */
   headerMenu?: boolean
 }
@@ -74,37 +72,22 @@ const disclosureLabel = computed(() => {
   const current = currentPage.value ?? currentSection.value
   return current ? `${label}: ${current}` : label
 })
-// The site header that holds the phone Find and Menu buttons, while it applies.
-const siteHeaderShell = useSiteHeaderShell()
-const headerShell = computed(() => headerMenu && enhanced.value && mobile.value ? siteHeaderShell.value : undefined)
 let media: MediaQueryList | undefined
 let destination: HTMLElement | null = null
 
-const toggle = (): HTMLElement | null | undefined => headerShell.value
-  ? headerShell.value.bar.querySelector<HTMLElement>('.fg-site-header__menu')
-  : root.value?.querySelector<HTMLElement>('button.fg-site-rail__toggle')
+const toggle = (): HTMLElement | null | undefined => root.value?.querySelector<HTMLElement>('button.fg-site-rail__toggle')
 const focusFirstLink = (): void => {
   void nextTick(() => root.value?.querySelector<HTMLElement>('.fg-site-nav a')?.focus({ preventScroll: true }))
 }
 
-const findButton = (): HTMLElement | null | undefined => headerShell.value?.bar.querySelector<HTMLElement>('.fg-site-header__find')
-
-// Moves focus to the matching control when the rail and the drawer trigger swap. The desktop Find
-// field and the phone Find button trade focus; the rest of the rail trades it with the trigger.
+// Moves focus to the matching control when the rail and the drawer trigger swap.
 const syncBreakpoint = (): void => {
   const active = document.activeElement
-  const toPhone = media?.matches === true && !mobile.value
-  const toDesktop = media?.matches === false && mobile.value && !open.value
-  const leavingFindField = toPhone && active instanceof HTMLElement && active.matches('.fg-site-find__input')
-    && root.value?.contains(active)
-  const leavingFocusedRail = toPhone && root.value?.contains(active)
-  const leavingFindButton = toDesktop && active !== null && findButton() === active
-  const leavingFocusedTrigger = toDesktop && toggle() === active
+  const leavingFocusedRail = media?.matches === true && !mobile.value && root.value?.contains(active)
+  const leavingFocusedTrigger = media?.matches === false && mobile.value && !open.value && toggle() === active
   mobile.value = media?.matches === true
   if (!mobile.value) open.value = false
-  if (leavingFindField) void nextTick(() => (findButton() ?? toggle())?.focus({ preventScroll: true }))
-  else if (leavingFocusedRail) void nextTick(() => toggle()?.focus({ preventScroll: true }))
-  else if (leavingFindButton) void nextTick(() => findField()?.focus({ preventScroll: true }))
+  if (leavingFocusedRail) void nextTick(() => toggle()?.focus({ preventScroll: true }))
   else if (leavingFocusedTrigger) focusFirstLink()
 }
 
@@ -115,15 +98,13 @@ const navigate = (href: string, event: MouseEvent): void => {
 }
 
 // How the drawer opens decides where focus goes. A keyboard open moves focus to the current row;
-// a tap moves it to the drawer, so no ring shows and no on-screen keyboard opens; Find focuses
-// the field. The labelled trigger opens without one and keeps the dialog's own focus.
+// a tap moves it to the drawer, so no ring shows and no on-screen keyboard opens; the / shortcut
+// focuses Find. Closing returns focus to the trigger, as the dialog does.
 let opening: { toFind?: boolean; byPointer?: boolean; select?: boolean } | undefined
-// The phone buttons are not the dialog's trigger, so focus returns to whichever one opened it.
-let opener: HTMLElement | undefined
-const openMenu = (how: NonNullable<typeof opening>): void => {
-  opening = how
-  opener = document.activeElement instanceof HTMLElement ? document.activeElement : undefined
-  open.value = true
+// The trigger opens the drawer itself; this only records how. detail is 0 for a click made with
+// Enter or Space, and 1 or more for a tap or a mouse click.
+const onTriggerClick = (event: MouseEvent): void => {
+  opening = { byPointer: event.detail > 0 }
 }
 
 // Scrolls a list so a row sits at its centre. It sets the list's own scrollTop, so the page never moves.
@@ -160,11 +141,12 @@ const closeAutoFocus = (event: Event): void => {
     // The drawer trigger disappears when crossing into the desktop rail.
     event.preventDefault()
     focusFirstLink()
-  } else if (opener) {
+  } else {
+    // The trigger sits above the page, so returning focus to it must keep the reader's position,
+    // as after the / shortcut opened the drawer mid-page.
     event.preventDefault()
-    opener.focus({ preventScroll: true })
+    toggle()?.focus({ preventScroll: true })
   }
-  opener = undefined
 }
 
 // Find filters the rows only, never the page, so deep links and the page order stay stable. Every
@@ -277,10 +259,12 @@ const onShortcut = (event: KeyboardEvent): void => {
   if (field) {
     field.focus()
     field.select()
-  } else if (mobile.value) openMenu({ toFind: true, select: true })
+  } else if (mobile.value) {
+    opening = { toFind: true, select: true }
+    open.value = true
+  }
 }
 
-const [DefineSearchIcon, ReuseSearchIcon] = createReusableTemplate<{ iconClass?: string }>()
 const [DefineFind, ReuseFind] = createReusableTemplate()
 const [DefineEmpty, ReuseEmpty] = createReusableTemplate()
 const [DefineFoot, ReuseFoot] = createReusableTemplate()
@@ -305,31 +289,9 @@ onUnmounted(() => {
     class="fg-site-rail"
     :data-enhanced="enhanced"
     :data-header-menu="headerMenu || undefined"
-    :data-in-header="headerShell ? true : undefined"
     :role="find ? 'complementary' : undefined"
     :aria-label="find ? label : undefined"
   >
-    <!-- The magnifier, shared by the Find field and the phone Find button. -->
-    <DefineSearchIcon v-slot="{ iconClass }">
-      <svg
-        :class="iconClass"
-        viewBox="0 0 16 16"
-        width="16"
-        height="16"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        aria-hidden="true"
-      >
-        <circle
-          cx="7"
-          cy="7"
-          r="4.5"
-        />
-        <path d="M10.5 10.5 14 14" />
-      </svg>
-    </DefineSearchIcon>
     <!-- With Find, the rail is a named aside, so the field and the shortcut switch sit in a landmark. -->
     <!-- Find needs JavaScript, so it renders only once the page is interactive. -->
     <DefineFind>
@@ -338,7 +300,24 @@ onUnmounted(() => {
         class="fg-site-find"
       >
         <div class="fg-site-find__field">
-          <ReuseSearchIcon icon-class="fg-site-find__icon" />
+          <svg
+            class="fg-site-find__icon"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle
+              cx="7"
+              cy="7"
+              r="4.5"
+            />
+            <path d="M10.5 10.5 14 14" />
+          </svg>
           <input
             :ref="trackFindField"
             v-model="query"
@@ -427,100 +406,6 @@ onUnmounted(() => {
         </template>
       </SiteNavLinks>
     </details>
-    <template v-else-if="headerShell">
-      <Teleport :to="headerShell.bar">
-        <UiButton
-          v-if="find"
-          variant="secondary"
-          size="lg"
-          class="fg-site-header__bar-button fg-site-header__find"
-          :aria-label="find.label"
-          aria-haspopup="dialog"
-          @click="openMenu({ toFind: true })"
-        >
-          <ReuseSearchIcon />
-        </UiButton>
-        <!-- detail is 0 for a click made with Enter or Space, and 1 or more for a tap or a mouse click. -->
-        <UiButton
-          variant="secondary"
-          size="lg"
-          class="fg-site-header__bar-button fg-site-header__menu"
-          aria-label="Menu"
-          aria-haspopup="dialog"
-          @click="openMenu({ byPointer: $event.detail > 0 })"
-        >
-          <svg
-            viewBox="0 0 16 16"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <path d="M1.5 3.5h13M1.5 8h13M1.5 12.5h13" />
-          </svg>
-        </UiButton>
-      </Teleport>
-      <UiDrawer
-        v-model:open="open"
-        title="Menu"
-        close-label="Close menu"
-        class="fg-site-rail__drawer fg-site-rail__drawer--menu"
-        @open-auto-focus="openAutoFocus"
-        @close-auto-focus="closeAutoFocus"
-      >
-        <SiteNavLinks
-          :content-id="contentId"
-          :label="label"
-          :groups="groups"
-          :active-id="activeId"
-          :visible="visible"
-          @navigate="navigate"
-        >
-          <template #before>
-            <ReuseFind />
-            <nav
-              v-if="headerShell.links.length > 0"
-              class="fg-site-nav fg-site-rail__pages"
-              aria-label="Site links"
-            >
-              <span
-                class="fg-site-rail__group-label"
-                aria-hidden="true"
-              >Pages</span>
-              <a
-                v-for="link in headerShell.links"
-                :key="link.href"
-                :href="link.href"
-                :aria-current="link.current ? 'page' : undefined"
-                @click="navigate(link.href, $event)"
-              >{{ link.label }}</a>
-            </nav>
-            <div
-              v-if="headerShell.appearance"
-              class="fg-site-rail__appearance"
-            >
-              <span
-                class="fg-site-rail__group-label"
-                aria-hidden="true"
-              >Appearance</span>
-              <UiSiteAppearancePicker
-                :model-value="headerShell.appearance.choice.value"
-                @update:model-value="headerShell.appearance.chooseAppearance"
-              />
-            </div>
-          </template>
-          <template #empty>
-            <ReuseEmpty />
-          </template>
-          <template #after>
-            <ReuseFoot />
-          </template>
-        </SiteNavLinks>
-      </UiDrawer>
-    </template>
     <UiDrawer
       v-else
       v-model:open="open"
@@ -534,6 +419,7 @@ onUnmounted(() => {
           variant="secondary"
           size="lg"
           class="fg-site-rail__toggle"
+          @click="onTriggerClick"
         >
           {{ disclosureLabel }}
         </UiButton>

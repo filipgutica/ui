@@ -305,13 +305,12 @@ pre,
 .theme-drop-zone > div { display: grid; gap: var(--space-1); }
 .theme-drop-zone span { color: var(--color-muted); font-size: var(--text-sm); }
 
-/* Below 901px the component list moves into a drawer opened from this bar. */
+/* At 800px and below the component list moves into a drawer opened from this bar, whose trigger
+ * sits --space-2 below the header. The bar stays in view, so browsing is one tap away on long pages. */
 .docs-mobilebar { display: none; padding: var(--space-2) var(--space-4) 0; }
-/* A labelled contents trigger shows the page's navigation and does not act, so it takes the field corner. */
-.navigation-trigger { min-height: var(--control-lg); border-radius: var(--radius-field); }
 .fg-drawer__body .docs-navigation a { min-height: var(--control-lg); }
 
-@media (max-width: 900px) {
+@media (max-width: 800px) {
   .docs-shell { display: block; }
   .sidebar { display: none; }
   .fg-site-header { position: relative; z-index: 31; }

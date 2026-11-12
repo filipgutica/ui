@@ -1133,7 +1133,7 @@ test('navigates with the mobile drawer and restores focus on dismissal', async (
   await drawer.getByRole('link', { name: 'Themes', exact: true }).click()
   await expect(page).toHaveURL(/#\/themes$/)
   await expect(page.locator('h1')).toHaveText('Themes')
-  await expect(trigger).toHaveText('Themes')
+  await expect(trigger).toHaveText('Browse components: Themes')
   await trigger.click()
   await expect(drawer.getByRole('link', { name: 'Themes', exact: true })).toHaveAttribute('aria-current', 'page')
   await page.setViewportSize({ width: 1280, height: 844 })
