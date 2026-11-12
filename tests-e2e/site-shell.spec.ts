@@ -192,6 +192,7 @@ test.describe('phone', () => {
       // The strip takes the next row, --space-2 below the first rows and above the rule.
       const rowsBottom = Math.max(projects.y + projects.height, picker.y + picker.height)
       expect(strip.y - rowsBottom).toBeCloseTo(8, 0)
+      expect((await box(page.getByRole('navigation', { name: 'Site links' }).getByRole('link').first())).x).toBeCloseTo(projects.x, 0)
       expect(rule.y + rule.height - 1 - (strip.y + strip.height)).toBeCloseTo(8, 0)
       // The rule below the header is a solid 1px line in the text colour.
       await expect(header).toHaveCSS('border-bottom-style', 'solid')
@@ -231,18 +232,42 @@ test.describe('phone', () => {
     await expect(strip).toHaveAttribute('data-clip', 'start')
   })
 
-  test('keeps a tool site\'s two links on the strip row, below the switcher and the picker', async ({ page }) => {
+  // annoterm, wtree, and devps assert this in their own site tests: a docs-shell page with two links
+  // hides them on phones, where the Source fact and the footer repeat them, and shows them above.
+  test('hides a tool site\'s two links on phones and shows them beside the picker above 640px', async ({ page }) => {
+    const links = page.getByRole('navigation', { name: 'Site links' })
     for (const width of [320, 390]) {
       await page.setViewportSize({ width, height: 844 })
       await page.goto(`${site}?tool`)
+      await expect(links, `at ${width}px`).toBeHidden()
       const projects = await box(page.locator('.fg-site-projects'))
       const picker = await box(page.locator('.fg-site-header .fg-segmented'))
-      const links = page.getByRole('navigation', { name: 'Site links' })
-      await expect(links.getByRole('link')).toHaveText(['GitHub', 'Releases'])
       expect(Math.abs(picker.y + picker.height / 2 - (projects.y + projects.height / 2)), `picker beside annoterm at ${width}px`).toBeLessThanOrEqual(1)
-      expect((await box(links)).y, `links below the first row at ${width}px`).toBeGreaterThanOrEqual(picker.y + picker.height)
-      await expect(links).not.toHaveAttribute('data-clip')
     }
+    for (const width of [768, 801, 1280]) {
+      await page.setViewportSize({ width, height: 844 })
+      await page.goto(`${site}?tool`)
+      await expect(links.getByRole('link'), `at ${width}px`).toHaveText(['GitHub', 'Releases'])
+      const picker = await box(page.locator('.fg-site-header .fg-segmented'))
+      const linksBox = await box(links)
+      expect(Math.abs(linksBox.y + linksBox.height / 2 - (picker.y + picker.height / 2)), `links beside the picker at ${width}px`).toBeLessThanOrEqual(1)
+    }
+  })
+
+  test('starts the strip with a late current page in view, without moving the page', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 844 })
+    await page.goto(`${site}?pages=4&find`)
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    const current = strip.locator('[aria-current="page"]')
+    await expect(current).toHaveText('Product page example')
+    await page.evaluate(() => document.fonts.ready)
+    await expect.poll(async () => {
+      const edge = await box(strip)
+      const row = await box(current)
+      return row.x >= edge.x - 0.5 && row.x + row.width <= edge.x + edge.width + 0.5
+    }).toBe(true)
+    await expect(strip).toHaveAttribute('data-clip', /start/)
+    expect(await page.evaluate(() => [scrollX, scrollY])).toEqual([0, 0])
   })
 
   test('opens the drawer from the left with Find pinned above the groups, and no pages or appearance', async ({ page }) => {
@@ -403,6 +428,16 @@ test.describe('without JavaScript', () => {
       await context.close()
     })
   }
+
+  test('a tool site\'s two links hide on phones and show above 640px', async ({ browser, page }) => {
+    for (const width of [320, 390, 768, 801, 1280]) {
+      const { context, noScript } = await staticPage({ browser, page, query: 'tool', width })
+      const links = noScript.getByRole('navigation', { name: 'Site links' })
+      if (width <= 640) await expect(links, `at ${width}px`).toBeHidden()
+      else await expect(links.getByRole('link'), `at ${width}px`).toHaveText(['GitHub', 'Releases'])
+      await context.close()
+    }
+  })
 
   test('without headerMenu, the trigger is a details summary with a chevron at 390px', async ({ browser, page }) => {
     const { context, noScript } = await staticPage({ browser, page, query: 'pages', width: 390 })

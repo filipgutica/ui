@@ -74,6 +74,19 @@ const measureClip = (): void => {
   const ends = [element.scrollLeft > 12 && 'start', hidden - element.scrollLeft > 12 && 'end'].filter(Boolean)
   clip.value = ends.length > 0 ? ends.join(' ') : undefined
 }
+// The strip starts with the current page in view, centred where it can be. It scrolls only the
+// strip, at once, so the page never moves.
+const revealCurrent = (): void => {
+  const element = strip.value
+  const current = element?.querySelector<HTMLElement>('[aria-current="page"]')
+  if (!element || !current) return
+  const hidden = element.scrollWidth - element.clientWidth
+  if (hidden <= 0) return
+  const box = element.getBoundingClientRect()
+  const row = current.getBoundingClientRect()
+  const left = element.scrollLeft + (row.left + row.width / 2) - (box.left + box.width / 2)
+  element.scrollTo({ left: Math.min(Math.max(left, 0), hidden), behavior: 'instant' })
+}
 useResizeObserver(strip, measureClip)
 useEventListener(strip, 'scroll', measureClip, { passive: true })
 // New or renamed links, and web fonts that finish loading after mount, change what the strip clips
@@ -107,9 +120,15 @@ onMounted(() => {
     })
   }
   document.addEventListener('pointerdown', onDocumentPointerdown)
+  revealCurrent()
+  measureClip()
   fonts = 'fonts' in document ? document.fonts : undefined
   fonts?.addEventListener('loadingdone', measureClip)
-  void fonts?.ready.then(measureClip)
+  // The fallback face's widths placed the current page; place it again in the loaded face.
+  void fonts?.ready.then(() => {
+    revealCurrent()
+    measureClip()
+  })
 })
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocumentPointerdown)

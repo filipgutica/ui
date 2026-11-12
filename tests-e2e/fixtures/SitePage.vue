@@ -20,14 +20,15 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
 
 // ?shell keeps the rail's rows in place without JavaScript (headerMenu), and ?find gives it Find with
 // grouped, searchable rows. ?pages gives the header the design system site's project and five pages,
-// which clip at 320px, and ?tool gives it a tool site's project and two links, as annoterm has.
+// which clip at 320px; ?pages=4 makes the fifth current instead of the second. ?tool gives it a tool
+// site's project and two links, as annoterm has.
 const params = new URLSearchParams(location.search)
 const shell = params.has('shell')
 const find = params.has('find') ? { label: 'Find a section', noun: 'section' } : undefined
 const project = params.has('pages') ? 'design-system' : params.has('tool') ? 'annoterm' : 'ui'
 const links = params.has('pages')
   ? ['Foundations', 'Components', 'Application example', 'Documentation example', 'Product page example']
-      .map((label, index) => ({ label, href: `#page-${index}`, current: index === 1 }))
+      .map((label, index) => ({ label, href: `#page-${index}`, current: index === Number(params.get('pages') || 1) }))
   : params.has('tool')
     ? [{ label: 'GitHub', href: '#github' }, { label: 'Releases', href: '#releases' }]
     : [

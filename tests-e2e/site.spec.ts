@@ -208,23 +208,71 @@ test('colors captures with the default terminal palette unless the site sets its
   await expect(screen).toHaveCSS('color', 'rgb(230, 233, 235)')
 })
 
-test('puts one or two header links on the strip row, below the project menu and the picker, on phones', async ({ page }) => {
+test('keeps one or two header links on the phone menu row as text links, outside the docs shell', async ({ page }) => {
   const links = page.getByRole('navigation', { name: 'Site links', exact: true })
-  for (const width of [320, 360, 390, 800]) {
+  // The rows that the project menu, the links, and the header controls sit on.
+  const headerRows = () => page.evaluate(() => new Set(
+    [...document.querySelectorAll('.fg-site-projects, .fg-site-header__links, .fg-site-header__end > :not(.fg-site-header__links)')]
+      .map(element => Math.round(element.getBoundingClientRect().top)),
+  ).size)
+  for (const width of [360, 375, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/#/')
     await expect(links.getByRole('link')).toHaveCount(2)
+    // One row: the header keeps its 64px minimum height plus its 1px border.
+    expect((await page.locator('.fg-site-header').boundingBox())?.height, `header height at ${width}px`).toBeLessThanOrEqual(65)
     const menu = (await page.locator('.fg-site-projects').boundingBox())!
-    const picker = (await page.locator('.fg-site-header .fg-segmented').boundingBox())!
     const linksBox = (await links.boundingBox())!
-    // The project menu and the picker share the first row; the links take the next one, at the start.
-    expect(Math.abs(picker.y + picker.height / 2 - (menu.y + menu.height / 2)), `picker beside the menu at ${width}px`).toBeLessThanOrEqual(1)
-    expect(linksBox.y, `links below the picker at ${width}px`).toBeGreaterThanOrEqual(picker.y + picker.height)
-    expect(linksBox.x, `links at the start at ${width}px`).toBeCloseTo(menu.x, 0)
-    // They are strip rows, as on desktop.
-    await expect(links.getByRole('link').first()).toHaveCSS('min-height', '44px')
+    expect(Math.abs(linksBox.y + linksBox.height / 2 - (menu.y + menu.height / 2)), `links beside the menu at ${width}px`).toBeLessThanOrEqual(2)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `page fits at ${width}px`).toBe(true)
+    expect(await links.evaluate(element => element.scrollWidth <= element.clientWidth), `links fit at ${width}px`).toBe(true)
   }
+  for (const width of [320, 360, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/#/')
+    // Text links have no padding, so the ring sits outside them, and no ancestor clips it.
+    const link = links.getByRole('link').first()
+    await link.focus()
+    await expect(link).toHaveCSS('outline-offset', '3px')
+    const clippedBy = await link.evaluate((element) => {
+      const style = getComputedStyle(element)
+      const ring = Number.parseFloat(style.outlineOffset) + Number.parseFloat(style.outlineWidth)
+      const box = element.getBoundingClientRect()
+      const clippers: string[] = []
+      for (let node = element.parentElement; node; node = node.parentElement) {
+        const { overflowX, overflowY } = getComputedStyle(node)
+        if (overflowX === 'visible' && overflowY === 'visible') continue
+        const edge = node.getBoundingClientRect()
+        if (box.left - ring < edge.left || box.right + ring > edge.right || box.top - ring < edge.top || box.bottom + ring > edge.bottom) clippers.push(node.className || node.tagName)
+      }
+      return clippers
+    })
+    expect(clippedBy, `focus ring clipped at ${width}px`).toEqual([])
+    // Two long links never push the header past two rows: only the picker wraps.
+    await links.getByRole('link').nth(0).evaluate(element => { element.textContent = 'Documentation' })
+    await links.getByRole('link').nth(1).evaluate(element => { element.textContent = 'Release notes' })
+    expect(await headerRows(), `header rows with long links at ${width}px`).toBeLessThanOrEqual(2)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `page fits with long links at ${width}px`).toBe(true)
+  }
+  // A current link takes the accent and medium weight, with no fill, shadow, or pip.
+  const current = links.getByRole('link').first()
+  await current.evaluate(element => element.setAttribute('aria-current', 'page'))
+  const [accent, medium] = await current.evaluate((element) => {
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--color-accent)'
+    probe.style.fontWeight = 'var(--weight-medium)'
+    element.after(probe)
+    const style = getComputedStyle(probe)
+    const values = [style.color, style.fontWeight]
+    probe.remove()
+    return values
+  })
+  await expect(current).toHaveCSS('color', accent!)
+  await expect(current).toHaveCSS('font-weight', medium!)
+  await expect(current).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(current).toHaveCSS('box-shadow', 'none')
+  expect(await current.evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
+  await expect(current).toHaveAttribute('aria-current', 'page')
 })
 
 test('puts three or more header links on a second row on phones, outside the docs shell', async ({ page }) => {
@@ -373,11 +421,11 @@ test('marks the pressed appearance choice in forced-colors mode', async ({ page 
   expect(await color(pressed)).not.toBe(await color(other))
 })
 
-test('keeps the docs-shell header links on phones and names the section menu after its label', async ({ page }) => {
+test('keeps three or more docs-shell header links on phones and names the section menu after its label', async ({ page }) => {
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(fixture)
-    // The header keeps the site's pages on phones, so the drawer does not repeat them.
+    // Three or more links stay in the header on phones, as the strip row; the drawer does not repeat them.
     const headerLinks = page.getByRole('navigation', { name: 'Site links', exact: true }).getByRole('link')
     await expect(headerLinks).toHaveText(['Guide', 'GitHub', 'Releases'])
     for (const link of await headerLinks.all()) await expect(link).toBeVisible()

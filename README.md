@@ -145,23 +145,29 @@ such as `wtree`, `devps`, or `ui`. The project menu is a native disclosure that
 works without JavaScript; Escape closes it and returns focus to its button.
 `links` are a navigation strip: rows 44px tall with 6px corners. A link with `current: true` gets `aria-current="page"` and the
 current-page fill. Where the strip does not fit, it scrolls sideways and fades
-each edge that hides more than 12px of a link, with no scrollbar. Without a
-default slot the header renders a System, Light, and Dark picker, built on
-`UiSegmentedControl`.
+each edge that hides more than 12px of a link, with no scrollbar, and it starts
+scrolled to centre the current link. Without a default slot the header renders
+a System, Light, and Dark picker, built on `UiSegmentedControl`. A page with
+its own appearance control passes it in the default slot and uses
+`useSiteAppearance({ applyToRoot: false })` when it owns the root element.
 
 At 800px and below the header follows the design system's phone header. It is
-static, with `--space-2` above, below, and between its rows:
+static, with `--space-2` above, below, and between its rows, and the project
+name never truncates.
 
-- The first row holds the project menu at the start and the picker at the end.
-  Where both do not fit, as at 320px with a long project name, the picker wraps
-  to its own row at the start. This is the rule, not a fallback. The project
-  name never truncates.
-- The `links` take the next row as the strip, on every page, the docs shell's
-  included. The drawer of a `UiSiteNav` does not repeat them.
-- Where the strip is 340px wide or less, its rows take 6px side padding, so a
-  clipped link keeps at least 16px in view under the fade. A page with its own appearance control passes it in the
-default slot and uses `useSiteAppearance({ applyToRoot: false })` when it owns
-the root element.
+- **Three or more links.** The first row holds the project menu at the start
+  and the picker at the end. Where both do not fit, as at 320px with a long
+  project name, the picker wraps to its own row at the start; this is the rule,
+  not a fallback. The links take the next row as the strip, on every page, the
+  docs shell's included, and the drawer of a `UiSiteNav` does not repeat them.
+  Where the strip is 340px wide or less, its rows take 6px side padding, so a
+  clipped link keeps at least 16px in view under the fade.
+- **One or two links.** They stay beside the picker. At 640px and below they
+  become text links on the project menu's row, and a current one has accent
+  text instead of the fill. Two short links keep the header to one row down to
+  360px; at 320px, or with longer links, the picker wraps to a second row.
+  Inside `.fg-site-docs` they hide at 640px and below, so repeat those
+  destinations on the page, such as in a Source fact and the footer.
 
 `useSiteAppearance()` returns `choice`, the resolved `appearance`, and
 `chooseAppearance(value)`. The choice is stored under `tool-site-theme`, follows
