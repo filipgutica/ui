@@ -280,6 +280,36 @@ test.describe('phone', () => {
     await expect(strip).toHaveAttribute('data-clip', 'end')
   })
 
+  test('leaves a link that Tab revealed in view when late web fonts load', async ({ page }) => {
+    let release = (): void => {}
+    const held = new Promise<void>((resolve) => { release = resolve })
+    await page.route('**/*.woff2', async (route) => {
+      await held
+      await route.continue()
+    })
+    await page.setViewportSize({ width: 320, height: 844 })
+    await page.goto(`${site}?pages=4&find`, { waitUntil: 'domcontentloaded' })
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    await expect(strip).toHaveAttribute('data-clip', /start/)
+    // Tab from the top of the page until a link before the current one has focus.
+    const focusedEarlyLink = () => page.evaluate(() => {
+      const active = document.activeElement
+      return active instanceof HTMLAnchorElement && active.closest('.fg-site-header__links') !== null && !active.hasAttribute('aria-current')
+    })
+    for (let presses = 0; presses < 5 && !(await focusedEarlyLink()); presses += 1) await page.keyboard.press('Tab')
+    expect(await focusedEarlyLink()).toBe(true)
+    const before = await strip.evaluate(element => element.scrollLeft)
+    release()
+    await page.evaluate(() => document.fonts.ready)
+    await page.evaluate(() => new Promise(requestAnimationFrame))
+    expect(await strip.evaluate(element => element.scrollLeft)).toBe(before)
+    expect(await strip.evaluate((element) => {
+      const edge = element.getBoundingClientRect()
+      const link = document.activeElement!.getBoundingClientRect()
+      return link.left >= edge.left - 0.5 && link.right <= edge.right + 0.5
+    })).toBe(true)
+  })
+
   test('starts the strip with a late current page in view, without moving the page', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 844 })
     await page.goto(`${site}?pages=4&find`)
