@@ -6,7 +6,7 @@ import { dirname, join, resolve } from 'node:path'
 import { tokens } from '@filipgutica/design-system'
 import { describe, expect, it } from 'vitest'
 
-import { renderThemeCss, vendorDesignSystem } from '../scripts/vendor-design-system.mjs'
+import { pinnedPackageRoot, renderTheme, renderThemeCss, vendorDesignSystem } from '../scripts/vendor-design-system.mjs'
 import { semanticCssVariables } from '../src/theme/index.ts'
 import { contrast } from './contrast.ts'
 
@@ -53,7 +53,7 @@ const themeFiles = readdirSync(resolve(process.cwd(), 'src/themes')).filter(file
 
 describe('Class-flavour theme files', () => {
   it('vendors every theme the design-system package ships, and nothing else', () => {
-    const shipped = readdirSync(dirname(createRequire(import.meta.url).resolve('@filipgutica/design-system/class/themes/graphite-indigo.css')))
+    const shipped = readdirSync(dirname(createRequire(import.meta.url).resolve('@filipgutica/design-system/themes/graphite-indigo.css')))
       .filter(file => file.endsWith('.css')).sort()
 
     expect(themeFiles).toEqual(shipped)
@@ -108,32 +108,74 @@ describe('Vendoring into a copy of the repository', () => {
 
 describe('Design-system token vendoring', () => {
   const tokensCss = readPackage('tokens.css')
-  const graphiteCss = read('src/themes/graphite-indigo.css')
-  const baseCss = readPackage('class/base.css')
   const themeCss = read('src/theme.css')
 
   it('restores a theme.css value that drifts from the package', () => {
     const drifted = themeCss.replace('--space-4: 1rem;', '--space-4: 2rem;')
 
-    expect(renderThemeCss({ themeCss: drifted, tokensCss, graphiteCss, baseCss })).toBe(themeCss)
+    expect(renderThemeCss({ themeCss: drifted, tokensCss })).toBe(themeCss)
   })
 
   it('fails when a value that changes in dark mode has no :root.dark declaration', () => {
     const noDarkText = themeCss.replace(/(:root\.dark\s*\{[^}]*?)\n {2}--color-text: [^;]+;/, '$1')
 
-    expect(() => renderThemeCss({ themeCss: noDarkText, tokensCss, graphiteCss, baseCss })).toThrow('--color-text changes in dark mode')
+    expect(() => renderThemeCss({ themeCss: noDarkText, tokensCss })).toThrow('--color-text changes in dark mode')
   })
 
-  it('fails when the package names a variable neither theme file declares', () => {
+  it('fails when the package declares a token theme.css does not', () => {
     const noSpace = themeCss.replace('\n  --space-4: 1rem;', '')
 
-    expect(() => renderThemeCss({ themeCss: noSpace, tokensCss, graphiteCss, baseCss })).toThrow('--space-4')
+    expect(() => renderThemeCss({ themeCss: noSpace, tokensCss })).toThrow('--space-4')
   })
 
-  it('fails when theme.css drops a base token that the Graphite Indigo theme also declares', () => {
+  it('fails when theme.css drops a token that the themes also declare', () => {
     const noProjectDark = themeCss.replace('\n  --color-project-dark: #a5a1ff;', '')
 
-    expect(() => renderThemeCss({ themeCss: noProjectDark, tokensCss, graphiteCss, baseCss })).toThrow('--color-project-dark')
+    expect(() => renderThemeCss({ themeCss: noProjectDark, tokensCss })).toThrow('--color-project-dark')
+  })
+
+  it('fails when the package drops a token that a component role carries', () => {
+    const noAccentText = tokensCss.replace(/\n {2}--color-accent-text: [^\n]+/, '')
+
+    expect(() => renderThemeCss({ themeCss, tokensCss: noAccentText })).toThrow('tokens.css does not declare --color-accent-text')
+  })
+
+  it('fails when a value refers to a variable theme.css does not declare', () => {
+    const dangling = tokensCss.replace('--color-link: #0b5f7c;', '--color-link: var(--color-missing);')
+
+    expect(() => renderThemeCss({ themeCss, tokensCss: dangling })).toThrow('--color-link refers to --color-missing')
+  })
+
+  it('fails when a package theme does not set its dark hue', () => {
+    const inputsCss = readPackage('themes/pine.css').replace(/\n {2}--color-project-dark: [^\n]+/, '')
+
+    expect(() => renderTheme({ id: 'pine', tokensCss, inputsCss })).toThrow('themes/pine.css must declare --color-project-dark')
+  })
+
+  // The package's standalone files carry values only: no comments name ui variables, and no
+  // class-flavour files exist. The outputs must not change.
+  it('builds the same files from a package with no ui comments and no class files', () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'ui-vendor-standalone-'))
+    try {
+      const packageRoot = join(scratch, 'package')
+      cpSync(pinnedPackageRoot(), packageRoot, { recursive: true, dereference: true })
+      rmSync(join(packageRoot, 'dist/class'), { recursive: true, force: true })
+      const tokensPath = join(packageRoot, 'language/tokens.css')
+      writeFileSync(tokensPath, readFileSync(tokensPath, 'utf8').replace(/ \/\* ui: [^*]*\*\//g, ''))
+      expect(readFileSync(tokensPath, 'utf8')).not.toContain('/* ui:')
+
+      const root = join(scratch, 'repo')
+      mkdirSync(join(root, 'src/themes'), { recursive: true })
+      mkdirSync(join(root, 'src/fonts'))
+      cpSync(resolve(process.cwd(), 'src/theme.css'), join(root, 'src/theme.css'))
+
+      vendorDesignSystem({ root, packageRoot })
+      for (const path of ['src/theme.css', 'src/fonts.css', ...themeFiles.map(file => `src/themes/${file}`)]) {
+        expect(readFileSync(join(root, path), 'utf8'), path).toBe(read(path))
+      }
+    } finally {
+      rmSync(scratch, { recursive: true, force: true })
+    }
   })
 })
 

@@ -465,12 +465,26 @@ pnpm verify
 
 The theme token values and the IBM Plex fonts live in
 [`@filipgutica/design-system`](https://github.com/filipgutica/design-system).
-`pnpm themes:build` copies them from the pinned package into `src/theme.css`,
-`src/themes/` (every class-flavour theme: Graphite Indigo, Pine, and Mauve),
-`src/fonts.css`, and `src/fonts/`. In
-`src/theme.css` it rewrites only the values that the package's `tokens.css`
-maps with a `ui:` comment. The other declarations belong to this library.
-`pnpm themes:check` fails when any of these files differs from the package.
+`pnpm themes:build` builds `src/theme.css`, `src/themes/` (every class-flavour
+theme: Graphite Indigo, Pine, and Mauve), `src/fonts.css`, and `src/fonts/`
+from the pinned package's `tokens.css`, `themes/*.css`, and fonts.
+
+- A design-system token and the variable of the same name here are one
+  variable.
+- [`scripts/theme-variables.mjs`](scripts/theme-variables.mjs) lists what this
+  library adds:
+  - the variables each theme file declares, and their order
+  - the component roles, such as `--color-button-bg`, and the token each one
+    carries
+  - the tokens only the theme files declare
+  - the tokens components read with a fallback and never declare
+- In `src/theme.css` the build rewrites only the values of tokens and
+  component roles. The other declarations belong to this library.
+
+`pnpm themes:check` fails when any of these files differs from what the
+package builds. The build also fails when the package lacks a token that the
+list names, or when a value refers to a variable that its file does not
+declare.
 When the package adds a theme, add its `./themes/<name>.css` export to
 `package.json`; `tests/graphite-indigo.test.js` fails until it is there.
 

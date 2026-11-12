@@ -1,15 +1,18 @@
-// Copies the token values, class-flavour themes, and fonts that @filipgutica/ui publishes from the
-// pinned @filipgutica/design-system package, which owns them. To change a value, bump that
-// package and run this script.
+// Builds the token values, themes, and fonts that @filipgutica/ui publishes from the pinned
+// @filipgutica/design-system package, which owns the values. It reads only the package's standalone
+// files: tokens.css, themes/*.css, and fonts. Which variables ui declares is ui's own, in
+// scripts/theme-variables.mjs. To change a value, bump the package and run this script.
 //
 //   node scripts/vendor-design-system.mjs          write every output
 //   node scripts/vendor-design-system.mjs --check  fail when an output differs from the package
 //
+// A token and the ui variable of the same name are one variable.
 // - src/theme.css stays hand-written. The script rewrites only the value of each :root and
-//   :root.dark declaration that a tokens.css "ui:" comment names. Declarations no comment names
-//   are ui's own, and every other byte stays as written.
-// - src/themes/*.css are the package's class-flavour themes, such as graphite-indigo.css, unchanged.
-//   A file the package no longer ships is removed.
+//   :root.dark declaration of a token or a component role. Declarations of other variables are
+//   ui's own, and every other byte stays as written.
+// - src/themes/<id>.css is one theme for sites that toggle a .dark class: themeVariables with the
+//   values of tokens.css and the package's themes/<id>.css. A .css file there that matches no
+//   package theme is removed.
 // - src/fonts/* are the package's font and licence files, unchanged. src/fonts.css is the
 //   package's fonts.css with its URLs pointed into fonts/.
 import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
@@ -17,9 +20,19 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-const packageFile = (path) => createRequire(import.meta.url).resolve(`@filipgutica/design-system/${path}`)
+import { componentRoles, themeOnlyTokens, themeVariables, useSiteTokens } from './theme-variables.mjs'
+
+const PACKAGE = '@filipgutica/design-system'
+
+// The installed package's root directory.
+export const pinnedPackageRoot = () => dirname(createRequire(import.meta.url).resolve(`${PACKAGE}/package.json`))
+
+// A file the package exports, resolved through its exports map. The package refers to itself by
+// name, so this works on any copy of it, such as an unpacked tarball.
+const packageFile = ({ packageRoot, path }) => createRequire(join(packageRoot, 'package.json')).resolve(`${PACKAGE}/${path}`)
 
 const declaration = /^(\s*)(--[\w-]+):\s*([^;]+);(.*)$/gm
+const reference = /var\((--[\w-]+)\)/g
 
 // The body of the one top-level rule with this selector.
 const ruleBody = (css, selector, file) => {
@@ -30,69 +43,74 @@ const ruleBody = (css, selector, file) => {
   return { start: match.index + match[0].indexOf('\n') + 1, body: match[1] }
 }
 
-// The light and dark value of every ui variable a tokens.css "ui:" comment names, with each
-// var(--token) reference renamed to that token's first ui variable.
-export const uiValues = (tokensCss) => {
-  const light = [...ruleBody(tokensCss, ':root', 'tokens.css').body.matchAll(declaration)]
-  const dark = new Map([...ruleBody(tokensCss, ':root[data-theme="dark"]', 'tokens.css').body.matchAll(declaration)]
-    .map(([, , token, value]) => [token, value]))
+const declarations = (body) => new Map([...body.matchAll(declaration)].map(([, , name, value]) => [name, value]))
 
-  const uiNames = new Map()
-  for (const [, , token, , comment] of light) {
-    const names = /\/\* ui: (.+) \*\//.exec(comment)?.[1]
-    if (names === undefined) throw new Error(`tokens.css ${token} has no "ui:" comment`)
-    // A var(--x, var(--y)) comment is a fallback ui writes where it reads the role, not a variable it declares.
-    uiNames.set(token, names.startsWith('var(') ? [] : names.split(', '))
+const declared = (body) => new Set(declarations(body).keys())
+
+// Throws when a value refers to a variable that the file it lands in does not declare.
+const checkReferences = ({ name, value, defined, file }) => {
+  for (const [, target] of value.matchAll(reference)) {
+    if (!defined.has(target)) throw new Error(`${name} refers to ${target}, which ${file} does not declare`)
   }
-  for (const token of dark.keys()) if (!uiNames.has(token)) throw new Error(`tokens.css dark ${token} has no light value`)
+}
 
-  const rename = (value) => value.replace(/var\((--[\w-]+)\)/g, (_, token) => {
-    const [first] = uiNames.get(token) ?? []
-    if (first === undefined) throw new Error(`tokens.css refers to ${token}, which has no ui variable`)
-    return `var(${first})`
-  })
+// The light and dark value of every token in tokens.css. Values keep their var() references, so a
+// page that overrides a token on a subtree or sets its own project hue changes what follows from it.
+// inputsCss, a package themes/<id>.css, replaces the light values of the tokens it sets.
+const tokenValues = ({ tokensCss, inputsCss, inputsFile }) => {
+  const light = declarations(ruleBody(tokensCss, ':root', 'tokens.css').body)
+  const dark = declarations(ruleBody(tokensCss, ':root[data-theme="dark"]', 'tokens.css').body)
+  for (const name of dark.keys()) if (!light.has(name)) throw new Error(`tokens.css dark ${name} has no light value`)
 
-  const values = new Map()
-  for (const [, , token, value] of light) {
-    const [general, ...roles] = uiNames.get(token)
-    if (general === undefined) continue
-    const entry = { light: rename(value), dark: rename(dark.get(token) ?? value) }
-    values.set(general, entry)
-    // When a comment names several variables, the first is the general one; the rest are
-    // component roles with the same value, which may also be written as var(<general>).
-    for (const role of roles) values.set(role, { ...entry, general })
+  if (inputsCss !== undefined) {
+    const inputs = declarations(ruleBody(inputsCss, ':root', inputsFile).body)
+    for (const name of ['--color-project', '--color-project-dark']) {
+      if (!inputs.has(name)) throw new Error(`${inputsFile} must declare ${name}`)
+    }
+    for (const [name, value] of inputs) {
+      if (!light.has(name)) throw new Error(`${inputsFile} sets ${name}, which tokens.css does not declare`)
+      light.set(name, value)
+    }
   }
-  return values
+
+  const mapped = [...themeVariables.filter((name) => componentRoles[name] === undefined),
+    ...Object.values(componentRoles), ...themeOnlyTokens, ...useSiteTokens]
+  for (const name of mapped) if (!light.has(name)) throw new Error(`tokens.css does not declare ${name}`)
+
+  return { light, dark: (name) => dark.get(name) ?? light.get(name) }
 }
 
 const fillRule = ({ body, mode, values }) => body.replace(declaration, (line, indent, name, current, rest) => {
   const entry = values.get(name)
-  if (entry === undefined || (entry.general !== undefined && current === `var(${entry.general})`)) return line
+  if (entry === undefined || (entry.token !== undefined && current === `var(${entry.token})`)) return line
   return `${indent}${name}: ${entry[mode]};${rest}`
 })
 
-const declared = (body) => new Set([...body.matchAll(declaration)].map(([, , name]) => name))
-
-// theme.css with each mapped declaration's value taken from the package.
-export const renderThemeCss = ({ themeCss, tokensCss, graphiteCss, baseCss }) => {
-  const values = uiValues(tokensCss)
+// theme.css with the value of each token and component role it declares taken from tokens.css.
+export const renderThemeCss = ({ themeCss, tokensCss }) => {
+  const tokens = tokenValues({ tokensCss })
   const root = ruleBody(themeCss, ':root', 'src/theme.css')
   const dark = ruleBody(themeCss, ':root.dark', 'src/theme.css')
   if (dark.start < root.start) throw new Error('src/theme.css must declare :root before :root.dark')
 
+  const values = new Map()
+  for (const name of tokens.light.keys()) {
+    if (!useSiteTokens.includes(name)) values.set(name, { light: tokens.light.get(name), dark: tokens.dark(name) })
+  }
+  // A component role may also be written as var(<its token>).
+  for (const [role, token] of Object.entries(componentRoles)) values.set(role, { ...values.get(token), token })
+
   const rootNames = declared(root.body)
   const darkNames = declared(dark.body)
-  const graphiteNames = declared(graphiteCss)
-  const baseNames = declared(baseCss)
   for (const [name, entry] of values) {
-    // Sites import src/theme.css alone, so it declares every base token. Only the Graphite
-    // Indigo theme's extra steps, which the package's base.css lacks, may live in that theme alone.
-    if (!rootNames.has(name) && (baseNames.has(name) || !graphiteNames.has(name))) {
-      throw new Error(`tokens.css names ${name}, which src/theme.css :root must declare`)
+    // Sites import src/theme.css alone, so it declares every token but the theme-only ones.
+    if (!rootNames.has(name) && !themeOnlyTokens.includes(name)) {
+      throw new Error(`tokens.css declares ${name}, which src/theme.css :root must declare`)
     }
     if (rootNames.has(name) && entry.light !== entry.dark && !darkNames.has(name)) {
       throw new Error(`${name} changes in dark mode, so src/theme.css :root.dark must declare it`)
     }
+    if (rootNames.has(name)) checkReferences({ name, value: `${entry.light} ${entry.dark}`, defined: rootNames, file: 'src/theme.css' })
   }
 
   return themeCss.slice(0, root.start)
@@ -100,6 +118,39 @@ export const renderThemeCss = ({ themeCss, tokensCss, graphiteCss, baseCss }) =>
     + themeCss.slice(root.start + root.body.length, dark.start)
     + fillRule({ body: dark.body, mode: 'dark', values })
     + themeCss.slice(dark.start + dark.body.length)
+}
+
+const themeName = (id) => id.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ')
+
+// src/themes/<id>.css: themeVariables in both modes, then the theme-only tokens in light. Dark
+// repeats every variable, because src/theme.css's :root.dark otherwise outranks this file's light
+// values. A component role points at its token.
+export const renderTheme = ({ id, tokensCss, inputsCss }) => {
+  const tokens = tokenValues({ tokensCss, inputsCss, inputsFile: `themes/${id}.css` })
+  const defined = new Set([...themeVariables, ...themeOnlyTokens])
+  const block = (names, value) => names.map((name) => {
+    const css = componentRoles[name] === undefined ? value(name) : `var(${componentRoles[name]})`
+    checkReferences({ name, value: css, defined, file: `src/themes/${id}.css` })
+    return `  ${name}: ${css};`
+  })
+
+  return [
+    `/* Generated from tokens/core.json and tokens/themes/${id}.json by scripts/build-tokens.mjs in ${PACKAGE}. Do not edit.`,
+    ` * Opt-in ${themeName(id)} roles for the class flavour. Import after class/base.css (theme.css in @filipgutica/ui).`,
+    ' * Dark mode uses the same .dark class as the base. Keep exactly one :root.dark block:',
+    ' * sites copy it into a <noscript> prefers-color-scheme rule. */',
+    '',
+    ':root {',
+    '  color-scheme: light;',
+    ...block([...themeVariables, ...themeOnlyTokens], (name) => tokens.light.get(name)),
+    '}',
+    '',
+    ':root.dark {',
+    '  color-scheme: dark;',
+    ...block(themeVariables, tokens.dark),
+    '}',
+    '',
+  ].join('\n')
 }
 
 const replaceAll = ({ text, from, to, count }) => {
@@ -116,25 +167,26 @@ export const renderFontsCss = (css) => {
 }
 
 // Writes every output under root, or with check, returns the paths that differ from the package
-// without writing anything. src/themes/ may hold other files, such as notes; only .css files there
-// are themes, so only a .css file the package no longer ships is removed or reported.
-export const vendorDesignSystem = ({ root, check = false }) => {
+// without writing anything. packageRoot is the design-system package to read, the pinned one by
+// default. src/themes/ may hold other files, such as notes; only .css files there are themes, so
+// only a .css file with no package theme is removed or reported.
+export const vendorDesignSystem = ({ root, check = false, packageRoot = pinnedPackageRoot() }) => {
   const read = (path) => readFileSync(join(root, path), 'utf8')
+  const readPackage = (path) => readFileSync(packageFile({ packageRoot, path }), 'utf8')
 
-  const graphiteCss = readFileSync(packageFile('class/themes/graphite-indigo.css'), 'utf8')
-  const themesDir = dirname(packageFile('class/themes/graphite-indigo.css'))
+  const tokensCss = readPackage('tokens.css')
+  const themesDir = dirname(packageFile({ packageRoot, path: 'themes/graphite-indigo.css' }))
   const themeFiles = readdirSync(themesDir).filter((file) => file.endsWith('.css'))
-  const fontsDir = dirname(packageFile('fonts.css'))
+  const fontsDir = dirname(packageFile({ packageRoot, path: 'fonts.css' }))
   const fontFiles = readdirSync(fontsDir).filter((file) => file !== 'fonts.css')
   const outputs = [
-    ['src/theme.css', renderThemeCss({
-      themeCss: read('src/theme.css'),
-      tokensCss: readFileSync(packageFile('tokens.css'), 'utf8'),
-      graphiteCss,
-      baseCss: readFileSync(packageFile('class/base.css'), 'utf8'),
-    })],
-    ...themeFiles.map((file) => [`src/themes/${file}`, readFileSync(join(themesDir, file), 'utf8')]),
-    ['src/fonts.css', renderFontsCss(readFileSync(packageFile('fonts.css'), 'utf8'))],
+    ['src/theme.css', renderThemeCss({ themeCss: read('src/theme.css'), tokensCss })],
+    ...themeFiles.map((file) => [`src/themes/${file}`, renderTheme({
+      id: file.slice(0, -'.css'.length),
+      tokensCss,
+      inputsCss: readFileSync(join(themesDir, file), 'utf8'),
+    })]),
+    ['src/fonts.css', renderFontsCss(readPackage('fonts.css'))],
     ...fontFiles.map((file) => [`src/fonts/${file}`, readFileSync(join(fontsDir, file))]),
   ]
   const extra = [
@@ -167,7 +219,7 @@ const run = () => {
     check: process.argv.includes('--check'),
   })
   if (stale.length > 0) {
-    console.error(`These files differ from @filipgutica/design-system. Run "pnpm themes:build":\n${stale.map((path) => `  ${path}`).join('\n')}`)
+    console.error(`These files differ from ${PACKAGE}. Run "pnpm themes:build":\n${stale.map((path) => `  ${path}`).join('\n')}`)
     process.exitCode = 1
   }
 }
