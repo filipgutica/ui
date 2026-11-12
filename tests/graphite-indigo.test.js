@@ -1,11 +1,12 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
-import { dirname, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
 import { tokens } from '@filipgutica/design-system'
 import { describe, expect, it } from 'vitest'
 
-import { renderThemeCss } from '../scripts/vendor-design-system.mjs'
+import { renderThemeCss, vendorDesignSystem } from '../scripts/vendor-design-system.mjs'
 import { semanticCssVariables } from '../src/theme/index.ts'
 import { contrast } from './contrast.ts'
 
@@ -73,6 +74,35 @@ describe('Class-flavour theme files', () => {
     expect(css).not.toMatch(/@import[^;]*design-system/)
     expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
     expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain(`--color-bg: ${tokens.themes[file.replace('.css', '')].dark['color-bg']}`)
+  })
+})
+
+describe('Vendoring into a copy of the repository', () => {
+  it('reports and removes only theme CSS the package does not ship, and keeps other files in src/themes', () => {
+    const root = mkdtempSync(join(tmpdir(), 'ui-vendor-'))
+    try {
+      mkdirSync(join(root, 'src/fonts'), { recursive: true })
+      cpSync(resolve(process.cwd(), 'src/theme.css'), join(root, 'src/theme.css'))
+      cpSync(resolve(process.cwd(), 'src/themes'), join(root, 'src/themes'), { recursive: true })
+      writeFileSync(join(root, 'src/themes/pine.css'), '/* edited */')
+      rmSync(join(root, 'src/themes/mauve.css'))
+      writeFileSync(join(root, 'src/themes/retired.css'), '/* a theme the package dropped */')
+      writeFileSync(join(root, 'src/themes/README.md'), 'Notes')
+
+      const stale = vendorDesignSystem({ root, check: true })
+      expect(stale).toEqual(expect.arrayContaining(['src/themes/pine.css', 'src/themes/mauve.css', 'src/themes/retired.css']))
+      expect(stale).not.toContain('src/themes/graphite-indigo.css')
+      expect(stale).not.toContain('src/themes/README.md')
+      expect(existsSync(join(root, 'src/themes/retired.css'))).toBe(true)
+
+      vendorDesignSystem({ root })
+      expect(readdirSync(join(root, 'src/themes')).sort()).toEqual([...themeFiles, 'README.md'].sort())
+      expect(readFileSync(join(root, 'src/themes/README.md'), 'utf8')).toBe('Notes')
+      expect(readFileSync(join(root, 'src/themes/pine.css'), 'utf8')).toBe(read('src/themes/pine.css'))
+      expect(vendorDesignSystem({ root, check: true })).toEqual([])
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })
 
