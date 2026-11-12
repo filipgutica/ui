@@ -2,12 +2,13 @@
 import {
   DialogClose,
   DialogContent,
-  DialogOverlay,
   DialogPortal,
   DialogRoot,
   DialogTitle,
   DialogTrigger,
 } from 'reka-ui'
+
+import ModalOverlay from './ModalOverlay.vue'
 
 export interface UiDrawerProps {
   open: boolean
@@ -29,19 +30,6 @@ defineSlots<{
   default(): unknown
   trigger?(): unknown
 }>()
-
-// A tap outside closes the drawer through reka, which waits for the click after a touch press so
-// that a drag or a long press does not close it. reka's overlay cancels a pointerdown on itself, and
-// WebKit fires no click after a cancelled pointerdown, or on an element with no click listener. So the
-// overlay holds a scrim: a press on it skips that cancel, and its click listener lets WebKit fire the
-// click, which reaches reka's outside handlers (pointerDownOutside, interactOutside) as before.
-// A mouse press is still cancelled, as reka does, so it does not move focus.
-const onScrimPointerDown = (event: PointerEvent): void => {
-  if (event.pointerType !== 'touch') event.preventDefault()
-}
-const onScrimClick = (): void => {
-  // The listener itself is what WebKit needs; reka closes the drawer.
-}
 </script>
 
 <template>
@@ -56,13 +44,7 @@ const onScrimClick = (): void => {
       <slot name="trigger" />
     </DialogTrigger>
     <DialogPortal>
-      <DialogOverlay class="fg-drawer__overlay">
-        <div
-          class="fg-drawer__scrim"
-          @pointerdown="onScrimPointerDown"
-          @click="onScrimClick"
-        />
-      </DialogOverlay>
+      <ModalOverlay class="fg-drawer__overlay" />
       <DialogContent
         class="fg-drawer__content"
         aria-modal="true"

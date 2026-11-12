@@ -15,11 +15,11 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Only where WebKit behaves differently: a tap outside the drawer.
+    // Only where WebKit behaves differently: a tap outside a dialog or the drawer.
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testMatch: 'drawer.spec.ts',
+      testMatch: ['dialog.spec.ts', 'drawer.spec.ts'],
     },
   ],
   webServer: {

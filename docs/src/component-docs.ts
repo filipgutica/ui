@@ -284,7 +284,7 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'footer', type: 'unknown', description: 'Actions below the body. The footer appears only when this slot exists. Action buttons must update open to close the dialog.' },
     ],
     events: [
-      { name: 'update:open', type: 'boolean', description: 'Requests an open-state change. The close button emits false. Escape and outside primary clicks also request dismissal unless prevented.' },
+      { name: 'update:open', type: 'boolean', description: 'Requests an open-state change. The close button emits false. Escape and a tap or primary click outside the dialog, in Safari and other WebKit browsers too, also request dismissal unless prevented. A press that starts inside the dialog does not.' },
     ],
     example: {
       title: 'Confirmation',

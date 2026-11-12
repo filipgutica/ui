@@ -334,7 +334,8 @@ design-language update records it in `DESIGN.md`.
 width, and the `command` and `caption` slot below. `html` is trusted, checked-in
 terminal markup with a single root element. The Full size button at the end of
 the tab row, or a click on the capture, opens it at full size in a dialog, and
-focus returns to the button on close. Phones show the button as an icon. `v-model`
+focus returns to the button on close. A tap or a click outside the dialog
+closes it, in Safari and other WebKit browsers too. Phones show the button as an icon. `v-model`
 holds the active ID and defaults to the first item. Each capture has the ID
 `idPrefix` + `id` (`frame-` by default), so a deep link such as `#frame-read`
 selects its tab on load and on hash change. Without JavaScript every capture is
