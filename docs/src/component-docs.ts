@@ -94,6 +94,32 @@ export const componentDocs: ComponentDoc[] = [
     },
   },
   {
+    category: 'Layout',
+    slug: 'breadcrumbs',
+    name: 'UiBreadcrumbs',
+    title: 'Breadcrumbs',
+    summary: 'Shows the path from the site\'s home page to this page.',
+    usage: [
+      'Put the trail right above the page\'s h1 on every page below the site\'s home page. Keep the project switcher in the header.',
+      'List the path from the home page; the last item is the current page. It renders as text with aria-current="page", takes no Tab stop, and ignores its href.',
+      'Ancestors are links in Tab order. An ancestor without href renders as muted text.',
+      'The trail sits on its text line: it takes back the room its link boxes add, so the h1 below does not move.',
+      'At 640px and below, a trail of three or more items shows only the parent, as a back link. A two-item trail shows in full.',
+      'Renders fully without JavaScript. site.css sets the trail in the monospace font on the project sites.',
+    ],
+    props: [
+      { name: 'items', required: true, type: 'readonly UiBreadcrumbItem[]', description: 'Ordered { label, href? } items from the home page to the current page, which is the last item.' },
+      { name: 'label', required: false, type: 'string', default: "'Breadcrumb'", description: 'Accessible name of the navigation. Give each trail on a page its own name.' },
+    ],
+    slots: [],
+    events: [],
+    example: {
+      title: 'Page path',
+      description: 'Two ancestor links, then the current page as text.',
+      code: `<UiBreadcrumbs\n  :items="[\n    { label: 'Filip Stack', href: '/' },\n    { label: 'Skills', href: '/skills/' },\n    { label: 'Field Guide' },\n  ]"\n/>`,
+    },
+  },
+  {
     category: 'Feedback',
     slug: 'alert',
     name: 'UiAlert',

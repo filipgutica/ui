@@ -1,3 +1,5 @@
+export { default as UiBreadcrumbs } from './components/UiBreadcrumbs.vue'
+export type { UiBreadcrumbItem, UiBreadcrumbsProps } from './components/UiBreadcrumbs.vue'
 export { default as UiButton } from './components/UiButton.vue'
 export type { UiButtonProps } from './components/UiButton.vue'
 export { default as UiCard } from './components/UiCard.vue'

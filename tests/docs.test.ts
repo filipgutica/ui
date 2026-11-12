@@ -26,6 +26,7 @@ const mountThemesPage = () => mount(defineComponent({
 const exportedComponents = [
   'UiAlert',
   'UiBadge',
+  'UiBreadcrumbs',
   'UiButton',
   'UiCard',
   'UiCheckbox',

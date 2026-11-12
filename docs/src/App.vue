@@ -37,6 +37,7 @@ const selectedComponent = computed(() =>
 const aliases: Partial<Record<string, string>> = {
   'alert': 'banner callout notice',
   'badge': 'tag chip label',
+  'breadcrumbs': 'path trail back',
   'code-block': 'snippet',
   'dialog': 'modal',
   'drawer': 'sheet sidebar menu',

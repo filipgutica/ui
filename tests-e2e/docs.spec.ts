@@ -7,6 +7,7 @@ import { contrast } from '../tests/contrast.js'
 const componentSlugs = [
   'alert',
   'badge',
+  'breadcrumbs',
   'button',
   'card',
   'checkbox',

@@ -1,0 +1,106 @@
+@layer components {
+  /* Breadcrumbs. The separators and the phone back mark are chevrons drawn with two borders of a
+   * turned box, so they hold no text to read. */
+  .fg-breadcrumbs {
+    color: var(--color-muted);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading);
+  }
+
+  /* The trail sits on its text line, not on its links' touch boxes: it moves up by half the room the
+   * box adds around the line and takes the same room back below, so the h1 under it does not move. */
+  .fg-breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--space-2);
+    margin: calc((1lh - var(--control-sm)) / 2) 0 calc((var(--control-sm) - 1lh) / 2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .fg-breadcrumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .fg-breadcrumbs li + li::before,
+  .fg-breadcrumbs li:nth-last-child(2) .fg-breadcrumbs__link::before {
+    width: 0.375rem;
+    height: 0.375rem;
+    border: solid currentColor;
+    border-width: 1.5px 1.5px 0 0;
+  }
+
+  /* Turned 45°, the chevron's ink sits right of its box's centre; the margins even out the gaps beside it. */
+  .fg-breadcrumbs li + li::before {
+    content: "";
+    flex: none;
+    margin-inline: -0.125rem 0.125rem;
+    transform: rotate(45deg);
+  }
+
+  /* Two classes, so a site's prose link rule, such as .fg-site-prose :where(li a), does not underline it. */
+  .fg-breadcrumbs .fg-breadcrumbs__link {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-sm);
+    border-radius: var(--radius-inline);
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+
+  /* No transition: hover changes the colour and the underline at once. */
+  @media (hover: hover) {
+    .fg-breadcrumbs .fg-breadcrumbs__link:hover {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  .fg-breadcrumbs__current {
+    color: var(--color-text);
+    font-weight: var(--weight-medium);
+    overflow-wrap: anywhere;
+  }
+
+  /* Labels centre on the cap height, as navigation rows do. */
+  @supports (text-box: trim-both cap alphabetic) {
+    .fg-breadcrumbs .fg-breadcrumbs__link {
+      display: block;
+      align-content: center;
+      padding-block: var(--space-2);
+      text-box: trim-both cap alphabetic;
+    }
+    .fg-breadcrumbs__current { text-box: trim-both cap alphabetic; }
+  }
+
+  @media (max-width: 800px) {
+    .fg-breadcrumbs ol { margin-block: calc((1lh - var(--control-lg)) / 2) calc((var(--control-lg) - 1lh) / 2); }
+    .fg-breadcrumbs .fg-breadcrumbs__link { min-height: var(--control-lg); }
+  }
+
+  /* Phones show only the parent of a trail of three or more, as a back link with a chevron that
+   * points back. A two-crumb trail fits in full. */
+  @media (max-width: 640px) {
+    .fg-breadcrumbs ol:has(> li:nth-child(3)) > li:not(:nth-last-child(2)) { display: none; }
+    .fg-breadcrumbs ol:has(> li:nth-child(3)) > li::before { content: none; }
+    .fg-breadcrumbs ol:has(> li:nth-child(3)) > li:nth-last-child(2) .fg-breadcrumbs__link {
+      position: relative;
+      padding-inline-start: 0.875rem;
+    }
+    .fg-breadcrumbs ol:has(> li:nth-child(3)) > li:nth-last-child(2) .fg-breadcrumbs__link::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0.25rem;
+      top: 50%;
+      transform: translateY(-50%) rotate(-135deg);
+    }
+  }
+}
