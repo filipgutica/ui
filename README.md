@@ -332,8 +332,8 @@ including captures and legends, span both columns afterward in source order.
 Below 1024px all children stack in source order. Explicit grid lines and
 `grid-auto-columns: minmax(0, 1fr)` preserve the split if an unlayered site rule
 overrides the column template. Remove that override to retain the 1.1:1 ratio.
-This is the wide exception to the phone/tablet breakpoints; the separate
-design-language update records it in `DESIGN.md`.
+This split is one of the library's own breakpoints; see
+[Build on the design system](#build-on-the-design-system).
 
 `UiCapture` shows one panel: tabs in the header, the capture scaled to the panel
 width, and the `command` and `caption` slot below. `html` is trusted, checked-in
@@ -416,6 +416,44 @@ rules. Without `fg-site-docs`, the frame and element defaults do not apply. Thes
 for every `UiCapture`, in the `components` layer, so a site's own unlayered
 `.term` and ANSI rules and its `--t*` values still win; and `UiSiteNav`, whose
 phone toggle and drawer title now show its `label`.
+
+## Build on the design system
+
+`@filipgutica/ui` is built on
+[`@filipgutica/design-system`](https://github.com/filipgutica/design-system).
+Follow its
+[`language/DESIGN.md`](https://github.com/filipgutica/design-system/blob/main/language/DESIGN.md)
+for the general rules. These facts belong to this library.
+
+- **Setup.** A personal or project site imports `theme.css`,
+  `themes/graphite-indigo.css`, `components.css`, and `site.css`, in the order
+  [Install](#install) and [Project sites](#project-sites) show. Write page
+  styles with the design system's `tokens.css` variable names; the library
+  declares them.
+- **Two undeclared tokens.** The library does not declare
+  `--color-nav-current-text` or `--color-segmented-current-text`. Write each
+  with the fallback the library uses:
+  `var(--color-nav-current-text, var(--color-accent))` and
+  `var(--color-segmented-current-text, var(--color-accent))`. Without a
+  fallback, the declaration silently falls back to the inherited or initial
+  value.
+- **Focus ring.** `site.css` draws the base focus ring only inside
+  `.fg-site-docs`; library controls draw their own. A page's own element
+  outside the shell, such as a link in a drawer rendered outside it, writes the
+  ring itself, exactly
+  `outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset)`.
+- **Breakpoints.** Pages use only the design system's viewport breakpoints:
+  `max-width: 640px`, `max-width: 800px`, and `min-width: 801px`. The library
+  also has its own, which pages do not copy:
+  - The tool-home hero, `.fg-site-hero`, splits at `min-width: 1024px`.
+  - The site header, prose title, definitions, and figure plate change at
+    `max-width: 680px`, and the frame padding applies at `min-width: 681px`.
+  - The docs shell steps `main`'s section gap from `--space-12` to `--space-8`
+    at 800px, where the design system steps documentation section gaps at
+    640px. A site that wants the design system's step sets `gap` on
+    `.fg-site-docs > main` in its own unlayered rules: `--space-12` at
+    `max-width: 800px` and `--space-8` at `max-width: 640px`. Unlayered rules
+    win over the library's `components` layer.
 
 ## Development
 
