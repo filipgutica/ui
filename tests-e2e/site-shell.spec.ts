@@ -337,6 +337,27 @@ test.describe('phone', () => {
     await expect(find(page)).not.toBeFocused()
   })
 
+  test('clears the strip fade when late web fonts make the links fit', async ({ page }) => {
+    // Hold the fonts back, so the strip is first measured in the fallback face.
+    let release = (): void => {}
+    const held = new Promise<void>((resolve) => { release = resolve })
+    await page.route('**/*.woff2', async (route) => {
+      await held
+      await route.continue()
+    })
+    await page.setViewportSize({ width: 720, height: 844 })
+    // The load event waits for the fonts, so do not wait for it.
+    await page.goto(pagesFixture, { waitUntil: 'domcontentloaded' })
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    const overflow = () => strip.evaluate(element => element.scrollWidth - element.clientWidth)
+    await expect(strip).toHaveAttribute('data-clip', 'end')
+    expect(await overflow()).toBeGreaterThan(12)
+    release()
+    await page.evaluate(() => document.fonts.ready)
+    await expect.poll(overflow).toBeLessThanOrEqual(12)
+    await expect(strip).not.toHaveAttribute('data-clip')
+  })
+
   test('opening the drawer mid-page and closing it keeps the reader\'s position', async ({ page }) => {
     await page.goto(`${fixture}#commands`)
     const before = await page.evaluate(() => scrollY)

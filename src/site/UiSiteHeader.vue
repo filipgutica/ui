@@ -76,8 +76,10 @@ const measureClip = (): void => {
 }
 useResizeObserver(strip, measureClip)
 useEventListener(strip, 'scroll', measureClip, { passive: true })
-// New or renamed links change what the strip clips without resizing it.
+// New or renamed links, and web fonts that finish loading after mount, change what the strip clips
+// without resizing it. The font listeners are added on mount.
 watch(() => links, measureClip, { deep: true, flush: 'post' })
+let fonts: FontFaceSet | undefined
 
 const closeMenu = (): void => {
   if (menu.value) menu.value.open = false
@@ -105,9 +107,13 @@ onMounted(() => {
     })
   }
   document.addEventListener('pointerdown', onDocumentPointerdown)
+  fonts = 'fonts' in document ? document.fonts : undefined
+  fonts?.addEventListener('loadingdone', measureClip)
+  void fonts?.ready.then(measureClip)
 })
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocumentPointerdown)
+  fonts?.removeEventListener('loadingdone', measureClip)
 })
 
 </script>
