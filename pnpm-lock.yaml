@@ -37,8 +37,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0))
       '@filipgutica/design-system':
-        specifier: 1.0.8
-        version: 1.0.8
+        specifier: 1.0.9
+        version: 1.0.9
       '@playwright/test':
         specifier: ^1.62.1
         version: 1.62.1
@@ -272,8 +272,8 @@ packages:
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@filipgutica/design-system@1.0.8':
-    resolution: {integrity: sha512-1OCkyqd2thkF57fWCsRHeBOoSadf8RhrgI+cSBkvXVJcZYcgiRqH7pSQhKfXEeybYGiq1lixCa7I60fDbyg/+Q==}
+  '@filipgutica/design-system@1.0.9':
+    resolution: {integrity: sha512-Z1eFLlXjAj4ww0PbOHOnEJv5o1wT0WxWUN6lNn0znH5i8TU6YH/Z2PhJy2WBh/VI8L38tEoSjEGPfEtQZfw97A==}
     engines: {node: '>=22.12'}
 
   '@floating-ui/core@1.8.0':
@@ -3070,7 +3070,7 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@filipgutica/design-system@1.0.8': {}
+  '@filipgutica/design-system@1.0.9': {}
 
   '@floating-ui/core@1.8.0':
     dependencies:

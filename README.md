@@ -36,6 +36,17 @@ The third import adds Graphite Indigo's site typography and layout roles. Both
 the base theme and Graphite Indigo use neutral surfaces, project-hue primary buttons,
 and the ui project hue for checked and selected states.
 
+The design system's other two themes, Pine and Mauve, set the same roles with
+their own hues. To use one, import it in place of Graphite Indigo, after
+`theme.css`:
+
+```css
+@import "@filipgutica/ui/themes/pine.css"; /* or themes/mauve.css */
+```
+
+Each theme file has one `:root` block and one `:root.dark` block, so dark mode
+uses the same `.dark` class as the base theme.
+
 `theme.css` loads the package's own IBM Plex Sans and IBM Plex Mono latin woff2
 files (400, 500, 600), with `font-display: swap` and system fallbacks. It makes
 no remote font requests. The files come from Fontsource 5.3.0 and ship under
@@ -408,13 +419,16 @@ pnpm docs:dev
 pnpm verify
 ```
 
-Graphite Indigo token values and the IBM Plex fonts live in
+The theme token values and the IBM Plex fonts live in
 [`@filipgutica/design-system`](https://github.com/filipgutica/design-system).
 `pnpm themes:build` copies them from the pinned package into `src/theme.css`,
-`src/themes/graphite-indigo.css`, `src/fonts.css`, and `src/fonts/`. In
+`src/themes/` (every class-flavour theme: Graphite Indigo, Pine, and Mauve),
+`src/fonts.css`, and `src/fonts/`. In
 `src/theme.css` it rewrites only the values that the package's `tokens.css`
 maps with a `ui:` comment. The other declarations belong to this library.
 `pnpm themes:check` fails when any of these files differs from the package.
+When the package adds a theme, add its `./themes/<name>.css` export to
+`package.json`; `tests/graphite-indigo.test.js` fails until it is there.
 
 To update the values, bump the package and rebuild:
 

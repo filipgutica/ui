@@ -1,11 +1,12 @@
-import { readFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
-import { resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
 import { tokens } from '@filipgutica/design-system'
 import { describe, expect, it } from 'vitest'
 
-import { renderThemeCss } from '../scripts/vendor-design-system.mjs'
+import { renderThemeCss, vendorDesignSystem } from '../scripts/vendor-design-system.mjs'
 import { semanticCssVariables } from '../src/theme/index.ts'
 import { contrast } from './contrast.ts'
 
@@ -44,6 +45,64 @@ describe('Graphite Indigo files', () => {
       .map(([, name]) => name)
 
     expect(used.filter(name => !defined.has(name))).toEqual([])
+  })
+})
+
+// Every class-flavour theme the design system ships: Graphite Indigo, Pine, and Mauve.
+const themeFiles = readdirSync(resolve(process.cwd(), 'src/themes')).filter(file => file.endsWith('.css')).sort()
+
+describe('Class-flavour theme files', () => {
+  it('vendors every theme the design-system package ships, and nothing else', () => {
+    const shipped = readdirSync(dirname(createRequire(import.meta.url).resolve('@filipgutica/design-system/class/themes/graphite-indigo.css')))
+      .filter(file => file.endsWith('.css')).sort()
+
+    expect(themeFiles).toEqual(shipped)
+    expect(themeFiles.map(file => file.replace('.css', ''))).toEqual(Object.keys(tokens.themes).sort())
+  })
+
+  it('exports each theme as @filipgutica/ui/themes/<name>.css, and nothing else under themes', () => {
+    const { exports } = JSON.parse(read('package.json'))
+    const themeExports = Object.entries(exports).filter(([path]) => path.startsWith('./themes/'))
+
+    expect(Object.fromEntries(themeExports)).toEqual(Object.fromEntries(themeFiles.map(file => [`./themes/${file}`, `./src/themes/${file}`])))
+  })
+
+  it.each(themeFiles)('gives %s the same roles as Graphite Indigo, with one :root.dark block from its own tokens', (file) => {
+    const css = read(`src/themes/${file}`)
+
+    expect(variablesIn(css)).toEqual(variablesIn(read('src/themes/graphite-indigo.css')))
+    expect(css).not.toMatch(/@import[^;]*design-system/)
+    expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
+    expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain(`--color-bg: ${tokens.themes[file.replace('.css', '')].dark['color-bg']}`)
+  })
+})
+
+describe('Vendoring into a copy of the repository', () => {
+  it('reports and removes only theme CSS the package does not ship, and keeps other files in src/themes', () => {
+    const root = mkdtempSync(join(tmpdir(), 'ui-vendor-'))
+    try {
+      mkdirSync(join(root, 'src/fonts'), { recursive: true })
+      cpSync(resolve(process.cwd(), 'src/theme.css'), join(root, 'src/theme.css'))
+      cpSync(resolve(process.cwd(), 'src/themes'), join(root, 'src/themes'), { recursive: true })
+      writeFileSync(join(root, 'src/themes/pine.css'), '/* edited */')
+      rmSync(join(root, 'src/themes/mauve.css'))
+      writeFileSync(join(root, 'src/themes/retired.css'), '/* a theme the package dropped */')
+      writeFileSync(join(root, 'src/themes/README.md'), 'Notes')
+
+      const stale = vendorDesignSystem({ root, check: true })
+      expect(stale).toEqual(expect.arrayContaining(['src/themes/pine.css', 'src/themes/mauve.css', 'src/themes/retired.css']))
+      expect(stale).not.toContain('src/themes/graphite-indigo.css')
+      expect(stale).not.toContain('src/themes/README.md')
+      expect(existsSync(join(root, 'src/themes/retired.css'))).toBe(true)
+
+      vendorDesignSystem({ root })
+      expect(readdirSync(join(root, 'src/themes')).sort()).toEqual([...themeFiles, 'README.md'].sort())
+      expect(readFileSync(join(root, 'src/themes/README.md'), 'utf8')).toBe('Notes')
+      expect(readFileSync(join(root, 'src/themes/pine.css'), 'utf8')).toBe(read('src/themes/pine.css'))
+      expect(vendorDesignSystem({ root, check: true })).toEqual([])
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 })
 

@@ -1,4 +1,4 @@
-// Copies the Graphite Indigo token values and fonts that @filipgutica/ui publishes from the
+// Copies the token values, class-flavour themes, and fonts that @filipgutica/ui publishes from the
 // pinned @filipgutica/design-system package, which owns them. To change a value, bump that
 // package and run this script.
 //
@@ -8,7 +8,8 @@
 // - src/theme.css stays hand-written. The script rewrites only the value of each :root and
 //   :root.dark declaration that a tokens.css "ui:" comment names. Declarations no comment names
 //   are ui's own, and every other byte stays as written.
-// - src/themes/graphite-indigo.css is the package's class-flavour theme, unchanged.
+// - src/themes/*.css are the package's class-flavour themes, such as graphite-indigo.css, unchanged.
+//   A file the package no longer ships is removed.
 // - src/fonts/* are the package's font and licence files, unchanged. src/fonts.css is the
 //   package's fonts.css with its URLs pointed into fonts/.
 import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
@@ -114,12 +115,15 @@ export const renderFontsCss = (css) => {
   return replaceAll({ text: pointed, from: 'beside this file', to: 'in fonts/', count: 1 })
 }
 
-const run = () => {
-  const root = fileURLToPath(new URL('..', import.meta.url))
-  const check = process.argv.includes('--check')
+// Writes every output under root, or with check, returns the paths that differ from the package
+// without writing anything. src/themes/ may hold other files, such as notes; only .css files there
+// are themes, so only a .css file the package no longer ships is removed or reported.
+export const vendorDesignSystem = ({ root, check = false }) => {
   const read = (path) => readFileSync(join(root, path), 'utf8')
 
   const graphiteCss = readFileSync(packageFile('class/themes/graphite-indigo.css'), 'utf8')
+  const themesDir = dirname(packageFile('class/themes/graphite-indigo.css'))
+  const themeFiles = readdirSync(themesDir).filter((file) => file.endsWith('.css'))
   const fontsDir = dirname(packageFile('fonts.css'))
   const fontFiles = readdirSync(fontsDir).filter((file) => file !== 'fonts.css')
   const outputs = [
@@ -129,16 +133,21 @@ const run = () => {
       graphiteCss,
       baseCss: readFileSync(packageFile('class/base.css'), 'utf8'),
     })],
-    ['src/themes/graphite-indigo.css', graphiteCss],
+    ...themeFiles.map((file) => [`src/themes/${file}`, readFileSync(join(themesDir, file), 'utf8')]),
     ['src/fonts.css', renderFontsCss(readFileSync(packageFile('fonts.css'), 'utf8'))],
     ...fontFiles.map((file) => [`src/fonts/${file}`, readFileSync(join(fontsDir, file))]),
   ]
-  const extraFonts = readdirSync(join(root, 'src/fonts')).filter((file) => !fontFiles.includes(file)).map((file) => `src/fonts/${file}`)
+  const extra = [
+    ...readdirSync(join(root, 'src/themes'))
+      .filter((file) => file.endsWith('.css') && !themeFiles.includes(file))
+      .map((file) => `src/themes/${file}`),
+    ...readdirSync(join(root, 'src/fonts')).filter((file) => !fontFiles.includes(file)).map((file) => `src/fonts/${file}`),
+  ]
 
   if (!check) {
     for (const [path, content] of outputs) writeFileSync(join(root, path), content)
-    for (const path of extraFonts) rmSync(join(root, path))
-    return
+    for (const path of extra) rmSync(join(root, path))
+    return []
   }
 
   const stale = outputs.filter(([path, content]) => {
@@ -149,7 +158,14 @@ const run = () => {
       return true
     }
   }).map(([path]) => path)
-  stale.push(...extraFonts)
+  return [...stale, ...extra]
+}
+
+const run = () => {
+  const stale = vendorDesignSystem({
+    root: fileURLToPath(new URL('..', import.meta.url)),
+    check: process.argv.includes('--check'),
+  })
   if (stale.length > 0) {
     console.error(`These files differ from @filipgutica/design-system. Run "pnpm themes:build":\n${stale.map((path) => `  ${path}`).join('\n')}`)
     process.exitCode = 1
