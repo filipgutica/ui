@@ -30,15 +30,17 @@ defineSlots<{
   trigger?(): unknown
 }>()
 
-// reka's overlay cancels every pointerdown, and for a touch it closes the drawer only on the click
-// that follows. WebKit fires no click after a cancelled pointerdown, so a tap outside never closed
-// the drawer there. For a touch, the overlay keeps the press from reka and closes on its own click,
-// which a drag or a long press does not fire. A mouse press still closes it through reka at once.
-const onOverlayPointerDown = (event: PointerEvent): void => {
-  if (event.pointerType === 'touch') event.stopImmediatePropagation()
+// A tap outside closes the drawer through reka, which waits for the click after a touch press so
+// that a drag or a long press does not close it. reka's overlay cancels a pointerdown on itself, and
+// WebKit fires no click after a cancelled pointerdown, or on an element with no click listener. So the
+// overlay holds a scrim: a press on it skips that cancel, and its click listener lets WebKit fire the
+// click, which reaches reka's outside handlers (pointerDownOutside, interactOutside) as before.
+// A mouse press is still cancelled, as reka does, so it does not move focus.
+const onScrimPointerDown = (event: PointerEvent): void => {
+  if (event.pointerType !== 'touch') event.preventDefault()
 }
-const onOverlayClick = (): void => {
-  if (open) emit('update:open', false)
+const onScrimClick = (): void => {
+  // The listener itself is what WebKit needs; reka closes the drawer.
 }
 </script>
 
@@ -54,11 +56,13 @@ const onOverlayClick = (): void => {
       <slot name="trigger" />
     </DialogTrigger>
     <DialogPortal>
-      <DialogOverlay
-        class="fg-drawer__overlay"
-        @pointerdown.capture="onOverlayPointerDown"
-        @click.self="onOverlayClick"
-      />
+      <DialogOverlay class="fg-drawer__overlay">
+        <div
+          class="fg-drawer__scrim"
+          @pointerdown="onScrimPointerDown"
+          @click="onScrimClick"
+        />
+      </DialogOverlay>
       <DialogContent
         class="fg-drawer__content"
         aria-modal="true"
