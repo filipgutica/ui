@@ -542,23 +542,25 @@
     line-height: var(--leading);
   }
   .fg-command-list__table { width: 100%; border-collapse: collapse; }
+  /* As the design-system catalogue's command list: the rule sits below each row, and cells are
+   * centred, so a row is as tall as its copy button or its wrapped description. */
   .fg-command-list th {
-    padding: 0 var(--space-3) var(--space-2) 0;
+    padding: var(--space-2) var(--space-4) var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border-subtle);
     color: var(--color-muted);
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
     font-weight: var(--weight-medium);
     text-align: start;
   }
   .fg-command-list td {
-    padding: var(--space-3) var(--space-3) var(--space-3) 0;
-    border-top: 1px solid var(--color-border-subtle);
-    vertical-align: top;
+    padding: var(--space-1) var(--space-4) var(--space-1) 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+    vertical-align: middle;
   }
-  .fg-command-list thead td { padding: 0; border: 0; }
-  .fg-command-list tbody tr:last-child td { border-bottom: 1px solid var(--color-border-subtle); }
+  .fg-command-list thead td { padding: 0; }
   .fg-command-list__command { width: 1%; white-space: nowrap; }
   .fg-command-list__command code { font-family: var(--font-mono); font-size: var(--text-sm); }
-  .fg-command-list__description { color: var(--color-text); }
+  .fg-command-list__description { color: var(--color-muted); font-size: var(--text-sm); }
   .fg-command-list td.fg-command-list__action { width: 1%; padding: var(--space-1) 0; }
   .fg-command-list__copy {
     display: inline-grid;
@@ -883,15 +885,14 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       column-gap: var(--space-2);
-      padding-block: var(--space-3);
-      border-top: 1px solid var(--color-border-subtle);
+      align-items: center;
+      padding-block: var(--space-2);
+      border-bottom: 1px solid var(--color-border-subtle);
     }
-    .fg-command-list tbody tr:last-child { border-bottom: 1px solid var(--color-border-subtle); }
     .fg-command-list td,
-    .fg-command-list tbody tr:last-child td,
     .fg-command-list td.fg-command-list__action { width: auto; padding: 0; border: 0; }
     .fg-command-list__command { white-space: normal; overflow-wrap: anywhere; }
-    .fg-command-list td.fg-command-list__description { grid-column: 1; padding-top: var(--space-1); }
+    .fg-command-list td.fg-command-list__description { grid-column: 1; }
     .fg-command-list td.fg-command-list__action { grid-column: 2; grid-row: 1 / span 2; }
   }
   @media (min-width: 681px) {

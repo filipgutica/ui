@@ -333,8 +333,11 @@ on `:root`, because the dialog renders outside the panel.
 `<code>`, and `commandHeader` and `descriptionHeader` to rename the columns. Each row gets a copy button named
 "Copy <command>" once the page is interactive; set `copyable` to `false` to
 remove them. A copied row shows a tick for 1.5s. A status message announces each
-copy and shows a fallback when the clipboard is unavailable. At 640px and below
-each command stacks above its description and wraps.
+copy and shows a fallback when the clipboard is unavailable. Rows follow the
+design-system catalogue's command list: cells are centred with 4px block
+padding, a rule sits below each row, and the description is muted at
+`--text-sm`. At 640px and below each command stacks above its description and
+wraps, with 8px block padding and the copy button centred beside both.
 
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
 numbered markers (each `li` holds an `h3` title and short paragraphs; mark the last
