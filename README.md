@@ -251,7 +251,9 @@ in place under it.
 The drawer opens from the left. It holds Find, pinned at the top, then the
 groups. A keyboard open focuses the current row, a tap focuses the drawer, and
 `/` opens it with Find focused. It closes on navigation and focuses the
-destination section; otherwise focus returns to the trigger. Focus follows the
+destination section; otherwise focus returns to the trigger. A tap or a click
+outside it closes it, in Safari and other WebKit browsers too; a press that
+starts inside it does not. Focus follows the
 visible control across the breakpoint.
 
 `find` adds a Find field above the rows, for long rails. It is off by default.

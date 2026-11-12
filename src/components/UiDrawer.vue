@@ -29,6 +29,17 @@ defineSlots<{
   default(): unknown
   trigger?(): unknown
 }>()
+
+// reka's overlay cancels every pointerdown, and for a touch it closes the drawer only on the click
+// that follows. WebKit fires no click after a cancelled pointerdown, so a tap outside never closed
+// the drawer there. For a touch, the overlay keeps the press from reka and closes on its own click,
+// which a drag or a long press does not fire. A mouse press still closes it through reka at once.
+const onOverlayPointerDown = (event: PointerEvent): void => {
+  if (event.pointerType === 'touch') event.stopImmediatePropagation()
+}
+const onOverlayClick = (): void => {
+  if (open) emit('update:open', false)
+}
 </script>
 
 <template>
@@ -43,7 +54,11 @@ defineSlots<{
       <slot name="trigger" />
     </DialogTrigger>
     <DialogPortal>
-      <DialogOverlay class="fg-drawer__overlay" />
+      <DialogOverlay
+        class="fg-drawer__overlay"
+        @pointerdown.capture="onOverlayPointerDown"
+        @click.self="onOverlayClick"
+      />
       <DialogContent
         class="fg-drawer__content"
         aria-modal="true"
