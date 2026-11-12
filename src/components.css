@@ -1143,8 +1143,9 @@
     inset: 0;
     z-index: 50;
     background: var(--color-overlay);
-
   }
+  /* Fills the dialog or drawer overlay, so a tap lands on it. ModalOverlay explains why. */
+  .fg-scrim { position: absolute; inset: 0; }
 
   .fg-dialog__content {
     position: fixed;

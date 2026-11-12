@@ -3,11 +3,12 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogOverlay,
   DialogPortal,
   DialogRoot,
   DialogTitle,
 } from 'reka-ui'
+
+import ModalOverlay from './ModalOverlay.vue'
 
 export interface UiDialogProps {
   description?: string
@@ -30,7 +31,7 @@ const emit = defineEmits<{
     @update:open="emit('update:open', $event)"
   >
     <DialogPortal>
-      <DialogOverlay class="fg-dialog__overlay" />
+      <ModalOverlay class="fg-dialog__overlay" />
       <DialogContent
         class="fg-dialog__content"
         aria-modal="true"
