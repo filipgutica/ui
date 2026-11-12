@@ -96,6 +96,15 @@ export const themeOnlyTokens = [
   '--page-wide',
 ]
 
+// Variables that src/theme.css declares with values of its own: they are not design-system tokens.
+export const ownVariables = [
+  '--row-compact',
+  '--heading-mark',
+  '--color-shadow',
+  '--shadow-control',
+  '--shadow-popover',
+]
+
 // Tokens that ui never declares. Components read them with a fallback at the use site, such as
 // var(--color-nav-current-text, var(--color-accent)), so a page can set them on any subtree.
 export const useSiteTokens = [

@@ -20,7 +20,7 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { componentRoles, themeOnlyTokens, themeVariables, useSiteTokens } from './theme-variables.mjs'
+import { componentRoles, ownVariables, themeOnlyTokens, themeVariables, useSiteTokens } from './theme-variables.mjs'
 
 const PACKAGE = '@filipgutica/design-system'
 
@@ -102,6 +102,11 @@ export const renderThemeCss = ({ themeCss, tokensCss }) => {
 
   const rootNames = declared(root.body)
   const darkNames = declared(dark.body)
+  for (const name of [...rootNames, ...darkNames]) {
+    if (!values.has(name) && !ownVariables.includes(name)) {
+      throw new Error(`tokens.css does not declare ${name}, which src/theme.css declares`)
+    }
+  }
   for (const [name, entry] of values) {
     // Sites import src/theme.css alone, so it declares every token but the theme-only ones.
     if (!rootNames.has(name) && !themeOnlyTokens.includes(name)) {

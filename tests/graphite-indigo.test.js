@@ -140,6 +140,12 @@ describe('Design-system token vendoring', () => {
     expect(() => renderThemeCss({ themeCss, tokensCss: noAccentText })).toThrow('tokens.css does not declare --color-accent-text')
   })
 
+  it('fails when the package drops a token that theme.css declares', () => {
+    const noSpace = tokensCss.replace(/\n {2}--space-4: [^\n]+/, '')
+
+    expect(() => renderThemeCss({ themeCss, tokensCss: noSpace })).toThrow('tokens.css does not declare --space-4')
+  })
+
   it('fails when a value refers to a variable theme.css does not declare', () => {
     const dangling = tokensCss.replace('--color-link: #0b5f7c;', '--color-link: var(--color-missing);')
 

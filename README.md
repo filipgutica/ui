@@ -478,8 +478,9 @@ from the pinned package's `tokens.css`, `themes/*.css`, and fonts.
     carries
   - the tokens only the theme files declare
   - the tokens components read with a fallback and never declare
+  - the variables `src/theme.css` declares with values of its own
 - In `src/theme.css` the build rewrites only the values of tokens and
-  component roles. The other declarations belong to this library.
+  component roles.
 
 `pnpm themes:check` fails when any of these files differs from what the
 package builds. The build also fails when the package lacks a token that the
