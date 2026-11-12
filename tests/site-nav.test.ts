@@ -110,6 +110,12 @@ describe('UiSiteNav', () => {
     const trigger = wrapper.get('button')
     expect(trigger.text()).toBe('On this page: wtree ui')
     expect(document.activeElement).toBe(trigger.element)
+
+    // Back on desktop, focus moves from the trigger to the rail's first row.
+    viewport.resize({ mobile: false })
+    await nextTick()
+    await nextTick()
+    expect(document.activeElement).toBe(wrapper.get('.fg-site-nav a').element)
   })
 
   it('closes the drawer on navigation and focuses the destination section', async () => {
