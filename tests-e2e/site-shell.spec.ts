@@ -254,6 +254,32 @@ test.describe('phone', () => {
     }
   })
 
+  test('leaves the strip where the reader scrolled it when late web fonts load', async ({ page }) => {
+    let release = (): void => {}
+    const held = new Promise<void>((resolve) => { release = resolve })
+    await page.route('**/*.woff2', async (route) => {
+      await held
+      await route.continue()
+    })
+    await page.setViewportSize({ width: 320, height: 844 })
+    // The load event waits for the fonts, so do not wait for it.
+    await page.goto(`${site}?pages=4&find`, { waitUntil: 'domcontentloaded' })
+    const strip = page.getByRole('navigation', { name: 'Site links' })
+    await expect(strip).toHaveAttribute('data-clip', /start/)
+    const scrollLeft = () => strip.evaluate(element => element.scrollLeft)
+    expect(await scrollLeft()).toBeGreaterThan(0)
+    await strip.hover()
+    await page.mouse.wheel(-2000, 0)
+    await expect.poll(scrollLeft).toBe(0)
+    release()
+    await page.evaluate(() => document.fonts.ready)
+    await page.evaluate(() => new Promise(requestAnimationFrame))
+    expect(await scrollLeft()).toBe(0)
+    // The fade still follows the loaded face: at the start, only the end edge hides links.
+    expect(await strip.evaluate(element => element.scrollWidth - element.clientWidth)).toBeGreaterThan(12)
+    await expect(strip).toHaveAttribute('data-clip', 'end')
+  })
+
   test('starts the strip with a late current page in view, without moving the page', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 844 })
     await page.goto(`${site}?pages=4&find`)

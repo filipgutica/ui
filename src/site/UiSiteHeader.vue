@@ -87,8 +87,14 @@ const revealCurrent = (): void => {
   const left = element.scrollLeft + (row.left + row.width / 2) - (box.left + box.width / 2)
   element.scrollTo({ left: Math.min(Math.max(left, 0), hidden), behavior: 'instant' })
 }
+// Once the reader moves the strip, it stays where they put it.
+let moved = false
+const markMoved = (): void => {
+  moved = true
+}
 useResizeObserver(strip, measureClip)
 useEventListener(strip, 'scroll', measureClip, { passive: true })
+useEventListener(strip, ['wheel', 'pointerdown', 'touchstart', 'keydown'], markMoved, { passive: true })
 // New or renamed links, and web fonts that finish loading after mount, change what the strip clips
 // without resizing it. The font listeners are added on mount.
 watch(() => links, measureClip, { deep: true, flush: 'post' })
@@ -124,9 +130,10 @@ onMounted(() => {
   measureClip()
   fonts = 'fonts' in document ? document.fonts : undefined
   fonts?.addEventListener('loadingdone', measureClip)
-  // The fallback face's widths placed the current page; place it again in the loaded face.
+  // The fallback face's widths placed the current page; place it again in the loaded face, unless
+  // the reader has moved the strip since.
   void fonts?.ready.then(() => {
-    revealCurrent()
+    if (!moved) revealCurrent()
     measureClip()
   })
 })
