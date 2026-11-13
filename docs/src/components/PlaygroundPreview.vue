@@ -296,18 +296,17 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
       </UiRadioCardGroup>
 
       <template v-else-if="slug === 'dialog'">
-        <UiButton
-          variant="secondary"
-          @click="dialogOpen = true"
-        >
-          Open dialog
-        </UiButton>
         <UiDialog
           :open="dialogOpen"
           :title="dialogTitle"
           :description="dialogDescription"
           @update:open="dialogOpen = $event"
         >
+          <template #trigger>
+            <UiButton variant="secondary">
+              Open dialog
+            </UiButton>
+          </template>
           Review the details before continuing.
           <template #footer>
             <UiButton

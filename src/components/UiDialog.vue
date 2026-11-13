@@ -6,6 +6,7 @@ import {
   DialogPortal,
   DialogRoot,
   DialogTitle,
+  DialogTrigger,
 } from 'reka-ui'
 
 import ModalOverlay from './ModalOverlay.vue'
@@ -23,6 +24,12 @@ const { description = undefined, open, title } = defineProps<UiDialogProps>()
 const emit = defineEmits<{
   (event: 'update:open', value: boolean): void
 }>()
+
+defineSlots<{
+  default(): unknown
+  footer?(): unknown
+  trigger?(): unknown
+}>()
 </script>
 
 <template>
@@ -30,6 +37,12 @@ const emit = defineEmits<{
     :open="open"
     @update:open="emit('update:open', $event)"
   >
+    <DialogTrigger
+      v-if="$slots.trigger"
+      as-child
+    >
+      <slot name="trigger" />
+    </DialogTrigger>
     <DialogPortal>
       <ModalOverlay class="fg-dialog__overlay" />
       <DialogContent

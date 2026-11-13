@@ -36,14 +36,31 @@ for (const { name, use, press } of modes) {
       // By CSS: while the dialog is open, the page behind it, the opener included, is aria-hidden.
       const opener = page.locator('#app > .fg-button')
       await expect(opener).toHaveText('Open dialog')
-      // From a focused control, as the docs ask: UiDialog has no trigger, so focus returns to the
-      // control that had it. A mouse click in WebKit does not focus a button.
+      // Legacy external opener: focus returns to the control that had it.
+      // A mouse click in WebKit does not focus a button.
       await opener.focus()
       await page.keyboard.press('Enter')
       const dialog = page.getByRole('dialog', { name: 'Remove theme' })
       await expect(dialog).toBeVisible()
       // Outside the dialog in both layouts, behind the backdrop.
       return { opener, openerCentre: await centre(opener), dialog }
+    }
+
+    for (const dismissal of ['Escape', 'close button', 'outside press'] as const) {
+      test(`returns focus after pointer opening and ${dismissal}`, async ({ page }) => {
+        await page.goto(fixture + '?trigger')
+        const opener = page.locator('#app > .fg-button')
+        await press(page, await centre(opener))
+        const dialog = page.getByRole('dialog', { name: 'Remove theme' })
+        await expect(dialog).toBeVisible()
+
+        if (dismissal === 'Escape') await page.keyboard.press('Escape')
+        else if (dismissal === 'close button') await press(page, await centre(dialog.getByRole('button', { name: 'Close dialog' })))
+        else await press(page, { x: 10, y: 10 })
+
+        await expect(dialog).toBeHidden()
+        await expect(opener).toBeFocused()
+      })
     }
 
     test('closes on a press outside, returns focus to the opener, and stays open on a press inside', async ({ page }) => {
@@ -91,3 +108,17 @@ test.describe('with a mouse', () => {
     await expect(dialog).toHaveAttribute('data-state', 'open')
   })
 })
+
+for (const width of [320, 390]) {
+  test(`keeps a plain dialog within a ${width}px viewport`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto(fixture)
+    await page.locator('#app > .fg-button').click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    const box = (await dialog.boundingBox())!
+    expect(box.width).toBeLessThanOrEqual(width)
+    expect(box.x).toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(width)
+  })
+}

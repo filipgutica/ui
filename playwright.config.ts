@@ -15,11 +15,11 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Only where WebKit behaves differently: a tap outside a dialog or the drawer.
+    // Dialog/drawer pointer dismissal, focus return, and standalone capture viewer sizing.
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testMatch: ['dialog.spec.ts', 'drawer.spec.ts'],
+      testMatch: ['dialog.spec.ts', 'drawer.spec.ts', 'capture-viewer.spec.ts'],
     },
   ],
   webServer: {
