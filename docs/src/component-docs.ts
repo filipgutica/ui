@@ -295,8 +295,8 @@ export const componentDocs: ComponentDoc[] = [
     usage: [
       'Use a dialog when the user must complete or dismiss a task before returning to the page.',
       'Keep content that does not require an interruption on the page.',
-      'Set open to true from your own trigger. Bind v-model:open so dismissal updates your state.',
-      'Open the dialog from a focused control so focus can return to that control after dismissal.',
+      'Bind v-model:open and put one button in the optional trigger slot. Activation opens the dialog; dismissal returns focus to that button, including pointer activation in WebKit.',
+      'External controls can still set open. Without the trigger slot, open from a focused control or restore focus with close-auto-focus.',
       'For tasks with actions, provide explicit controls in the footer slot.',
       'To resize the panel, pass class or style to UiDialog. These and other content attributes reach the dialog panel.',
     ],
@@ -306,6 +306,7 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'title', required: true, type: 'string', description: 'Visible heading that provides the dialog\'s accessible name. Supply a concise title that identifies the task.' },
     ],
     slots: [
+      { name: 'trigger', type: 'unknown', description: 'A single button that opens the dialog and receives focus after dismissal. Omit this slot when an external control sets open.' },
       { name: 'default', type: 'unknown', description: 'Task content in the scrollable body below the header.' },
       { name: 'footer', type: 'unknown', description: 'Actions below the body. The footer appears only when this slot exists. Action buttons must update open to close the dialog.' },
     ],
@@ -315,7 +316,7 @@ export const componentDocs: ComponentDoc[] = [
     example: {
       title: 'Confirmation',
       description: 'The body states what Remove will delete, with the destructive action in the footer.',
-      code: `<UiDialog v-model:open="open" title="Remove theme">\n  This removes the saved theme.\n  <template #footer>\n    <UiButton variant="danger">Remove</UiButton>\n  </template>\n</UiDialog>`,
+      code: `<UiDialog v-model:open="open" title="Remove theme">\n  <template #trigger>\n    <UiButton variant="secondary">Open dialog</UiButton>\n  </template>\n  This removes the saved theme.\n  <template #footer>\n    <UiButton variant="danger">Remove</UiButton>\n  </template>\n</UiDialog>`,
     },
   },
   {

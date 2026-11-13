@@ -1149,6 +1149,7 @@
   .fg-scrim { position: absolute; inset: 0; }
 
   .fg-dialog__content {
+    box-sizing: border-box;
     position: fixed;
     z-index: 51;
     top: 50%;

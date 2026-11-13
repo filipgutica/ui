@@ -81,6 +81,25 @@ right above the h1 of every page below a site's home page. `UiBreadcrumbs`
 renders without JavaScript, and `site.css` sets the trail in the monospace
 font.
 
+## Dialogs
+
+Bind `v-model:open` and put a single button in the optional `trigger` slot.
+The dialog opens on activation and returns focus to that button after Escape,
+the close button, or an outside press, including mouse clicks and touch taps in WebKit.
+
+```vue
+<UiDialog v-model:open="open" title="Remove theme" description="This removes the saved theme.">
+  <template #trigger>
+    <UiButton variant="secondary">Open dialog</UiButton>
+  </template>
+  Remove it from this browser only.
+</UiDialog>
+```
+
+External controls can still set `open`. Without the trigger slot, open from a
+focused control or use `@close-auto-focus` to restore focus yourself. WebKit
+pointer activation does not focus buttons. The optional `footer` slot holds actions.
+
 ## Themes
 
 Import a VS Code JSON or JSONC theme in the browser:
