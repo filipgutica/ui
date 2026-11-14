@@ -132,11 +132,14 @@ describe('UiCapture', () => {
     const dialog = document.querySelector<HTMLElement>('[role="dialog"]')
     const titleId = dialog?.getAttribute('aria-labelledby') ?? ''
     expect(document.getElementById(titleId)?.textContent?.trim()).toBe('Mark capture')
+    // The body is the one scroll region, named by the title.
+    expect(dialog?.querySelector('[role="region"]')?.getAttribute('aria-label')).toBe('Mark capture')
     expect(dialog?.querySelector('[role="region"]')?.textContent).toBe('mark screen')
     expect(dialog?.querySelector('[role="region"]')?.getAttribute('tabindex')).toBe('0')
 
-    const close = [...dialog?.querySelectorAll('button') ?? []].find(button => button.textContent?.trim() === 'Close capture')
-    close?.click()
+    // A viewer has no footer; its header close button closes it.
+    expect(dialog?.querySelector('.fg-dialog__footer')).toBeNull()
+    dialog?.querySelector<HTMLButtonElement>('[aria-label="Close dialog"]')?.click()
     await settleDialog()
 
     expect(document.querySelector('[role="dialog"]')).toBeNull()

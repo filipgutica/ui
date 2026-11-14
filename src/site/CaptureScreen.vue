@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
+import { MIN_FIT_SCALE } from '../full-size.js'
+
 const { html, label, fit } = defineProps<{
   html: string
   label: string
   /** Fits the capture to the available width when it remains readable. */
   fit: boolean
 }>()
-
-// Smaller scales make terminal text unreadable; let the capture scroll instead.
-const MIN_FIT_SCALE = 0.7
 
 const container = ref<HTMLElement>()
 const scale = ref(1)

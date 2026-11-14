@@ -100,6 +100,29 @@ External controls can still set `open`. Without the trigger slot, open from a
 focused control or use `@close-auto-focus` to restore focus yourself. WebKit
 pointer activation does not focus buttons. The optional `footer` slot holds actions.
 
+`UiImageViewer` opens a screenshot at full size in a viewer: a dialog with no
+footer, as wide and tall as the image up to the viewport, with a focusable body
+that scrolls both ways. Title it with a short name and keep the alt text on the
+image. Pass the full size in CSS pixels, half the pixel size of a 2x screenshot.
+The image fits the viewer's width while it keeps 70% of that size; below that,
+as on phones, it stays at full size and pans, so its text stays readable.
+`UiDialog` takes `variant="viewer"` for other full-size content.
+
+```vue
+<UiImageViewer
+  v-model:open="open"
+  title="Ticket screenshot"
+  src="/screenshots/ticket.png"
+  alt="A Ticket with its brief, Progress, and Threads"
+  :width="1280"
+  :height="800"
+>
+  <template #trigger>
+    <UiButton variant="secondary">Open screenshot</UiButton>
+  </template>
+</UiImageViewer>
+```
+
 ## Themes
 
 Import a VS Code JSON or JSONC theme in the browser:
@@ -357,7 +380,7 @@ This split is one of the library's own breakpoints; see
 `UiCapture` shows one panel: tabs in the header, the capture scaled to the panel
 width, and the `command` and `caption` slot below. `html` is trusted, checked-in
 terminal markup with a single root element. The Full size button at the end of
-the tab row, or a click on the capture, opens it at full size in a dialog, and
+the tab row, or a click on the capture, opens it at full size in a viewer, and
 focus returns to the button on close. A tap or a click outside the dialog
 closes it, in Safari and other WebKit browsers too. Phones show the button as an icon. `v-model`
 holds the active ID and defaults to the first item. Each capture has the ID

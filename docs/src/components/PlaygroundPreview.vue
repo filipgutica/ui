@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import sampleScreenshot from '../sample-screenshot.svg'
+
 import type { UiAlertProps, UiButtonProps, UiCodeBlockProps, UiControlSize, UiFigureProps } from '../../../src/index.js'
 
 import {
@@ -16,6 +18,7 @@ import {
   UiExample,
   UiField,
   UiFigure,
+  UiImageViewer,
   UiInput,
   UiProgress,
   UiRadioCard,
@@ -84,6 +87,7 @@ const segmentValue = ref('list')
 const figureProps = computed((): UiFigureProps => compact || numbered ? { number: 1 } : {})
 const dialogOpen = ref(false)
 const drawerOpen = ref(false)
+const imageViewerOpen = ref(false)
 const selectedTab = ref('list')
 
 type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'yaml' | 'css' | 'html' | 'bash' | 'text'
@@ -321,6 +325,22 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
           </template>
         </UiDialog>
       </template>
+
+      <UiImageViewer
+        v-else-if="slug === 'image-viewer'"
+        v-model:open="imageViewerOpen"
+        title="Sample screenshot"
+        :src="sampleScreenshot"
+        alt="A sample app showing a Ticket's brief, Progress, and Threads"
+        :width="1280"
+        :height="800"
+      >
+        <template #trigger>
+          <UiButton variant="secondary">
+            Open screenshot
+          </UiButton>
+        </template>
+      </UiImageViewer>
 
       <UiDrawer
         v-else-if="slug === 'drawer'"
