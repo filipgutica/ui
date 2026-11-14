@@ -15,11 +15,13 @@ export interface UiDialogProps {
   description?: string
   open: boolean
   title: string
+  /** `viewer` shows one screenshot or capture at full size: sized to its content, with a body that scrolls both ways. */
+  variant?: 'dialog' | 'viewer'
 }
 
 defineOptions({ inheritAttrs: false })
 
-const { description = undefined, open, title } = defineProps<UiDialogProps>()
+const { description = undefined, open, title, variant = 'dialog' } = defineProps<UiDialogProps>()
 
 const emit = defineEmits<{
   (event: 'update:open', value: boolean): void
@@ -48,7 +50,8 @@ defineSlots<{
       <DialogContent
         class="fg-dialog__content"
         aria-modal="true"
-        v-bind="$attrs"
+        :data-variant="variant === 'viewer' ? variant : undefined"
+        v-bind="{ ...(description ? {} : { 'aria-describedby': undefined }), ...$attrs }"
       >
         <div class="fg-dialog__header">
           <div>
@@ -77,7 +80,11 @@ defineSlots<{
             </svg>
           </DialogClose>
         </div>
-        <div class="fg-dialog__body">
+        <!-- A viewer's body is its scroll region, focusable so the arrow keys scroll it. -->
+        <div
+          class="fg-dialog__body"
+          v-bind="variant === 'viewer' ? { role: 'region', tabindex: 0, 'aria-label': title } : {}"
+        >
           <slot />
         </div>
         <div

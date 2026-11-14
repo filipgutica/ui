@@ -122,3 +122,37 @@ for (const width of [320, 390]) {
     expect(box.x + box.width).toBeLessThanOrEqual(width)
   })
 }
+
+// A 1280px screenshot fits a desktop viewer, which keeps it above 70% of its size, and stays at full
+// size on a phone, where fitting would shrink its text past reading.
+for (const { width, height, fits } of [
+  { width: 1280, height: 800, fits: true },
+  { width: 390, height: 844, fits: false },
+]) {
+  test(`an image viewer ${fits ? 'fits' : 'pans'} a 1280px screenshot at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height })
+    await page.goto(`${fixture}?image`)
+    await page.locator('#app > .fg-button').click()
+    const viewer = page.getByRole('dialog', { name: 'Ticket screenshot' })
+    await expect(viewer).toBeVisible()
+    await expect(viewer.locator('.fg-dialog__footer')).toHaveCount(0)
+    const box = (await viewer.boundingBox())!
+    expect(box.x).toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(width)
+    expect(box.y + box.height).toBeLessThanOrEqual(height)
+
+    const region = viewer.getByRole('region', { name: 'Ticket screenshot' })
+    await expect(region).toHaveAttribute('tabindex', '0')
+    const image = region.getByRole('img', { name: 'A Ticket with its brief, Progress, and Threads' })
+    const shown = (await image.boundingBox())!.width
+    const { clientWidth, scrollWidth } = await region.evaluate(element => ({ clientWidth: element.clientWidth, scrollWidth: element.scrollWidth }))
+    if (fits) {
+      expect(shown).toBeLessThanOrEqual(1280)
+      expect(shown).toBeGreaterThanOrEqual(1280 * 0.7)
+      expect(scrollWidth).toBe(clientWidth)
+    } else {
+      expect(shown).toBe(1280)
+      expect(scrollWidth).toBeGreaterThan(clientWidth)
+    }
+  })
+}

@@ -534,14 +534,9 @@
   /* Inset: the enhanced panel clips its content. */
   .fg-capture__screen:focus-visible,
   .fg-capture__expand:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
-  .fg-dialog__content.fg-capture-viewer {
-    width: calc(100vw - var(--space-8));
-    max-width: var(--page-max);
-    max-height: calc(100dvh - var(--space-8));
-  }
   .fg-capture-viewer .fg-capture__screen {
-    max-height: calc(100dvh - var(--space-16) * 3);
-    overflow: auto;
+    max-width: none;
+    overflow: visible;
     border-radius: var(--radius-inline);
   }
 
@@ -882,7 +877,6 @@
       height: 100%;
       transform: translateY(-50%);
     }
-    .fg-dialog__content.fg-capture-viewer { width: 100%; max-width: none; }
     /* Phones keep the icon; the accessible name still says Full size. */
     .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }
     .fg-capture__full { min-width: var(--control-lg); justify-content: center; }

@@ -301,9 +301,10 @@ export const componentDocs: ComponentDoc[] = [
       'To resize the panel, pass class or style to UiDialog. These and other content attributes reach the dialog panel.',
     ],
     props: [
-      { name: 'description', required: false, type: 'string', description: 'Supporting text beneath the title, linked through aria-describedby. Empty strings omit it. If omitted, pass :aria-describedby="undefined" to remove the unused reference.' },
+      { name: 'description', required: false, type: 'string', description: 'Supporting text beneath the title, linked through aria-describedby. Empty strings omit it, and the dialog drops the unused reference.' },
       { name: 'open', required: true, type: 'boolean', description: 'Controls visibility. By default, the open dialog traps focus and its content unmounts when closed.' },
       { name: 'title', required: true, type: 'string', description: 'Visible heading that provides the dialog\'s accessible name. Supply a concise title that identifies the task.' },
+      { name: 'variant', required: false, type: "'dialog' | 'viewer'", default: "'dialog'", description: 'viewer shows one screenshot or capture at full size: as wide and tall as its content up to the viewport, with a focusable body named by the title that scrolls both ways. A viewer has no footer. UiImageViewer uses it.' },
     ],
     slots: [
       { name: 'trigger', type: 'unknown', description: 'A single button that opens the dialog and receives focus after dismissal. Omit this slot when an external control sets open.' },
@@ -317,6 +318,39 @@ export const componentDocs: ComponentDoc[] = [
       title: 'Confirmation',
       description: 'The body states what Remove will delete, with the destructive action in the footer.',
       code: `<UiDialog v-model:open="open" title="Remove theme">\n  <template #trigger>\n    <UiButton variant="secondary">Open dialog</UiButton>\n  </template>\n  This removes the saved theme.\n  <template #footer>\n    <UiButton variant="danger">Remove</UiButton>\n  </template>\n</UiDialog>`,
+    },
+  },
+  {
+    category: 'Feedback',
+    slug: 'image-viewer',
+    name: 'UiImageViewer',
+    title: 'Image viewer',
+    summary: 'Opens a screenshot at full size in a viewer dialog.',
+    usage: [
+      'Open every screenshot that a page shows smaller than its full size in an image viewer.',
+      'Title it with the short name of what it shows, such as "Ticket screenshot". The alt text stays on the image.',
+      'Pass the full size in CSS pixels: half the pixel size of a 2x screenshot.',
+      'The image fits the viewer\'s width while it keeps 70% of its full size. Below that, as on phones, it stays at full size and the viewer scrolls both ways, so its text stays readable.',
+      'Put one button or link in the trigger slot, or set open from an external control and restore focus with close-auto-focus.',
+    ],
+    props: [
+      { name: 'alt', required: true, type: 'string', description: 'The image\'s alt text.' },
+      { name: 'height', required: true, type: 'number', description: 'Full-size height in CSS pixels.' },
+      { name: 'open', required: true, type: 'boolean', description: 'Controls visibility, as for UiDialog.' },
+      { name: 'src', required: true, type: 'string', description: 'The image URL.' },
+      { name: 'title', required: true, type: 'string', description: 'The viewer\'s title and accessible name: a short name such as "Ticket screenshot".' },
+      { name: 'width', required: true, type: 'number', description: 'Full-size width in CSS pixels.' },
+    ],
+    slots: [
+      { name: 'trigger', type: 'unknown', description: 'A single button or link that opens the viewer and receives focus after dismissal.' },
+    ],
+    events: [
+      { name: 'update:open', type: 'boolean', description: 'Requests an open-state change, as for UiDialog.' },
+    ],
+    example: {
+      title: 'Screenshot',
+      description: 'A 2x screenshot, 2560 pixels wide, opens at its 1280px full size.',
+      code: `<UiImageViewer\n  v-model:open="open"\n  title="Ticket screenshot"\n  src="/screenshots/ticket.png"\n  alt="A Ticket with its brief, Progress, and Threads"\n  :width="1280"\n  :height="800"\n>\n  <template #trigger>\n    <UiButton variant="secondary">Open screenshot</UiButton>\n  </template>\n</UiImageViewer>`,
     },
   },
   {

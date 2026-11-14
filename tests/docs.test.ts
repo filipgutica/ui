@@ -36,6 +36,7 @@ const exportedComponents = [
   'UiExample',
   'UiField',
   'UiFigure',
+  'UiImageViewer',
   'UiInput',
   'UiProgress',
   'UiRadioCard',

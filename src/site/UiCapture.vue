@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, useTemplateRef } from 'vue'
 
-import UiButton from '../components/UiButton.vue'
 import UiDialog from '../components/UiDialog.vue'
 import UiTabs from '../components/UiTabs.vue'
 import CaptureScreen from './CaptureScreen.vue'
@@ -179,25 +178,18 @@ onUnmounted(() => {
     <UiDialog
       v-model:open="viewerOpen"
       :title="`${viewed?.label ?? ''} capture`"
-      description="Scroll to read the full capture."
+      variant="viewer"
       class="fg-capture-viewer"
       @close-auto-focus="restoreViewerFocus"
     >
-      <CaptureScreen
+      <!-- The viewer's body is the scroll region, so the screen does not scroll or take focus itself. -->
+      <!-- eslint-disable vue/no-v-html -->
+      <div
         v-if="viewed"
-        :html="viewed.html"
-        :label="`${viewed.label} capture at full size`"
-        :fit="false"
+        class="fg-capture__screen"
+        v-html="viewed.html"
       />
-      <template #footer>
-        <UiButton
-          variant="secondary"
-          size="lg"
-          @click="viewerOpen = false"
-        >
-          Close capture
-        </UiButton>
-      </template>
+      <!-- eslint-enable vue/no-v-html -->
     </UiDialog>
   </div>
 </template>
