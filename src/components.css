@@ -1177,10 +1177,13 @@
   .fg-dialog__header { border-bottom: 1px solid var(--color-border-subtle); }
   .fg-dialog__footer { justify-content: flex-end; border-top: 1px solid var(--color-border-subtle); background: var(--color-surface); }
 
+  /* The title sets its whole type, so a site's own heading rules in the base layer cannot restyle it. */
   .fg-dialog__title {
     margin: 0;
+    font-family: var(--font-ui);
     font-size: 1.125rem;
     font-weight: 600;
+    line-height: var(--leading-tight);
     letter-spacing: -0.02em;
   }
 
