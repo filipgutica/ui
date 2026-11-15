@@ -367,16 +367,19 @@ Navigation rows in the rail and the drawer are `--row`
 (2.25rem) tall, and `--control-lg` at 800px and below.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
-Set `--color-project-dark` to the dark variant in both appearances, so prompts,
-capture tab underlines, and focus rings stay readable on terminal plates. The default hue
+Set `--color-project-dark` to the dark variant in both appearances, so capture tab
+underlines and focus rings stay readable on terminal captures. The default hue
 belongs to ui. Primary buttons use `--color-accent` with `--color-accent-text` in both appearances.
 Focus rings use `--color-focus`, the accent, at `--focus-width` with a `--focus-offset` gap.
 A focused field draws no ring: its edge turns accent, and its fill does not change.
-Command plates use `--color-command-bg` and `--color-command-border`, derived from the
-project hue. Terminal captures keep the neutral `--color-terminal` palette.
+Command plates are normal code blocks: they use the code well and follow the page
+appearance. `--color-command-bg` and `--color-command-border` remain as aliases for
+`--color-code` and `--color-border-subtle`. Terminal captures keep the neutral
+`--color-terminal` palette.
 
 Compact shell or plain-text `UiCodeBlock` rows and untitled shell blocks are
-terminal commands. Their CSS prompt stays out of copied and accessible text.
+terminal commands. Their `$` prompt, in `--color-accent`, is drawn by CSS and stays out
+of copied and accessible text.
 Typed source samples, including compact samples, use theme-matched syntax panels
 inset in the code block's frame. After a copy, Copy shows a tick for 1.5s.
 Default blocks with a title are source samples, including shell scripts.

@@ -116,9 +116,9 @@
   --color-accent-hover: var(--color-text);
   --color-project-dark: #a5a1ff;
   --color-status-ink: black;
-  /* Commands carry the project hue; terminal captures keep their neutral palette. */
-  --color-command-bg: color-mix(in srgb, var(--color-project) 25%, #101010);
-  --color-command-border: transparent;
+  /* Commands use the code well; terminal captures keep their neutral dark palette. */
+  --color-command-bg: var(--color-code);
+  --color-command-border: var(--color-border-subtle);
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
@@ -181,8 +181,8 @@
   --color-success-surface: #172d25;
   --color-info-surface: #202938;
   --color-status-ink: var(--color-text);
-  --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
-  --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
+  --color-command-bg: var(--color-code);
+  --color-command-border: var(--color-border-subtle);
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
