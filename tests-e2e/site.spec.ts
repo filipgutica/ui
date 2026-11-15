@@ -177,9 +177,10 @@ test('places the docs shell frame, rail, main, and footer on shared edges', asyn
 test('scrolls an overflowing desktop rail inside its divider, so the scrollbar sits clear of the border', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 160 })
   await page.goto(fixture)
-  // Scrolled down, the sticky rail sits at its top offset and must end inside the viewport.
-  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
-  const rail = await page.locator('.fg-site-rail').evaluate(element => {
+  // Mid-article, the sticky part of the rail, which draws the divider in the docs shell, sits at its
+  // top offset and must end inside the viewport.
+  await page.evaluate(() => scrollTo(0, 400))
+  const rail = await page.locator('.fg-site-rail__menu').evaluate(element => {
     const content = element.querySelector('.fg-site-rail__content')!
     return {
       railScrolls: element.scrollHeight > element.clientHeight,

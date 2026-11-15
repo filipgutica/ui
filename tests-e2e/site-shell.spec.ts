@@ -156,6 +156,27 @@ test.describe('desktop', () => {
     await expect(find(page)).toBeVisible()
     await expect(trigger(page)).toHaveCount(0)
   })
+
+  for (const height of [600, 800]) {
+    test(`keeps a rail taller than the window beside the article and above the footer at 1280x${height}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height })
+      await page.goto(`${fixture}&long`)
+      const nav = page.locator('.fg-site-rail__nav')
+      expect(await nav.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true)
+      // Mid-article, Find stays where it stuck.
+      await page.evaluate(() => scrollTo(0, 300))
+      const stuck = (await box(find(page))).y
+      await page.evaluate(() => scrollTo(0, 600))
+      expect((await box(find(page))).y).toBe(stuck)
+      // At the bottom, the rail, its divider, and its settings end at or above the footer rule.
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
+      const footer = (await box(page.locator('.fg-site-footer'))).y
+      for (const selector of ['.fg-site-rail', '.fg-site-rail__menu', '.fg-site-rail__foot']) {
+        const rail = await box(page.locator(selector))
+        expect(rail.y + rail.height, selector).toBeLessThanOrEqual(footer)
+      }
+    })
+  }
 })
 
 test.describe('phone', () => {

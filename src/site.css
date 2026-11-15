@@ -722,6 +722,17 @@
   /* No-JavaScript desktop: the rail's disclosure stays expanded. */
   @media (min-width: 801px) {
     .fg-site-rail { border-inline-end: 1px solid var(--color-border-subtle); padding-inline-end: var(--space-4); }
+    /* A sticky grid item is held by the whole grid, so in the docs shell the rail would stick on over
+     * the footer. There the rail fills its row beside main, and its menu takes the rail's box and
+     * sticks inside it, so it stops at the footer rule. */
+    .fg-site-docs > .fg-site-rail { position: static; align-self: stretch; padding: 0; border: 0; }
+    .fg-site-docs > .fg-site-rail > .fg-site-rail__menu {
+      position: sticky;
+      top: var(--space-6);
+      padding-block: var(--space-4);
+      padding-inline-end: var(--space-4);
+      border-inline-end: 1px solid var(--color-border-subtle);
+    }
     /* The links scroll, not the bordered rail, so an overlay scrollbar sits clear of the divider.
      * The scroller clips, so a 2px inset keeps the current row's lifted shadow whole. */
     .fg-site-rail__content { max-height: calc(100svh - var(--space-12) - var(--space-8)); overflow-y: auto; padding: 0.125rem; }
