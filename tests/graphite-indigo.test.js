@@ -4,10 +4,12 @@ import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 
 import { tokens } from '@filipgutica/design-system'
+import { themeVariables } from '@filipgutica/design-system/theme-mapper'
 import { describe, expect, it } from 'vitest'
 
 import { pinnedPackageRoot, renderTheme, renderThemeCss, vendorDesignSystem } from '../scripts/vendor-design-system.mjs'
-import { semanticCssVariables } from '../src/theme/index.ts'
+import { useSiteTokens } from '../scripts/theme-variables.mjs'
+import { parseVsCodeTheme } from '../src/theme/index.ts'
 import { contrast } from './contrast.ts'
 
 const read = (path) => readFileSync(resolve(process.cwd(), path), 'utf8')
@@ -17,17 +19,15 @@ const graphiteIndigo = tokens.themes['graphite-indigo']
 const variablesIn = (css) => new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(([, name]) => name))
 
 describe('Graphite Indigo files', () => {
-  it('give the library theme every role the theme importer controls', () => {
+  // Removing an imported theme falls back to these declarations, so each variable it sets needs one.
+  it('give the library theme every variable an imported theme sets, but the site hooks', () => {
     const defined = variablesIn(read('src/themes/graphite-indigo.css'))
-    // The importer still sets these retired aliases until it moves to the design-system mapper.
-    // No component reads them.
-    const retired = ['--color-button-bg', '--color-button-text', '--color-input-bg', '--color-input-text',
-      '--color-input-border', '--color-input-placeholder', '--color-row-selected-text', '--color-progress']
-    const missing = [
-      ...Object.values(semanticCssVariables).filter(variable => !retired.includes(variable)),
-      ...['comment', 'keyword', 'string', 'number', 'function', 'type', 'variable', 'operator', 'punctuation', 'tag', 'attribute']
-        .map(role => `--color-syntax-${role}`),
-    ].filter(variable => !defined.has(variable))
+    const imported = parseVsCodeTheme({
+      fileName: 'theme.json',
+      source: JSON.stringify({ colors: { 'editor.background': '#151515', 'editor.foreground': '#eeeeee' } }),
+    })
+    const missing = Object.keys(themeVariables(imported))
+      .filter(variable => !defined.has(variable) && !useSiteTokens.includes(variable))
 
     expect(missing).toEqual([])
   })

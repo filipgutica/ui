@@ -29,7 +29,8 @@ const count = ref(0)
 export const themeExample = `<script setup lang="ts">
 import { ref } from 'vue'
 import { UiAlert, UiButton } from '@filipgutica/ui'
-import { createOpenVsxThemeService } from '@filipgutica/ui/open-vsx'
+import { createOpenVsxThemeService } from '@filipgutica/design-system/open-vsx'
+import { mapVsCodeTheme } from '@filipgutica/design-system/theme-mapper'
 import { applySemanticTheme } from '@filipgutica/ui/theme'
 
 const themes = createOpenVsxThemeService()
@@ -44,7 +45,7 @@ async function installTheme() {
   if (result.status === 'error') {
     error.value = result.error.message
   } else if (result.status === 'success') {
-    applySemanticTheme({ root: document.documentElement, theme: result.theme })
+    applySemanticTheme({ root: document.documentElement, theme: mapVsCodeTheme(result.theme) })
   }
 }
 <` + `/script>

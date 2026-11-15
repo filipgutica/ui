@@ -275,6 +275,8 @@ pre,
 .add-theme-panel { display: grid; gap: var(--space-4); }
 .add-theme-panel__intro h3 { margin: 0; }
 .add-theme-panel__intro p { margin: var(--space-1) 0 0; color: var(--color-muted); }
+.theme-problems p { margin: 0; }
+.theme-problems ul { margin: var(--space-1) 0 0; padding-inline-start: var(--space-5); }
 .theme-search-field { position: relative; }
 .theme-search-field__icon { position: absolute; z-index: 1; top: 50%; left: var(--space-3); color: var(--color-muted); font-size: var(--text-xl); transform: translateY(-50%); }
 .theme-search-field .fg-input { min-height: var(--control-lg); padding-left: var(--space-12); }

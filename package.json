@@ -34,10 +34,6 @@
       "types": "./dist/site/index.d.ts",
       "import": "./dist/site.js"
     },
-    "./open-vsx": {
-      "types": "./dist/open-vsx/index.d.ts",
-      "import": "./dist/open-vsx.js"
-    },
     "./theme.css": "./src/theme.css",
     "./components.css": "./src/components.css",
     "./site.css": "./src/site.css",
@@ -82,10 +78,8 @@
   },
   "homepage": "https://github.com/filipgutica/ui#readme",
   "dependencies": {
-    "@filipgutica/design-system": "1.0.18",
+    "@filipgutica/design-system": "1.0.19",
     "@vueuse/core": "^14.4.0",
-    "jsonc-parser": "^3.3.1",
-    "jszip": "^3.10.1",
     "reka-ui": "^2.10.4",
     "shiki": "^3.23.0"
   },

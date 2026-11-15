@@ -1,6 +1,9 @@
+import { mapVsCodeTheme } from '@filipgutica/design-system/theme-mapper'
+
 import { isNormalizedTheme } from '../../src/theme/index.js'
 
-import type { NormalizedTheme, OpenVsxThemeSummary } from '../../src/theme/index.js'
+import type { OpenVsxThemeSummary, VsCodeTheme } from '@filipgutica/design-system/open-vsx'
+import type { NormalizedTheme } from '../../src/theme/index.js'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -13,6 +16,10 @@ const isThemeSummary = (value: unknown): value is OpenVsxThemeSummary =>
   && typeof value.description === 'string'
   && typeof value.downloadCount === 'number'
 
+// The import endpoint returns the design system's resolved theme, which the docs map here.
+const isVsCodeTheme = (value: unknown): value is VsCodeTheme =>
+  isRecord(value) && typeof value.name === 'string' && isRecord(value.colors)
+
 const readJson = async (response: Response): Promise<unknown> => {
   if (!response.ok) throw new Error('The docs theme service is unavailable.')
   return response.json()
@@ -21,7 +28,7 @@ const readJson = async (response: Response): Promise<unknown> => {
 // Pages has no API server. Load the same validated importer only when needed.
 const staticThemeService = async (signal?: AbortSignal) => {
   signal?.throwIfAborted()
-  const { createOpenVsxThemeService } = await import('../../src/open-vsx/index.js')
+  const { createOpenVsxThemeService } = await import('@filipgutica/design-system/open-vsx')
   signal?.throwIfAborted()
   return createOpenVsxThemeService({
     fetchImpl: (input, init) => fetch(input, {
@@ -71,8 +78,10 @@ export const importOpenVsxTheme = async ({
       `/api/open-vsx/import?${parameters}`,
       signal ? { signal } : undefined,
     ))
-  if (isRecord(result) && result.status === 'success' && isNormalizedTheme(result.theme)) {
-    return result.theme
+  if (isRecord(result) && result.status === 'success' && isVsCodeTheme(result.theme)) {
+    const theme = mapVsCodeTheme(result.theme)
+    // The same check the stored theme passes when the page loads again.
+    if (isNormalizedTheme(theme)) return theme
   }
   const error = isRecord(result) && isRecord(result.error) && typeof result.error.message === 'string'
     ? result.error.message

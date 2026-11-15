@@ -1,13 +1,17 @@
-import { createHash } from 'node:crypto'
-
 import { flushPromises, mount } from '@vue/test-utils'
-import JSZip from 'jszip'
 import { afterEach, expect, it, vi } from 'vitest'
 
 import { defineComponent, h, provide } from 'vue'
 
 import ThemesPage from '../docs/src/components/ThemesPage.vue'
 import { createDocsTheme, docsThemeKey } from '../docs/src/docs-theme.js'
+
+// The design system's Open VSX client reads the registry and the VSIX; its own tests cover that.
+// Here it stands in for the registry, so the test covers the docs' static wiring.
+const openVsx = vi.hoisted(() => ({
+  createOpenVsxThemeService: vi.fn(),
+}))
+vi.mock('@filipgutica/design-system/open-vsx', () => openVsx)
 
 afterEach(() => {
   vi.useRealTimers()
@@ -23,36 +27,18 @@ afterEach(() => {
 it('searches and installs an Open VSX theme on static Pages without a local API', async () => {
   vi.stubEnv('VITE_STATIC_HOST', 'true')
   localStorage.clear()
-  const manifest = {
-    publisher: 'example', name: 'nord', version: '1.0.0',
-    contributes: { themes: [{ label: 'Nord', uiTheme: 'vs-dark', path: './theme.json' }] },
+  const service = {
+    search: vi.fn(async (query: string) => ({ status: 'success', themes: query === 'Nord' ? [{
+      id: 'example.nord', name: 'Nord', publisher: 'example', description: 'Nord color theme', downloadCount: 100,
+    }] : [] })),
+    importTheme: vi.fn(async () => ({ status: 'success', theme: {
+      name: 'Nord', type: 'dark', colors: { 'editor.background': '#2e3440', 'editor.foreground': '#eceff4' },
+    } })),
   }
-  const zip = new JSZip()
-  zip.file('extension/package.json', JSON.stringify(manifest))
-  zip.file('extension/theme.json', JSON.stringify({
-    colors: { 'editor.background': '#2e3440', 'editor.foreground': '#eceff4' },
-  }))
-  const bytes = await zip.generateAsync({ type: 'uint8array' })
-  const checksum = createHash('sha256').update(bytes).digest('hex')
+  openVsx.createOpenVsxThemeService.mockReturnValue(service)
   vi.useFakeTimers()
-  const resources = 'https://openvsx.eclipsecontent.org/example/nord/1.0.0'
-  const fetchMock = vi.fn(async (input: string | URL | Request) => {
-    const url = new URL(String(input))
-    if (url.origin === 'https://open-vsx.org' && url.pathname === '/api/-/search') {
-      return new Response(JSON.stringify({ extensions: url.searchParams.get('query') === 'Nord' ? [{
-        namespace: 'example', name: 'nord', displayName: 'Nord', description: 'Nord color theme', downloadCount: 100,
-      }] : [] }))
-    }
-    if (url.href === 'https://open-vsx.org/api/example/nord') {
-      return new Response(JSON.stringify({ version: '1.0.0', files: {
-        manifest: `${resources}/package.json`, download: `${resources}/theme.vsix`, sha256: `${resources}/theme.sha256`,
-      } }))
-    }
-    if (url.href === `${resources}/package.json`) return new Response(JSON.stringify(manifest))
-    if (url.href === `${resources}/theme.vsix`) return new Response(new Uint8Array(bytes).buffer)
-    if (url.href === `${resources}/theme.sha256`) return new Response(checksum)
-    throw new Error(`Unexpected request: ${url.href}`)
-  })
+  // Any request through the page's own fetch would be a call to a local API.
+  const fetchMock = vi.fn(async () => new Response('{}'))
   vi.stubGlobal('fetch', fetchMock)
 
   const wrapper = mount(defineComponent({
@@ -73,11 +59,12 @@ it('searches and installs an Open VSX theme on static Pages without a local API'
     // The search request resolves through the data-fetching cache, which can take more than one flush.
     await vi.waitFor(() => expect(document.querySelector('.theme-results')?.textContent).toContain('Nord'))
     button('Install').click()
-    // ZIP decoding and Web Crypto complete asynchronously outside Vue's update queue.
     await vi.waitFor(() => expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Nord'))
     expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#2e3440')
     expect(JSON.parse(localStorage.getItem('filipgutica-ui-installed-themes')!)[0].id).toBe('example.nord')
-    expect(fetchMock.mock.calls.every(([url]) => String(url).startsWith('https://'))).toBe(true)
+    expect(service.importTheme).toHaveBeenCalledWith('example.nord', 'light')
+    expect(openVsx.createOpenVsxThemeService).toHaveBeenCalledWith({ fetchImpl: expect.any(Function) })
+    expect(fetchMock).not.toHaveBeenCalled()
   } finally {
     wrapper.unmount()
   }

@@ -115,13 +115,28 @@ const theme = parseVsCodeTheme({ source, fileName })
 applySemanticTheme({ root: document.documentElement, theme })
 ```
 
-The theme must define a background color and a foreground color, such as
-`editor.background` and `editor.foreground`.
+[`@filipgutica/design-system`](https://github.com/filipgutica/design-system)
+parses and maps the theme; this library applies it. The theme must define
+`editor.background` and a text colour that reads on it, or
+`parseVsCodeTheme` throws a `ThemeValidationError` with the code
+`missing-colors`. A file it cannot read throws `malformed-json` or
+`invalid-shape`.
+
+The mapper selects the theme's own colours and never alters them. Links,
+status colours, and terminal colours stay the design system's. Syntax colours
+stay the theme's own. `theme.problems` lists each contrast check the theme
+fails; the theme still applies.
+
+`applySemanticTheme` sets the theme's design-system variables inline on the
+root, and the `.dark` and `.high-contrast` classes. Passing `theme: null`
+clears them. Use `isNormalizedTheme` to check a theme read back from storage.
 
 To let people search for and import themes from Open VSX, use
-`createOpenVsxThemeService` from `@filipgutica/ui/open-vsx`. It runs on Node or
-in a browser with HTTPS and Web Crypto. In a browser, it works only when the
-registry and its resource host allow cross-origin requests.
+`createOpenVsxThemeService` from `@filipgutica/design-system/open-vsx`, and
+map each imported theme with `mapVsCodeTheme` from
+`@filipgutica/design-system/theme-mapper`. The service runs on Node or in a browser with HTTPS
+and Web Crypto. In a browser, it works only when the registry and its resource
+host allow cross-origin requests.
 
 The theme search-and-install dialog on the docs site is not exported. Build
 your own picker from the exported components and theme helpers.

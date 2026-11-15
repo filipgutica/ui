@@ -31,7 +31,7 @@ export const createDocsTheme = () => {
 
   const preferredAppearance = computed<'light' | 'dark'>(() => {
     const activeTheme = activeInstalledTheme.value?.theme
-    if (activeTheme) return activeTheme.appearance.includes('dark') ? 'dark' : 'light'
+    if (activeTheme) return activeTheme.appearance
     return schemeAppearance.value
   })
 
