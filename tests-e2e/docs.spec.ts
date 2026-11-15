@@ -309,21 +309,15 @@ test('rings quiet actions in the accent, like every control', async ({ page }) =
   await page.keyboard.press('Tab')
   await expect(copy).toBeFocused()
   await expect(copy).toHaveCSS('outline-color', await ink())
-  // On the dark command plate the ring takes the dark-theme accent.
+  // A command is a normal code block, so its ring is the accent too.
   await page.getByLabel('Variant', { exact: true }).selectOption('compact')
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
+  await expect(block).toHaveAttribute('data-command', 'true')
   await copy.focus()
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Tab')
   await expect(copy).toBeFocused()
-  const plateInk = await block.evaluate(element => {
-    const probe = element.appendChild(document.createElement('i'))
-    probe.style.color = 'var(--color-project-dark)'
-    const color = getComputedStyle(probe).color
-    probe.remove()
-    return color
-  })
-  await expect(copy).toHaveCSS('outline-color', plateInk)
+  await expect(copy).toHaveCSS('outline-color', await ink())
 
   await page.goto('/#/sandbox/drawer')
   await page.locator('.playground-stage').getByRole('button', { name: 'Open drawer' }).click()
@@ -383,7 +377,7 @@ test('rings a checked checkbox and switch in the system text colour in forced co
 test('leaves a disabled quiet action without hover or press fills', async ({ page }) => {
   await page.goto('/#/sandbox/code-block')
   const copy = page.locator('.playground-stage .fg-code-block').getByRole('button', { name: 'Copy code' })
-  // On the dark command plate, an enabled Copy keeps the plate's text colour on hover.
+  // On a command, an enabled Copy keeps the block's text colour on hover.
   await page.getByLabel('Variant', { exact: true }).selectOption('compact')
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
   const block = page.locator('.playground-stage .fg-code-block')

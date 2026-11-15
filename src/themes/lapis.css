@@ -50,8 +50,8 @@
   --color-terminal-caption: #13171a;
   --color-terminal-caption-text: #c9d0d6;
   --color-accent-hover: var(--color-text);
-  --color-command-bg: color-mix(in srgb, var(--color-project) 25%, #101010);
-  --color-command-border: transparent;
+  --color-command-bg: var(--color-code);
+  --color-command-border: var(--color-border-subtle);
   --text-3xl: 2.75rem;
   --text-reading: 1rem;
   --text-display: 3.5rem;
@@ -112,8 +112,8 @@
   --color-terminal-caption: #13171a;
   --color-terminal-caption-text: #c9d0d6;
   --color-accent-hover: var(--color-text);
-  --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
-  --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
+  --color-command-bg: var(--color-code);
+  --color-command-border: var(--color-border-subtle);
   --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
