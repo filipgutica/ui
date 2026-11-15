@@ -377,7 +377,7 @@ test('rings a checked checkbox and switch in the system text colour in forced co
 test('leaves a disabled quiet action without hover or press fills', async ({ page }) => {
   await page.goto('/#/sandbox/code-block')
   const copy = page.locator('.playground-stage .fg-code-block').getByRole('button', { name: 'Copy code' })
-  // On the dark command plate, an enabled Copy keeps the plate's text colour on hover.
+  // On a command, an enabled Copy keeps the block's text colour on hover.
   await page.getByLabel('Variant', { exact: true }).selectOption('compact')
   await page.getByLabel('Language', { exact: true }).selectOption('bash')
   const block = page.locator('.playground-stage .fg-code-block')

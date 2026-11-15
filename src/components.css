@@ -28,7 +28,13 @@
   }
   /* The header sits on the frame, so the frame drops its top padding under one. */
   .fg-code-block[data-variant="default"] { padding-top: 0; }
-  /* A command is a normal code block; only its CSS prompt marks it. */
+  /* A command is a normal code block; only its CSS prompt marks it. Its well and edge read
+   * --color-command-bg and --color-command-border, which default to --color-code and
+   * --color-border-subtle, so a site that overrides them still restyles its commands. */
+  .fg-code-block[data-command="true"] {
+    --color-code: var(--color-command-bg);
+    border-color: var(--color-command-border);
+  }
   .fg-code-block[data-command="true"] .fg-code-block__line::before {
     content: '$ ' / '';
     flex: none;

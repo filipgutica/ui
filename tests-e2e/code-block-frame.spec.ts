@@ -73,7 +73,7 @@ test.describe('code block frame', () => {
     expect(await geometry(bare)).toEqual({ frame: '16px', panel: '12px', top: 4, left: 4, bottom: 4, right: 4, copyRight: null })
   })
 
-  test('the frame is raised with a subtle edge, and the command plate darkens its panel', async ({ page }) => {
+  test('the frame is raised with a subtle edge, and a command uses the same frame, well, and edge', async ({ page }) => {
     for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme })
       const block = await sandbox(page, { variant: 'default' })
@@ -90,9 +90,26 @@ test.describe('code block frame', () => {
 
       const command = await sandbox(page, { variant: 'compact', language: 'bash' })
       await expect(command).toHaveAttribute('data-command', 'true')
-      const [plate, panel] = await Promise.all([hexOf(command, 'backgroundColor'), hexOf(command.locator('pre'), 'backgroundColor')])
-      expect(panel, `${colorScheme} command panel`).not.toBe(plate)
+      await expect(command, `${colorScheme} command`).toHaveCSS('background-color', tokens.raised)
+      await expect(command, `${colorScheme} command`).toHaveCSS('border-top-color', tokens.edge)
+      await expect(command.locator('pre'), `${colorScheme} command`).toHaveCSS('background-color', tokens.code)
     }
+  })
+
+  test('the command aliases still restyle only commands', async ({ page }) => {
+    const command = await sandbox(page, { variant: 'compact', language: 'bash' })
+    await expect(command).toHaveAttribute('data-command', 'true')
+    await page.evaluate(() => {
+      document.documentElement.style.setProperty('--color-command-bg', 'rgb(1, 2, 3)')
+      document.documentElement.style.setProperty('--color-command-border', 'rgb(4, 5, 6)')
+    })
+    await expect(command.locator('pre')).toHaveCSS('background-color', 'rgb(1, 2, 3)')
+    await expect(command).toHaveCSS('border-top-color', 'rgb(4, 5, 6)')
+    // The same block as typed source, on the same page, keeps the code well and edge.
+    await page.getByLabel('Language', { exact: true }).selectOption('typescript')
+    await expect(command).not.toHaveAttribute('data-command', 'true')
+    await expect(command.locator('pre')).not.toHaveCSS('background-color', 'rgb(1, 2, 3)')
+    await expect(command).not.toHaveCSS('border-top-color', 'rgb(4, 5, 6)')
   })
 
   test('a live example source stays flat and flush with its frame', async ({ page }) => {
