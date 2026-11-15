@@ -16,7 +16,8 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue', '@vueuse/core', 'reka-ui', 'jsonc-parser', 'jszip', /^shiki\//],
+      // A regex, so the design system's subpath exports, such as /theme-mapper, stay external too.
+      external: ['vue', '@vueuse/core', 'reka-ui', 'jsonc-parser', 'jszip', /^shiki\//, /^@filipgutica\/design-system(\/|$)/],
       output: {
         entryFileNames: '[name].js',
       },

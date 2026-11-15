@@ -5,7 +5,11 @@
     {
       "description": "design-system restarted its versions at 1.0.x. The 1.1.0 to 2.4.0 releases are deprecated and older, so Renovate offers 1.0.x only.",
       "matchPackageNames": ["@filipgutica/design-system"],
-      "allowedVersions": "/^1\\.0\\./"
+      "allowedVersions": "/^1\\.0\\./",
+      "semanticCommitType": "fix",
+      "prBodyNotes": [
+        "Before merging, read the design-system release notes for every version in this range. If one changes an export, a theme file, a token name, or a type that `./theme` re-exports, push an empty `fix(deps)!:` commit to this branch whose footer starts with the `BREAKING CHANGE` token and a colon, then says what consumers must change, in one line under 100 characters. Merge with a merge commit, never a rebase merge. Otherwise merge as is: this PR's `fix(deps)` commit releases a patch."
+      ]
     }
   ]
 }

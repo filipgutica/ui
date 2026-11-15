@@ -70,6 +70,8 @@
   --space-24: 6rem;
   --row: 2.25rem;
   --page-wide: 1120px;
+  --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 :root.dark {
@@ -130,4 +132,6 @@
   --color-accent-hover: var(--color-text);
   --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
   --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
+  --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }

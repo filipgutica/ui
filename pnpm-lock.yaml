@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@filipgutica/design-system':
+        specifier: 1.0.18
+        version: 1.0.18
       '@vueuse/core':
         specifier: ^14.4.0
         version: 14.4.0(vue@3.5.42(typescript@5.9.3))
@@ -36,9 +39,6 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0))
-      '@filipgutica/design-system':
-        specifier: 1.0.13
-        version: 1.0.13
       '@playwright/test':
         specifier: ^1.62.1
         version: 1.62.1
@@ -272,8 +272,8 @@ packages:
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@filipgutica/design-system@1.0.13':
-    resolution: {integrity: sha512-m7+fXRU6Q2AyEk7onyWe3VlmJn+a3DFabKex8SsP3Q+69y5f2EgTGiZ2SttmzLG7xqhwdNCZSLWqMwxL59QELQ==}
+  '@filipgutica/design-system@1.0.18':
+    resolution: {integrity: sha512-X8VSF3O0LCKQjHP5NuNaYFdPTsVpiDSSfPf7snGi+cSBGyzL5iumdy2vr7Z6d4PN9+pZKbIwf25VlvCGESbfyA==}
     engines: {node: '>=22.12'}
 
   '@floating-ui/core@1.8.0':
@@ -3070,7 +3070,9 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@filipgutica/design-system@1.0.13': {}
+  '@filipgutica/design-system@1.0.18':
+    dependencies:
+      jsonc-parser: 3.3.1
 
   '@floating-ui/core@1.8.0':
     dependencies:

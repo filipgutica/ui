@@ -1,24 +1,24 @@
-/* Generated from tokens/core.json and tokens/themes/pine.json by scripts/build-tokens.mjs in @filipgutica/design-system. Do not edit.
- * Opt-in Pine roles for the class flavour. Import after class/base.css (theme.css in @filipgutica/ui).
+/* Generated from tokens/core.json and tokens/themes/github.json by scripts/build-tokens.mjs in @filipgutica/design-system. Do not edit.
+ * Opt-in Github roles for the class flavour. Import after class/base.css (theme.css in @filipgutica/ui).
  * Dark mode uses the same .dark class as the base. Keep exactly one :root.dark block:
  * sites copy it into a <noscript> prefers-color-scheme rule. */
 
 :root {
   color-scheme: light;
-  --color-project: #00543f;
-  --color-project-dark: #3fe0c0;
-  --color-bg: #f4f5f6;
-  --color-surface: #e9ebed;
-  --color-surface-raised: #fbfbfc;
-  --color-surface-muted: #e2e5e8;
-  --color-text: #101315;
-  --color-muted: #50575e;
+  --color-project: #1f883d;
+  --color-project-dark: #3fb950;
+  --color-bg: #ffffff;
+  --color-surface: #f6f8fa;
+  --color-surface-raised: #ffffff;
+  --color-surface-muted: #eff2f5;
+  --color-text: #1f2328;
+  --color-muted: #59636e;
   --color-link: #0b5f7c;
   --color-accent: var(--color-project);
   --color-accent-text: var(--color-bg);
   --color-focus: var(--color-accent);
-  --color-border: #6d747b;
-  --color-border-subtle: #d3d8dd;
+  --color-border: #818b98;
+  --color-border-subtle: #d1d9e0;
   --color-button-bg: var(--color-accent);
   --color-button-text: var(--color-accent-text);
   --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
@@ -26,7 +26,7 @@
   --color-input-text: var(--color-text);
   --color-input-border: var(--color-border);
   --color-input-placeholder: var(--color-muted);
-  --color-row-hover: #e2e5e8;
+  --color-row-hover: #eff2f5;
   --color-row-selected: var(--color-surface-raised);
   --color-row-selected-text: var(--color-text);
   --color-code: var(--color-surface);
@@ -70,24 +70,27 @@
   --space-24: 6rem;
   --row: 2.25rem;
   --page-wide: 1120px;
+  --font-ui: "Mona Sans VF", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Backtick Fix", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --color-nav-current-text: var(--color-text);
 }
 
 :root.dark {
   color-scheme: dark;
   --color-project: var(--color-project-dark);
-  --color-project-dark: #3fe0c0;
-  --color-bg: #0d1012;
-  --color-surface: #13171a;
-  --color-surface-raised: #181d21;
-  --color-surface-muted: #20262b;
-  --color-text: #e6e9eb;
-  --color-muted: #9aa3ab;
+  --color-project-dark: #3fb950;
+  --color-bg: #0d1117;
+  --color-surface: #151b23;
+  --color-surface-raised: #151b23;
+  --color-surface-muted: #212830;
+  --color-text: #f0f6fc;
+  --color-muted: #9198a1;
   --color-link: #67c1df;
   --color-accent: var(--color-project);
   --color-accent-text: var(--color-bg);
   --color-focus: var(--color-accent);
-  --color-border: #78818a;
-  --color-border-subtle: #262d33;
+  --color-border: #656c76;
+  --color-border-subtle: #3d444d;
   --color-button-bg: var(--color-accent);
   --color-button-text: var(--color-accent-text);
   --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
@@ -95,7 +98,7 @@
   --color-input-text: var(--color-text);
   --color-input-border: var(--color-border);
   --color-input-placeholder: var(--color-muted);
-  --color-row-hover: #20262b;
+  --color-row-hover: #262c36;
   --color-row-selected: var(--color-surface-raised);
   --color-row-selected-text: var(--color-text);
   --color-code: var(--color-surface);
@@ -130,4 +133,7 @@
   --color-accent-hover: var(--color-text);
   --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
   --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
+  --font-ui: "Mona Sans VF", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Backtick Fix", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --color-nav-current-text: var(--color-accent);
 }
