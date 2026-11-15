@@ -21,7 +21,8 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
 // ?shell keeps the rail's rows in place without JavaScript (headerMenu), and ?find gives it Find with
 // grouped, searchable rows. ?pages gives the header the design system site's project and five pages,
 // which clip at 320px; ?pages=4 makes the fifth current instead of the second. ?tool gives it a tool
-// site's project and two links, as annoterm has.
+// site's project and two links, as annoterm has. ?long adds six groups to the rail, so it is taller
+// than a short window, as the design-system catalogue's is.
 const params = new URLSearchParams(location.search)
 const shell = params.has('shell')
 const find = params.has('find') ? { label: 'Find a section', noun: 'section' } : undefined
@@ -42,6 +43,12 @@ const groups = find
       { label: 'Reference', items: [{ label: 'Start with the guide', href: '#inline-steps' }, { label: 'Commands', href: '#commands', terms: 'cli flags' }] },
     ]
   : [{ items: [{ label: 'Install', href: '#install' }, { label: 'Commands', href: '#commands' }] }]
+const more = params.has('long')
+  ? Array.from({ length: 6 }, (_, group) => ({
+      label: `More ${group + 1}`,
+      items: Array.from({ length: 4 }, (_, row) => ({ label: `Topic ${group * 4 + row + 1}`, href: `#topic-${group * 4 + row + 1}` })),
+    }))
+  : []
 </script>
 
 <template>
@@ -54,7 +61,7 @@ const groups = find
     />
     <UiSiteNav
       label="On this page"
-      :groups="groups"
+      :groups="[...groups, ...more]"
       :find="find"
       :header-menu="shell"
     />
