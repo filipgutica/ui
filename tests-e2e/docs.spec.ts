@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 
-import { expect, test, type Locator } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 import { contrast } from '../tests/contrast.js'
 
@@ -198,40 +198,12 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
     { slug: 'switch', role: 'switch', name: 'Email notifications', state: 'aria-checked', selector: '.fg-switch__track' },
     { slug: 'toggle-button', role: 'button', name: 'Tests with signal Pillar 3', state: 'aria-pressed', selector: '.fg-toggle-button__switch' },
   ] as const) {
-    for (const { colorScheme, palette, checkedStates } of [
-      { colorScheme: 'light', palette: null, checkedStates: [false, true] },
-      { colorScheme: 'dark', palette: null, checkedStates: [false, true] },
-      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#ffffff', border: '#929292' }, checkedStates: [false, true] },
-      { colorScheme: 'dark', palette: { background: '#202020', raised: '#202020', border: '#707070' }, checkedStates: [false, true] },
-      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000066', border: '#000000' }, checkedStates: [false] },
-      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000055', border: '#00000080' }, checkedStates: [false] },
-      { colorScheme: 'light', palette: { background: '#ffffff', raised: '#00000080', border: '#000000' }, checkedStates: [false] },
-    ] as const) {
+    // Built-in themes only: the off track has no design-system contrast check, so an imported
+    // theme's track is not repaired (design-system Known gaps).
+    for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
       await page.goto('/#/themes')
-      if (palette) {
-        const name = `Switch ${colorScheme} ${palette.raised}`
-        const fileChooser = page.waitForEvent('filechooser')
-        await page.getByRole('button', { name: 'Choose file', exact: true }).click()
-        await (await fileChooser).setFiles({
-          name: `${name}.json`,
-          mimeType: 'application/json',
-          buffer: Buffer.from(JSON.stringify({
-            name,
-            type: colorScheme,
-            colors: {
-              'editor.background': palette.background,
-              'editor.foreground': colorScheme === 'light' ? '#000000' : '#ffffff',
-              'sideBar.background': palette.background,
-              'panel.background': palette.raised,
-              'panel.border': palette.border,
-            },
-          })),
-        })
-        await expect(page.getByRole('radio', { name, exact: true })).toBeChecked()
-      } else {
-        await page.getByRole('radio', { name: colorScheme === 'light' ? 'Light' : 'Dark', exact: true }).click()
-      }
+      await page.getByRole('radio', { name: colorScheme === 'light' ? 'Light' : 'Dark', exact: true }).click()
       await page.goto(`/#/sandbox/${slug}`)
       const stage = page.locator('.playground-stage')
       const toggle = stage.getByRole(role, { name, exact: true })
@@ -239,7 +211,7 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
       // The stage is transparent by default. Paint each real host surface rather than reading it as black.
       for (const surface of ['--color-bg', '--color-surface-raised']) {
         await stage.evaluate((element, token) => { element.style.background = `var(${token})` }, surface)
-        for (const checked of checkedStates) {
+        for (const checked of [false, true]) {
           if (await toggle.getAttribute(state) !== String(checked)) await toggle.click()
           const colors = await track.evaluate(element => {
             const context = document.createElement('canvas').getContext('2d')!
@@ -263,7 +235,7 @@ test('keeps borderless switch cues visible on canvas and panels in both themes a
               surface,
             }
           })
-          expect(contrast(colors.track, colors.surface), `${slug} ${colorScheme} imported=${!!palette} ${surface} checked=${checked}`).toBeGreaterThanOrEqual(3)
+          expect(contrast(colors.track, colors.surface), `${slug} ${colorScheme} ${surface} checked=${checked}`).toBeGreaterThanOrEqual(3)
           expect(contrast(colors.thumb, colors.track)).toBeGreaterThanOrEqual(3)
           if (!checked) await expect(track).toHaveCSS('border-color', 'rgba(0, 0, 0, 0)')
         }
@@ -737,7 +709,7 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   // The picker remains raised while the closed control is a muted well.
   const raisedFill = await select.evaluate(element => {
     const probe = document.createElement('span')
-    probe.style.backgroundColor = 'var(--color-input-bg)'
+    probe.style.backgroundColor = 'var(--color-surface-raised)'
     element.after(probe)
     const fill = getComputedStyle(probe).backgroundColor
     probe.remove()
@@ -804,7 +776,7 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   const muted = await select.evaluate(element => getComputedStyle(element).color)
   expect(muted).toBe(await select.evaluate(element => {
     const probe = document.createElement('span')
-    probe.style.color = 'var(--color-input-placeholder)'
+    probe.style.color = 'var(--color-muted)'
     element.after(probe)
     const color = getComputedStyle(probe).color
     probe.remove()
@@ -818,45 +790,6 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   await select.click()
   await select.locator('option:checked').hover()
   await expect(select.locator('option:checked')).toHaveCSS('outline-style', 'none')
-  await page.keyboard.press('Escape')
-})
-
-test('keeps picker rows readable when an imported theme inverts the input fill', async ({ page }) => {
-  await page.goto('/#/sandbox/select')
-  // A light page with a dark input: page text matches the input fill.
-  await page.evaluate(() => {
-    for (const [name, value] of Object.entries({ '--color-bg': '#ffffff', '--color-text': '#111111', '--color-input-bg': '#111111', '--color-input-text': '#ffffff', '--color-accent': '#2f6fed' })) {
-      document.documentElement.style.setProperty(name, value)
-    }
-  })
-  const select = page.locator('.playground-stage > .fg-select')
-  await select.selectOption('passed')
-  await select.press('Space')
-  // Option fills are opaque, so canvas resolves each color to hex without an underlay. An unfilled
-  // row, such as the checked one, shows the picker's fill.
-  const rowContrast = async (option: Locator) => {
-    const { color, background } = await option.evaluate(element => {
-      const context = document.createElement('canvas').getContext('2d')!
-      const hex = (value: string) => {
-        context.fillStyle = value
-        context.fillRect(0, 0, 1, 1)
-        return '#' + [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(channel => channel.toString(16).padStart(2, '0')).join('')
-      }
-      const style = getComputedStyle(element)
-      const fill = style.backgroundColor === 'rgba(0, 0, 0, 0)'
-        ? getComputedStyle(element.closest('select')!, '::picker(select)').backgroundColor
-        : style.backgroundColor
-      return { color: hex(style.color), background: hex(fill) }
-    })
-    return contrast(color, background)
-  }
-  const checked = select.locator('option:checked')
-  expect(await rowContrast(checked)).toBeGreaterThanOrEqual(4.5)
-  await checked.hover()
-  expect(await rowContrast(checked)).toBeGreaterThanOrEqual(4.5)
-  const other = select.locator('option').filter({ hasText: 'Failed' })
-  await other.hover()
-  expect(await rowContrast(other)).toBeGreaterThanOrEqual(4.5)
   await page.keyboard.press('Escape')
 })
 

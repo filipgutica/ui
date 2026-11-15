@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { contrast, mix } from './contrast.js'
+import { contrast } from './contrast.js'
 
 const source = readFileSync(resolve(process.cwd(), 'src/theme.css'), 'utf8')
 
@@ -33,15 +33,14 @@ describe.each([
     ['--color-muted', '--color-bg'],
     ['--color-link', '--color-bg'],
     ['--color-accent', '--color-bg'],
-    ['--color-input-text', '--color-input-bg'],
-    ['--color-button-text', '--color-button-bg'],
+    ['--color-text', '--color-surface-raised'],
+    ['--color-accent-text', '--color-accent'],
   ])('keeps %s readable against %s', (foreground, background) => {
     expect(contrast(tokens[foreground]!, tokens[background]!)).toBeGreaterThanOrEqual(4.5)
   })
 
   it.each([
     ['--color-border', '--color-surface-raised'],
-    ['--color-input-border', '--color-input-bg'],
     ['--color-focus', '--color-bg'],
     ['--color-focus', '--color-surface'],
     ['--color-focus', '--color-surface-raised'],
@@ -50,9 +49,8 @@ describe.each([
   })
 
   // The checked option has no fill, so its accent check carries the state on the picker and on a hovered row.
-  it.each([0, 0.08])('keeps the select check visible on the picker with a %s text tint', ratio => {
-    const fill = mix(tokens['--color-text']!, tokens['--color-input-bg']!, ratio)
-    expect(contrast(tokens['--color-accent']!, fill)).toBeGreaterThanOrEqual(3)
+  it.each(['--color-surface-raised', '--color-row-hover'])('keeps the select check visible on the picker fill %s', fill => {
+    expect(contrast(tokens['--color-accent']!, tokens[fill]!)).toBeGreaterThanOrEqual(3)
   })
 
   it('keeps danger text readable on its semantic surface', () => {

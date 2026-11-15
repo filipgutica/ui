@@ -8,8 +8,8 @@
 //
 // A token and the ui variable of the same name are one variable.
 // - src/theme.css stays hand-written. The script rewrites only the value of each :root and
-//   :root.dark declaration of a token or a component role. Declarations of other variables are
-//   ui's own, and every other byte stays as written.
+//   :root.dark declaration of a token. Declarations of other variables are ui's own, and every
+//   other byte stays as written.
 // - src/themes/<id>.css is one theme for sites that toggle a .dark class: themeVariables, plus
 //   every other variable the package's themes/<id>.css sets, with the values of tokens.css and that
 //   file in light and in dark. A .css file there that matches no package theme is removed.
@@ -21,7 +21,7 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { componentRoles, ownVariables, themeOnlyTokens, themeVariables, useSiteTokens } from './theme-variables.mjs'
+import { ownVariables, themeOnlyTokens, themeVariables, useSiteTokens } from './theme-variables.mjs'
 
 const PACKAGE = '@filipgutica/design-system'
 
@@ -82,20 +82,20 @@ const tokenValues = ({ tokensCss, inputsCss, inputsFile }) => {
     for (const [name, value] of inputs) light.set(name, value)
   }
 
-  const mapped = [...themeVariables.filter((name) => componentRoles[name] === undefined),
-    ...Object.values(componentRoles), ...themeOnlyTokens, ...useSiteTokens]
-  for (const name of mapped) if (!light.has(name)) throw new Error(`tokens.css does not declare ${name}`)
+  for (const name of [...themeVariables, ...themeOnlyTokens, ...useSiteTokens]) {
+    if (!light.has(name)) throw new Error(`tokens.css does not declare ${name}`)
+  }
 
   return { light, dark: (name) => themeDark.get(name) ?? dark.get(name) ?? light.get(name), themeNames }
 }
 
 const fillRule = ({ body, mode, values }) => body.replace(declaration, (line, indent, name, current, rest) => {
   const entry = values.get(name)
-  if (entry === undefined || (entry.token !== undefined && current === `var(${entry.token})`)) return line
+  if (entry === undefined) return line
   return `${indent}${name}: ${entry[mode]};${rest}`
 })
 
-// theme.css with the value of each token and component role it declares taken from tokens.css.
+// theme.css with the value of each token it declares taken from tokens.css.
 export const renderThemeCss = ({ themeCss, tokensCss }) => {
   const tokens = tokenValues({ tokensCss })
   const root = ruleBody(themeCss, ':root', 'src/theme.css')
@@ -106,8 +106,6 @@ export const renderThemeCss = ({ themeCss, tokensCss }) => {
   for (const name of tokens.light.keys()) {
     if (!useSiteTokens.includes(name)) values.set(name, { light: tokens.light.get(name), dark: tokens.dark(name) })
   }
-  // A component role may also be written as var(<its token>).
-  for (const [role, token] of Object.entries(componentRoles)) values.set(role, { ...values.get(token), token })
 
   const rootNames = declared(root.body)
   const darkNames = declared(dark.body)
@@ -138,14 +136,14 @@ const themeName = (id) => id.split('-').map((word) => word[0].toUpperCase() + wo
 
 // src/themes/<id>.css: themeVariables in both modes, then the theme-only tokens in light, then every
 // other variable the package theme sets, such as fonts, in both modes. Dark repeats every variable,
-// because src/theme.css's :root.dark otherwise outranks this file's light values. A component role
-// points at its token. The file has one :root.dark block and no @media copy.
+// because src/theme.css's :root.dark otherwise outranks this file's light values. The file has one
+// :root.dark block and no @media copy.
 export const renderTheme = ({ id, tokensCss, inputsCss }) => {
   const tokens = tokenValues({ tokensCss, inputsCss, inputsFile: `themes/${id}.css` })
   const extra = tokens.themeNames.filter((name) => !themeVariables.includes(name) && !themeOnlyTokens.includes(name))
   const defined = new Set([...themeVariables, ...themeOnlyTokens, ...extra])
   const block = (names, value) => names.map((name) => {
-    const css = componentRoles[name] === undefined ? value(name) : `var(${componentRoles[name]})`
+    const css = value(name)
     checkReferences({ name, value: css, defined, file: `src/themes/${id}.css` })
     return `  ${name}: ${css};`
   })

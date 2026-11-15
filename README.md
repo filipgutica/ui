@@ -498,13 +498,10 @@ and `src/fonts/` from the pinned package's `tokens.css`, `themes/*`, and fonts.
 - [`scripts/theme-variables.mjs`](scripts/theme-variables.mjs) lists what this
   library adds:
   - the variables each theme file declares, and their order
-  - the component roles, such as `--color-button-bg`, and the token each one
-    carries
   - the tokens only the theme files declare
   - the tokens components read with a fallback and never declare
   - the variables `src/theme.css` declares with values of its own
-- In `src/theme.css` the build rewrites only the values of tokens and
-  component roles.
+- In `src/theme.css` the build rewrites only the values of tokens.
 
 `pnpm themes:check` fails when any of these files differs from what the
 package builds. The build also fails when the package lacks a token that the
