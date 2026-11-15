@@ -1,3 +1,4 @@
+import { themeVariables } from '@filipgutica/design-system/theme-mapper'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -7,471 +8,146 @@ import {
   parseVsCodeTheme,
 } from '../src/theme/index.js'
 
-import { contrast } from './contrast.js'
+const source = (theme: Record<string, unknown>): string => JSON.stringify(theme)
+const darkTheme = {
+  name: 'Test Dark',
+  type: 'dark',
+  colors: { 'editor.background': '#151515', 'editor.foreground': '#eeeeee', 'button.background': '#6c8cff' },
+  tokenColors: [{ scope: ['keyword'], settings: { foreground: '#ff88dd' } }],
+}
 
-describe('VS Code theme parsing and normalization', () => {
-  it('imports syntax colors, persists a validated palette, and clears it on reset', () => {
+// Every inline property on an element, by name.
+const inlineStyle = (element: HTMLElement): Record<string, string> => Object.fromEntries(
+  Array.from({ length: element.style.length }, (_, index) => element.style.item(index))
+    .map(name => [name, element.style.getPropertyValue(name)]),
+)
+
+const codeOf = (action: () => unknown): string | undefined => {
+  try {
+    action()
+  } catch (error) {
+    if (error instanceof ThemeValidationError) return error.code
+    throw error
+  }
+  return undefined
+}
+
+describe('VS Code theme files', () => {
+  it('parses JSONC and maps the theme with the design-system mapper', () => {
     const theme = parseVsCodeTheme({
-      fileName: 'syntax.json',
-      source: JSON.stringify({
-        colors: { 'editor.background': '#151515', 'editor.foreground': '#eeeeee' },
-        tokenColors: [
-          { scope: ['keyword', 'storage.type'], settings: { foreground: '#f8d' } },
-          { scope: 'string, string.quoted', settings: { foreground: '#88ddaa' } },
-        ],
-      }),
-    })
-    expect(theme).toMatchObject({ syntax: { keyword: '#ff88dd', string: '#88ddaa' } })
-    expect(isNormalizedTheme(JSON.parse(JSON.stringify(theme)))).toBe(true)
-    expect(isNormalizedTheme({ ...theme, syntax: { keyword: 'url(https://example.com)' } })).toBe(false)
-    expect(isNormalizedTheme({ ...theme, syntax: { unknown: '#ffffff' } })).toBe(false)
-    const root = document.createElement('div')
-    applySemanticTheme({ root, theme })
-    expect(root.style.getPropertyValue('--color-syntax-keyword')).toBe('#ff88dd')
-    applySemanticTheme({ root, theme: null })
-    expect(root.style.getPropertyValue('--color-syntax-keyword')).toBe('')
-  })
-
-  it('rejects unsafe syntax colors at the import boundary', () => {
-    expect(() => parseVsCodeTheme({
-      fileName: 'unsafe.json',
-      source: JSON.stringify({
-        colors: { 'editor.background': '#151515', 'editor.foreground': '#eeeeee' },
-        tokenColors: [{ scope: 'keyword', settings: { foreground: 'red; background: url(https://example.com)' } }],
-      }),
-    })).toThrow(ThemeValidationError)
-  })
-  it('keeps selected nav and tab text readable on the current-row fill', () => {
-    // Each accent clears the 3:1 indicator check but not 4.5:1 text on the lifted fill.
-    const cases = [
-      { type: 'light', page: '#FFFFFF', text: '#111111', accent: '#888888', fill: (page: string) => page },
-      { type: 'dark', page: '#000000', text: '#EEEEEE', accent: '#666666', fill: () => '#141414' },
-    ]
-    for (const { type, page, text, accent, fill } of cases) {
-      const root = document.createElement('div')
-      const theme = parseVsCodeTheme({
-        fileName: `${type}-quiet-accent.json`,
-        source: JSON.stringify({
-          type,
-          colors: { 'editor.background': page, 'editor.foreground': text, focusBorder: accent },
-        }),
-      })
-      applySemanticTheme({ root, theme })
-      expect(contrast(root.style.getPropertyValue('--color-nav-current-text'), fill(page))).toBeGreaterThanOrEqual(4.5)
-      // The pressed segmented option sits on the raised thumb, where the same accent also falls short.
-      expect(root.style.getPropertyValue('--color-segmented-current-text').toUpperCase()).toBe(text)
-      applySemanticTheme({ root, theme: null })
-      expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('')
-      expect(root.style.getPropertyValue('--color-segmented-current-text')).toBe('')
-    }
-
-    // A translucent accent renders over the fill, not the page: #00000099 on #B4B4B4 is #484848, 4.41:1.
-    const root = document.createElement('div')
-    applySemanticTheme({ root, theme: parseVsCodeTheme({
-      fileName: 'translucent-accent.json',
-      source: JSON.stringify({
-        type: 'light',
-        colors: { 'editor.background': '#808080', 'editor.foreground': '#000000', 'sideBar.background': '#B4B4B4', focusBorder: '#00000099' },
-      }),
-    }) })
-    expect(root.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
-
-    // A white accent tints a mid-grey dark page to #868686, where white body text drops to 3.64:1.
-    const grey = document.createElement('div')
-    applySemanticTheme({ root: grey, theme: parseVsCodeTheme({
-      fileName: 'grey-dark.json',
-      source: JSON.stringify({ type: 'dark', colors: { 'editor.background': '#686868', 'editor.foreground': '#FFFFFF', focusBorder: '#FFFFFF' } }),
-    }) })
-    expect(contrast(grey.style.getPropertyValue('--color-nav-current-text'), '#868686')).toBeGreaterThanOrEqual(4.5)
-
-    // color-mix keeps a translucent accent's alpha: #282828cc 14% into #b8b8b8 over #808080 renders #a6a6a6,
-    // where the accent itself reaches only 4.18:1.
-    const alphaMix = document.createElement('div')
-    applySemanticTheme({ root: alphaMix, theme: parseVsCodeTheme({
-      fileName: 'alpha-mix.json',
-      source: JSON.stringify({ type: 'light', colors: { 'editor.background': '#808080', 'editor.foreground': '#000000', 'panel.background': '#b8b8b8ff', focusBorder: '#282828cc' } }),
-    }) })
-    expect(alphaMix.style.getPropertyValue('--color-nav-current-text')).toBe('#000000')
-  })
-
-  it('keeps the danger button label readable on its rest, hover, and pressed fills', () => {
-    const danger = (name: string, colors: Record<string, string>) => {
-      const root = document.createElement('div')
-      applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: `${name}.json`, source: JSON.stringify({ type: 'light', colors }) }) })
-      return root.style.getPropertyValue('--color-danger-button-text')
-    }
-    // #dd3333 mixed 75% toward #333333 drops to 3.97:1 on the pressed fill, #dd3333 16% into #efe4e4 (#ecc8c8).
-    const red = danger('bright-red', { 'editor.background': '#FFFFFF', 'editor.foreground': '#333333', errorForeground: '#dd3333' })
-    expect(contrast(red, '#ecc8c8')).toBeGreaterThanOrEqual(4.5)
-    // A deep red keeps its own tinted label.
-    expect(danger('deep-red', { 'editor.background': '#FFFFFF', 'editor.foreground': '#101315', errorForeground: '#bd342b' })).toBe('')
-  })
-
-  it('applies and clears every normalized color through the public CSS-variable contract', () => {
-    const root = document.createElement('div')
-    const theme = parseVsCodeTheme({
-      fileName: 'minimal.json',
-      source: JSON.stringify({
-        colors: {
-          'editor.background': '#101010',
-          'editor.foreground': '#F0F0F0',
-        },
-      }),
-    })
-
-    applySemanticTheme({ root, theme })
-    expect(root.style.getPropertyValue('--color-bg')).toBe('#101010')
-    expect(root.style.getPropertyValue('--color-text')).toBe('#F0F0F0')
-    const offTrack = root.style.getPropertyValue('--color-switch-off-track')
-    expect(contrast(offTrack, theme.tokens.pageBackground)).toBeGreaterThanOrEqual(3)
-    expect(contrast(offTrack, theme.tokens.surfaceRaised)).toBeGreaterThanOrEqual(3)
-    expect(contrast(root.style.getPropertyValue('--color-switch-off-thumb'), offTrack)).toBeGreaterThanOrEqual(3)
-    expect(contrast(root.style.getPropertyValue('--color-toggle-switch-off-track'), theme.tokens.surfaceRaised)).toBeGreaterThanOrEqual(3)
-    expect(root.classList.contains('dark')).toBe(true)
-    expect(root.classList.contains('high-contrast')).toBe(false)
-
-    applySemanticTheme({ root, theme: null })
-    expect(root.style.getPropertyValue('--color-bg')).toBe('')
-    expect(root.style.getPropertyValue('--color-text')).toBe('')
-    expect(root.style.getPropertyValue('--color-switch-off-track')).toBe('')
-    expect(root.style.getPropertyValue('--color-switch-off-thumb')).toBe('')
-    expect(root.style.getPropertyValue('--color-toggle-switch-off-track')).toBe('')
-    expect(root.classList.contains('dark')).toBe(false)
-    expect(root.classList.contains('high-contrast')).toBe(false)
-  })
-
-  it('applies high-contrast appearance state', () => {
-    const root = document.createElement('div')
-    const theme = parseVsCodeTheme({
-      fileName: 'contrast.json',
-      source: JSON.stringify({
-        type: 'hcLight',
-        colors: {
-          'editor.background': '#FFFFFF',
-          'editor.foreground': '#000000',
-        },
-      }),
-    })
-
-    applySemanticTheme({ root, theme })
-
-    expect(root.classList.contains('dark')).toBe(false)
-    expect(root.classList.contains('high-contrast')).toBe(true)
-  })
-
-  it('parses JSONC and maps VS Code colors into semantic tokens', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'forest.jsonc',
+      fileName: 'test-dark.jsonc',
       source: `{
-        // Comments and trailing commas are valid in VS Code themes.
-        "name": "Forest",
+        // VS Code allows comments and trailing commas.
+        "name": "Test Dark",
         "type": "dark",
-        "colors": {
-          "editor.background": "#101812",
-          "editor.foreground": "#E8F0EA",
-          "sideBar.background": "#172019",
-          "panel.background": "#1C271F",
-          "descriptionForeground": "#A5B3A8",
-          "panel.border": "#3B4B3E",
-          "focusBorder": "#78D69F",
-          "textLink.foreground": "#75DDA5",
-          "button.background": "#287A4B",
-          "button.foreground": "#FFFFFF",
-          "button.hoverBackground": "#32955D",
-          "input.background": "#0D140F",
-          "input.foreground": "#EDF5EF",
-          "input.border": "#4A5C4E",
-          "input.placeholderForeground": "#91A095",
-          "list.hoverBackground": "#243329",
-          "list.activeSelectionBackground": "#315E43",
-          "list.activeSelectionForeground": "#FFFFFF",
-          "errorForeground": "#FF8B8B",
-          "notificationsWarningIcon.foreground": "#F3C969",
-          "notificationsInfoIcon.foreground": "#75BFFF",
-          "testing.iconPassed": "#72D18B",
-          "progressBar.background": "#66D995",
-        },
-        "tokenColors": [],
+        "colors": { "editor.background": "#151515", "editor.foreground": "#eeeeee", },
       }`,
     })
 
-    expect(theme).toMatchObject({
-      name: 'Forest',
-      appearance: 'dark',
-      tokens: {
-        pageBackground: '#101812',
-        surface: '#172019',
-        surfaceRaised: '#1C271F',
-        textPrimary: '#E8F0EA',
-        textMuted: '#A5B3A8',
-        border: '#3B4B3E',
-        link: '#75DDA5',
-        focus: '#78D69F',
-        buttonBackground: '#287A4B',
-        inputBackground: '#0D140F',
-        rowHoverBackground: '#243329',
-        rowSelectedBackground: '#315E43',
-        error: '#FF8B8B',
-        warning: '#F3C969',
-        info: '#75BFFF',
-        success: '#72D18B',
-        progress: '#66D995',
-      },
-    })
+    expect(theme).toMatchObject({ name: 'Test Dark', appearance: 'dark', highContrast: false })
+    expect(theme.neutrals['color-bg']).toBe('#151515')
   })
 
-  it('uses ordered semantic and appearance fallbacks for missing keys', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'minimal.json',
-      source: JSON.stringify({
-        colors: {
-          'editor.background': '#FAFAFA',
-          foreground: '#202020',
-          'textLink.foreground': '#005FB8',
-        },
-      }),
-    })
-
-    expect(theme.name).toBe('minimal')
-    expect(theme.appearance).toBe('light')
-    expect(theme.tokens).toMatchObject({
-      pageBackground: '#FAFAFA',
-      surface: '#FAFAFA',
-      textPrimary: '#202020',
-      textMuted: '#202020',
-      link: '#005FB8',
-      accent: '#005FB8',
-      progress: '#005FB8',
-    })
-    expect(theme.tokens.border).toMatch(/^#[0-9A-F]{6}$/)
+  it('names a theme from its file when the file has no name', () => {
+    expect(parseVsCodeTheme({ fileName: 'themes/Night Owl.json', source: source({ ...darkTheme, name: undefined }) }).name)
+      .toBe('Night Owl')
   })
 
-  it.each([
-    ['unsupported CSS name', 'red'],
-    ['CSS injection', '#fff; background: url(file:///secret)'],
-  ])('rejects %s in a supported color key', (_label, value) => {
-    expect(() => parseVsCodeTheme({
-      fileName: 'unsafe.json',
-      source: JSON.stringify({
-        colors: {
-          'editor.background': '#101010',
-          'editor.foreground': value,
-        },
-      }),
-    })).toThrowError(new ThemeValidationError(
-      'invalid-color',
-      'The color for "editor.foreground" must be a 3-, 4-, 6-, or 8-digit hexadecimal value.',
-    ))
+  it('keeps its error codes for files it cannot parse', () => {
+    expect(codeOf(() => parseVsCodeTheme({ fileName: 'broken.json', source: '{ "colors": ' }))).toBe('malformed-json')
+    expect(() => parseVsCodeTheme({ fileName: 'broken.json', source: '{\n  "colors": {\n    "editor.background": }\n}' }))
+      .toThrow(/line 3, column/)
+    expect(codeOf(() => parseVsCodeTheme({ fileName: 'list.json', source: '[]' }))).toBe('invalid-shape')
+    expect(codeOf(() => parseVsCodeTheme({ fileName: 'no-colors.json', source: source({ name: 'No colors' }) }))).toBe('invalid-shape')
+    expect(codeOf(() => parseVsCodeTheme({ fileName: 'name.json', source: source({ name: 1, colors: {} }) }))).toBe('invalid-shape')
   })
 
-  it('accepts the short hexadecimal forms supported by VS Code', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'short.json',
-      source: JSON.stringify({
-        colors: {
-          'editor.background': '#111',
-          'editor.foreground': '#FFFC',
-          'button.background': '#833',
-        },
-      }),
-    })
+  // The mapper throws only when editor.background is missing or malformed, or no text colour reads on it.
+  it('reports a theme the mapper cannot use as missing-colors', () => {
+    const missing = codeOf(() => parseVsCodeTheme({ fileName: 'empty.json', source: source({ colors: {} }) }))
+    const malformed = codeOf(() => parseVsCodeTheme({
+      fileName: 'malformed.json',
+      source: source({ colors: { 'editor.background': 'red', 'editor.foreground': '#ffffff' } }),
+    }))
+    const unreadable = codeOf(() => parseVsCodeTheme({
+      fileName: 'unreadable.json',
+      source: source({ colors: { 'editor.background': '#777777', 'editor.foreground': '#888888' } }),
+    }))
 
-    expect(theme.tokens.pageBackground).toBe('#111111')
-    expect(theme.tokens.textPrimary).toBe('#FFFFFFCC')
-    expect(theme.tokens.buttonBackground).toBe('#883333')
-    expect(theme.tokens.buttonForeground).toBe('#FFFFFF')
+    expect([missing, malformed, unreadable]).toEqual(['missing-colors', 'missing-colors', 'missing-colors'])
+  })
+})
+
+describe('Persisted themes', () => {
+  it('accepts a parsed theme after a JSON round trip, including one with a long name', () => {
+    for (const name of ['Test Dark', 'x'.repeat(100)]) {
+      const theme = parseVsCodeTheme({ fileName: 'test.json', source: source({ ...darkTheme, name }) })
+
+      expect(isNormalizedTheme(JSON.parse(JSON.stringify(theme)))).toBe(true)
+    }
   })
 
-  it('infers dark appearance from a shorthand background when metadata is absent', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'short-dark.json',
-      source: JSON.stringify({
-        colors: { 'editor.background': '#000', 'editor.foreground': '#fff' },
-      }),
-    })
+  it('rejects malformed values without throwing', () => {
+    const theme = parseVsCodeTheme({ fileName: 'test.json', source: source(darkTheme) })
 
-    expect(theme.appearance).toBe('dark')
-    expect(theme.tokens.pageBackground).toBe('#000000')
+    for (const value of [
+      null,
+      'theme',
+      { ...theme, name: ' ' },
+      { ...theme, name: 'x'.repeat(81) },
+      { ...theme, highContrast: 'no' },
+      { ...theme, problems: undefined },
+      { ...theme, hue: 'red' },
+      { ...theme, neutrals: { ...theme.neutrals, 'color-bg': 'url(https://example.com)' } },
+      { ...theme, syntax: { unknown: '#ffffff' } },
+    ]) {
+      expect(isNormalizedTheme(value)).toBe(false)
+    }
   })
 
-  it('uses an accessible built-in button pair when an imported theme omits it', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'official-dark.json',
-      source: JSON.stringify({
-        type: 'dark',
-        colors: {
-          'editor.background': '#1E1E1E',
-          'editor.foreground': '#D4D4D4',
-          'textLink.foreground': '#3794FF',
-        },
-      }),
-    })
+  // Themes stored by earlier versions: a four-value appearance and a 28-key tokens record.
+  it('drops a theme stored in the old shape without throwing', () => {
+    const tokens = Object.fromEntries([
+      'pageBackground', 'surface', 'surfaceRaised', 'surfaceMuted', 'textPrimary', 'textMuted', 'border', 'borderSubtle',
+      'link', 'accent', 'focus', 'buttonBackground', 'buttonForeground', 'buttonHoverBackground', 'inputBackground',
+      'inputForeground', 'inputBorder', 'inputPlaceholder', 'rowHoverBackground', 'rowSelectedBackground',
+      'rowSelectedForeground', 'codeBackground', 'codeForeground', 'error', 'warning', 'success', 'info', 'progress',
+    ].map(key => [key, '#123456']))
 
-    expect(theme.tokens.buttonBackground).toBe('#89B4FA')
-    expect(theme.tokens.buttonForeground).toBe('#11111B')
+    expect(isNormalizedTheme({ name: 'Old high contrast', appearance: 'high-contrast-dark', tokens })).toBe(false)
+    expect(isNormalizedTheme({ name: 'Old light', appearance: 'light', tokens, syntax: {} })).toBe(false)
   })
+})
 
-  it('rings focus in the applied theme\'s accent, not its focus border', () => {
+describe('Applying a theme', () => {
+  it('sets exactly the design-system theme variables and the appearance classes, then clears them', () => {
     const root = document.createElement('div')
-    applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: 'forest.json', source: JSON.stringify({
-      type: 'dark',
-      colors: { 'editor.background': '#101812', 'editor.foreground': '#E8F0EA', focusBorder: '#78D69F' },
-    }) }) })
-    expect(root.style.getPropertyValue('--color-focus')).toBe(root.style.getPropertyValue('--color-accent'))
+    const theme = parseVsCodeTheme({ fileName: 'test.json', source: source({ ...darkTheme, type: 'hc' }) })
+    const variables = themeVariables(theme)
+
+    applySemanticTheme({ root, theme })
+
+    expect(inlineStyle(root)).toEqual(variables)
+    expect(variables['--color-syntax-keyword']).toBe('#ff88dd')
+    expect([...root.classList].sort()).toEqual(['dark', 'high-contrast'])
+
+    applySemanticTheme({ root, theme: null })
+
+    expect(inlineStyle(root)).toEqual({})
+    expect([...root.classList]).toEqual([])
   })
 
-  it('keeps the accent focus ring at 3:1 on the page, the surface, and the raised surface', () => {
-    // A white focus border clears the mid-grey side bar but would vanish on the white page and panels.
-    const theme = parseVsCodeTheme({ fileName: 'white-panels.json', source: JSON.stringify({
-      type: 'light',
-      colors: {
-        'editor.background': '#FFFFFF',
-        'editor.foreground': '#000000',
-        'panel.background': '#FFFFFF',
-        'sideBar.background': '#777777',
-        focusBorder: '#FFFFFF',
-      },
-    }) })
-    const { accent, pageBackground, surface, surfaceRaised } = theme.tokens
-    for (const background of [pageBackground, surface, surfaceRaised]) {
-      expect(contrast(accent, background), `accent ${accent} on ${background}`).toBeGreaterThanOrEqual(3)
-    }
-  })
-
-  it('measures the accent focus ring against a translucent surface as rendered over the page', () => {
-    // #00000080 over the white page renders #7F7F7F, where the purple focus border reaches only 1.35:1.
-    const theme = parseVsCodeTheme({ fileName: 'translucent-side-bar.json', source: JSON.stringify({
-      type: 'light',
-      colors: {
-        'editor.background': '#FFFFFF',
-        'editor.foreground': '#000000',
-        'panel.background': '#FFFFFF',
-        'sideBar.background': '#00000080',
-        focusBorder: '#8839EF',
-      },
-    }) })
-    expect(theme.tokens.surface).toBe('#00000080')
-    expect(contrast(theme.tokens.accent, '#7F7F7F')).toBeGreaterThanOrEqual(3)
-  })
-
-  it('rests a light field on the theme\'s input background when its text would not read on the raised surface', () => {
-    const fieldFill = (type: string, colors: Record<string, string>) => {
-      const root = document.createElement('div')
-      applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: `${type}.json`, source: JSON.stringify({ type, colors }) }) })
-      return root.style.getPropertyValue('--color-field-bg')
-    }
-
-    // White text on a black input in a white light theme.
-    expect(fieldFill('light', {
-      'editor.background': '#FFFFFF',
-      'editor.foreground': '#000000',
-      'panel.background': '#FFFFFF',
-      'input.background': '#000000',
-      'input.foreground': '#FFFFFF',
-      'input.placeholderForeground': '#FFFFFF',
-    })).toBe('var(--color-input-bg)')
-    // Readable on the raised surface: the field keeps it.
-    expect(fieldFill('light', { 'editor.background': '#FFFFFF', 'editor.foreground': '#101010' })).toBe('')
-    // Dark fields stay in the well.
-    expect(fieldFill('dark', { 'editor.background': '#101010', 'editor.foreground': '#F0F0F0' })).toBe('')
-  })
-
-  it('keeps muted text and links readable across page and surface backgrounds', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'split-surfaces.json',
-      source: JSON.stringify({
-        type: 'light',
-        colors: {
-          'editor.background': '#FFFFFF',
-          'editor.foreground': '#000000',
-          'sideBar.background': '#757575',
-          descriptionForeground: '#FFFFFF',
-          'textLink.foreground': '#FFFFFF',
-        },
-      }),
+  it('replaces the previous theme and its classes', () => {
+    const root = document.createElement('div')
+    applySemanticTheme({ root, theme: parseVsCodeTheme({ fileName: 'dark.json', source: source({ ...darkTheme, type: 'hc' }) }) })
+    const light = parseVsCodeTheme({
+      fileName: 'light.json',
+      source: source({ type: 'light', colors: { 'editor.background': '#fafafa', 'editor.foreground': '#111111' } }),
     })
 
-    expect(theme.tokens.surface).toBe('#757575')
-    expect(theme.tokens.textMuted).toBe('#000000')
-    expect(theme.tokens.link).toBe('#000000')
-  })
+    applySemanticTheme({ root, theme: light })
 
-  it('rejects malformed JSONC with a useful location', () => {
-    expect(() => parseVsCodeTheme({
-      fileName: 'broken.jsonc',
-      source: '{ "colors": { "editor.background": "#101010", }',
-    })).toThrowError(/could not be parsed.*line 1/i)
-  })
-
-  it('rejects themes without usable base colors', () => {
-    expect(() => parseVsCodeTheme({
-      fileName: 'empty.json',
-      source: JSON.stringify({ colors: { 'activityBar.background': '#101010' } }),
-    })).toThrowError(new ThemeValidationError(
-      'missing-colors',
-      'The theme must define a supported background color and foreground color.',
-    ))
-  })
-
-  it('preserves high-contrast appearance and explicit border fallbacks', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'contrast.json',
-      source: JSON.stringify({
-        type: 'hc',
-        colors: {
-          'editor.background': '#000000',
-          'editor.foreground': '#FFFFFF',
-          contrastBorder: '#FFFF00',
-        },
-      }),
-    })
-
-    expect(theme.appearance).toBe('high-contrast-dark')
-    expect(theme.tokens.border).toBe('#FFFF00')
-    expect(theme.tokens.inputBorder).toBe('#FFFF00')
-  })
-
-  it('replaces invisible high-contrast borders, focus, and primary text', () => {
-    const theme = parseVsCodeTheme({
-      fileName: 'invisible-contrast.json',
-      source: JSON.stringify({
-        type: 'hc',
-        colors: {
-          'editor.background': '#000000',
-          'editor.foreground': '#000000',
-          'sideBar.background': '#181825',
-          'textLink.foreground': '#181825',
-          errorForeground: '#18182500',
-          'notificationsWarningIcon.foreground': '#181825',
-          'testing.iconPassed': '#181825',
-          'notificationsInfoIcon.foreground': '#181825',
-          'button.background': '#FFFFFF',
-          'button.foreground': '#000000',
-          'button.hoverBackground': '#000000',
-          'input.background': '#000000',
-          'input.placeholderForeground': '#000000',
-          'list.hoverBackground': '#FFFFFF',
-          'progressBar.background': '#181825',
-          contrastBorder: '#00000000',
-          'panel.border': '#18182500',
-          focusBorder: '#00000000',
-        },
-      }),
-    })
-
-    expect(theme.tokens.textPrimary).toBe('#FFFFFF')
-    expect(theme.tokens.border).not.toBe('#00000000')
-    expect(theme.tokens.borderSubtle).not.toBe('#18182500')
-    expect(theme.tokens.focus).not.toBe('#00000000')
-    expect(theme.tokens.link).not.toBe('#181825')
-    expect(theme.tokens.error).not.toBe('#18182500')
-    expect(theme.tokens.warning).not.toBe('#181825')
-    expect(theme.tokens.success).not.toBe('#181825')
-    expect(theme.tokens.info).not.toBe('#181825')
-    expect(theme.tokens.buttonHoverBackground).toBe(theme.tokens.buttonBackground)
-    expect(theme.tokens.inputPlaceholder).not.toBe('#000000')
-    expect(theme.tokens.rowHoverBackground).not.toBe('#FFFFFF')
-    expect(theme.tokens.surfaceMuted).not.toBe('#FFFFFF')
-    expect(theme.tokens.progress).not.toBe(theme.tokens.surfaceMuted)
+    expect(inlineStyle(root)).toEqual(themeVariables(light))
+    expect([...root.classList]).toEqual([])
   })
 })

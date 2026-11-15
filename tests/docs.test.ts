@@ -234,11 +234,17 @@ describe('docs themes', () => {
   })
 
   it('clears imported theme variables when returning to a built-in theme', async () => {
-    document.documentElement.style.setProperty('--color-bg', '#101218')
-    document.documentElement.classList.add('dark')
+    const theme = parseVsCodeTheme({
+      fileName: 'installed.json',
+      source: JSON.stringify({ type: 'dark', colors: { 'editor.background': '#101218', 'editor.foreground': '#f4f5f8' } }),
+    })
+    localStorage.setItem('filipgutica-ui-active-theme', 'saved.theme')
+    localStorage.setItem('filipgutica-ui-installed-themes', JSON.stringify([{ id: 'saved.theme', theme }]))
 
     const wrapper = mountThemesPage()
     await flushPromises()
+    expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#101218')
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
 
     const lightButton = [...document.querySelectorAll<HTMLButtonElement>('[role="radio"]')]
       .find(button => button.textContent?.includes('Light'))
@@ -256,18 +262,17 @@ describe('docs themes', () => {
   it('searches Open VSX and applies a normalized theme', async () => {
     vi.useFakeTimers()
     localStorage.setItem('filipgutica-ui-active-theme', 'dark')
-    const theme = parseVsCodeTheme({
-      fileName: 'test-dark.json',
-      source: JSON.stringify({
-        name: 'Test Dark',
-        type: 'dark',
-        colors: {
-          'editor.background': '#101218',
-          'editor.foreground': '#f4f5f8',
-          'button.background': '#6c8cff',
-        },
-      }),
-    })
+    // The import endpoint returns the design system's resolved theme; the docs map it.
+    const theme = {
+      name: 'Test Dark',
+      type: 'dark',
+      colors: {
+        'editor.background': '#101218',
+        'editor.foreground': '#f4f5f8',
+        'button.background': '#6c8cff',
+      },
+      tokenColors: [{ scope: 'comment', settings: { foreground: '#33363c' } }],
+    }
     const fetchMock = vi.fn(async (input: string | URL | Request) => {
       const url = String(input)
       if (url.includes('/api/open-vsx/import')) {
@@ -310,6 +315,29 @@ describe('docs themes', () => {
     expect(fetchMock.mock.calls.some(([url]) => String(url).includes('appearance=dark'))).toBe(true)
     expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('#101218')
     expect(wrapper.get('[role="radio"][aria-checked="true"]').text()).toBe('Test Dark')
+    // The theme installs, and the panel lists the checks it fails, such as its dim comments.
+    const notice = wrapper.get('.fg-alert[data-tone="warning"]')
+    expect(notice.text()).toContain('Installed Test Dark.')
+    expect(notice.findAll('li').map(item => item.text())).toContainEqual(expect.stringMatching(/^syntax: [\d.]+:1, needs 4.5:1, in the theme's colours$/))
+    wrapper.unmount()
+  })
+
+  // Earlier versions stored a four-value appearance and a 28-key tokens record.
+  it('drops themes stored in the old shape and keeps the shared appearance', async () => {
+    const tokens = { pageBackground: '#12141a', textPrimary: '#f7f8fb' }
+    localStorage.setItem('filipgutica-ui-active-theme', 'old.light')
+    localStorage.setItem('filipgutica-ui-installed-themes', JSON.stringify([
+      { id: 'old.contrast', theme: { name: 'Old Contrast', appearance: 'high-contrast-dark', tokens } },
+      { id: 'old.light', theme: { name: 'Old Light', appearance: 'light', tokens, syntax: {} } },
+    ]))
+
+    const wrapper = mountThemesPage()
+    await flushPromises()
+
+    expect(wrapper.text()).not.toContain('Old Contrast')
+    expect(wrapper.text()).not.toContain('Old Light')
+    expect(localStorage.getItem('filipgutica-ui-active-theme')).toBe('system')
+    expect(document.documentElement.style.getPropertyValue('--color-bg')).toBe('')
     wrapper.unmount()
   })
 
@@ -341,17 +369,11 @@ describe('docs themes', () => {
   it('locks competing inputs and ignores an install completed after leaving the panel', async () => {
     vi.useFakeTimers()
     let resolveImport: ((response: Response) => void) | undefined
-    const theme = parseVsCodeTheme({
-      fileName: 'test-dark.json',
-      source: JSON.stringify({
-        name: 'Test Dark',
-        type: 'dark',
-        colors: {
-          'editor.background': '#101218',
-          'editor.foreground': '#f4f5f8',
-        },
-      }),
-    })
+    const theme = {
+      name: 'Test Dark',
+      type: 'dark',
+      colors: { 'editor.background': '#101218', 'editor.foreground': '#f4f5f8' },
+    }
     const fetchMock = vi.fn((input: string | URL | Request) => {
       const url = String(input)
       if (url.includes('/api/open-vsx/import')) {

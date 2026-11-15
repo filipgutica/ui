@@ -1,4 +1,4 @@
-import type { OpenVsxThemeService } from '../src/open-vsx/index.js'
+import type { OpenVsxThemeService } from '@filipgutica/design-system/open-vsx'
 
 export interface OpenVsxApiResponse {
   status: number

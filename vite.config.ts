@@ -11,12 +11,12 @@ export default defineConfig({
         index: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
         theme: fileURLToPath(new URL('./src/theme/index.ts', import.meta.url)),
         site: fileURLToPath(new URL('./src/site/index.ts', import.meta.url)),
-        'open-vsx': fileURLToPath(new URL('./src/open-vsx/index.ts', import.meta.url)),
       },
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue', '@vueuse/core', 'reka-ui', 'jsonc-parser', 'jszip', /^shiki\//],
+      // A regex, so the design system's subpath exports, such as /theme-mapper, stay external too.
+      external: ['vue', '@vueuse/core', 'reka-ui', /^shiki\//, /^@filipgutica\/design-system(\/|$)/],
       output: {
         entryFileNames: '[name].js',
       },

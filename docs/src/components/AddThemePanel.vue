@@ -3,7 +3,8 @@ import { useDebounceFn, useDropZone, useFileDialog } from '@vueuse/core'
 import useSWRV from 'swrv'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import type { OpenVsxThemeSummary, NormalizedTheme } from '../../../src/theme/index.js'
+import type { OpenVsxThemeSummary } from '@filipgutica/design-system/open-vsx'
+import type { NormalizedTheme } from '../../../src/theme/index.js'
 
 import { UiAlert, UiButton, UiInput } from '../../../src/index.js'
 import { importOpenVsxTheme, searchOpenVsx } from '../open-vsx-client.js'
@@ -38,6 +39,8 @@ const fileBusy = ref(false)
 const installError = ref('')
 const fileError = ref('')
 const dropZone = ref<HTMLElement | null>(null)
+// The contrast checks the last installed theme fails, shown beside the control that installed it.
+const problemNotice = ref<{ source: 'search' | 'file', name: string, failures: string[] } | null>(null)
 let searchController: AbortController | undefined
 let importController: AbortController | undefined
 let acceptingResults = true
@@ -66,6 +69,14 @@ const { data, error: searchError, isLoading, isValidating } = useSWRV<OpenVsxThe
   },
 )
 
+const describeFailures = ({ problems }: NormalizedTheme): string[] => problems.map(({ check, kind, ratio, min }) =>
+  `${check}: ${ratio.toFixed(2)}:1, needs ${min}:1, in ${kind === 'theme' ? 'the theme\'s colours' : 'core colours'}`)
+
+const install = ({ source, id, theme }: { source: 'search' | 'file', id: string, theme: NormalizedTheme }): void => {
+  problemNotice.value = theme.problems.length ? { source, name: theme.name, failures: describeFailures(theme) } : null
+  emit('installed', { id, theme })
+}
+
 const searchBusy = computed(() => query.value.trim() !== debouncedQuery.value || isLoading.value || isValidating.value)
 const panelBusy = computed(() => Boolean(importingId.value) || fileBusy.value)
 
@@ -75,6 +86,7 @@ const installOpenVsxTheme = async (themeSummary: OpenVsxThemeSummary): Promise<v
   importController = controller
   importingId.value = themeSummary.id
   installError.value = ''
+  problemNotice.value = null
   try {
     const theme = await importOpenVsxTheme({
       extensionId: themeSummary.id,
@@ -82,7 +94,7 @@ const installOpenVsxTheme = async (themeSummary: OpenVsxThemeSummary): Promise<v
       signal: controller.signal,
     })
     if (!acceptingResults || controller.signal.aborted) return
-    emit('installed', { id: themeSummary.id, theme })
+    install({ source: 'search', id: themeSummary.id, theme })
   } catch (error) {
     if (!acceptingResults || controller.signal.aborted) return
     installError.value = error instanceof Error ? error.message : 'Could not import that theme.'
@@ -98,10 +110,11 @@ const importThemeFile = async (file: File | undefined): Promise<void> => {
   if (!file || panelBusy.value) return
   fileBusy.value = true
   fileError.value = ''
+  problemNotice.value = null
   try {
     const theme = await parseThemeFile(file)
     if (!acceptingResults) return
-    emit('installed', { id: `file:${file.name}:${theme.name}`, theme })
+    install({ source: 'file', id: `file:${file.name}:${theme.name}`, theme })
   } catch (error) {
     if (!acceptingResults) return
     fileError.value = error instanceof Error ? error.message : 'Could not read that theme file.'
@@ -199,6 +212,22 @@ onBeforeUnmount(() => {
     >
       {{ installError }}
     </UiAlert>
+    <UiAlert
+      v-else-if="problemNotice?.source === 'search'"
+      tone="warning"
+    >
+      <div class="theme-problems">
+        <p>Installed {{ problemNotice.name }}. Some text may be hard to read. It fails these contrast checks:</p>
+        <ul>
+          <li
+            v-for="failure in problemNotice.failures"
+            :key="failure"
+          >
+            {{ failure }}
+          </li>
+        </ul>
+      </div>
+    </UiAlert>
     <p
       v-else-if="!searchBusy && data?.length === 0"
       class="theme-empty-state"
@@ -270,6 +299,22 @@ onBeforeUnmount(() => {
       tone="error"
     >
       {{ fileError }}
+    </UiAlert>
+    <UiAlert
+      v-else-if="problemNotice?.source === 'file'"
+      tone="warning"
+    >
+      <div class="theme-problems">
+        <p>Installed {{ problemNotice.name }}. Some text may be hard to read. It fails these contrast checks:</p>
+        <ul>
+          <li
+            v-for="failure in problemNotice.failures"
+            :key="failure"
+          >
+            {{ failure }}
+          </li>
+        </ul>
+      </div>
     </UiAlert>
   </div>
 </template>

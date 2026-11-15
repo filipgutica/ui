@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import type { Plugin } from 'vite'
 
-import { createOpenVsxThemeService } from '../src/open-vsx/index.js'
+import { createOpenVsxThemeService } from '@filipgutica/design-system/open-vsx'
 import { handleOpenVsxRequest } from './open-vsx-api.js'
 
 const sendJson = ({

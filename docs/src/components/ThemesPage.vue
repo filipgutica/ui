@@ -73,7 +73,7 @@ const depthTiers = [
             :value="installedTheme.id"
           >
             <ThemePreview
-              :appearance="installedTheme.theme.appearance.includes('dark') ? 'dark' : 'light'"
+              :appearance="installedTheme.theme.appearance"
               :theme="installedTheme.theme"
             />
             <span class="theme-card-label">{{ installedTheme.theme.name }}</span>

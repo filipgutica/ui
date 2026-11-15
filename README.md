@@ -36,16 +36,20 @@ The third import adds Graphite Indigo's site typography and layout roles. Both
 the base theme and Graphite Indigo use neutral surfaces, project-hue primary buttons,
 and the ui project hue for checked and selected states.
 
-The design system's other two themes, Pine and Mauve, set the same roles with
-their own hues. To use one, import it in place of Graphite Indigo, after
-`theme.css`:
+The design system's other themes set the same roles with their own hues and
+neutrals: Catppuccin, Copper, Fern, GitHub, Iris, Lagoon, and Lapis. To use
+one, import it in place of Graphite Indigo, after `theme.css`:
 
 ```css
-@import "@filipgutica/ui/themes/pine.css"; /* or themes/mauve.css */
+@import "@filipgutica/ui/themes/copper.css"; /* or any themes/<name>.css */
 ```
 
 Each theme file has one `:root` block and one `:root.dark` block, so dark mode
-uses the same `.dark` class as the base theme.
+uses the same `.dark` class as the base theme. A theme can also set its own
+fonts and `--color-nav-current-text`.
+
+The Catppuccin and GitHub palettes are third-party work. They ship under
+[their licences](src/themes/THIRD_PARTY_NOTICES.md), in `src/themes/`.
 
 `theme.css` loads the package's own IBM Plex Sans and IBM Plex Mono latin woff2
 files (400, 500, 600), with `font-display: swap` and system fallbacks. It makes
@@ -111,13 +115,28 @@ const theme = parseVsCodeTheme({ source, fileName })
 applySemanticTheme({ root: document.documentElement, theme })
 ```
 
-The theme must define a background color and a foreground color, such as
-`editor.background` and `editor.foreground`.
+[`@filipgutica/design-system`](https://github.com/filipgutica/design-system)
+parses and maps the theme; this library applies it. The theme must define
+`editor.background` and a text colour that reads on it, or
+`parseVsCodeTheme` throws a `ThemeValidationError` with the code
+`missing-colors`. A file it cannot read throws `malformed-json` or
+`invalid-shape`.
+
+The mapper selects the theme's own colours and never alters them. Links,
+status colours, and terminal colours stay the design system's. Syntax colours
+stay the theme's own. `theme.problems` lists each contrast check the theme
+fails; the theme still applies.
+
+`applySemanticTheme` sets the theme's design-system variables inline on the
+root, and the `.dark` and `.high-contrast` classes. Passing `theme: null`
+clears them. Use `isNormalizedTheme` to check a theme read back from storage.
 
 To let people search for and import themes from Open VSX, use
-`createOpenVsxThemeService` from `@filipgutica/ui/open-vsx`. It runs on Node or
-in a browser with HTTPS and Web Crypto. In a browser, it works only when the
-registry and its resource host allow cross-origin requests.
+`createOpenVsxThemeService` from `@filipgutica/design-system/open-vsx`, and
+map each imported theme with `mapVsCodeTheme` from
+`@filipgutica/design-system/theme-mapper`. The service runs on Node or in a browser with HTTPS
+and Web Crypto. In a browser, it works only when the registry and its resource
+host allow cross-origin requests.
 
 The theme search-and-install dialog on the docs site is not exported. Build
 your own picker from the exported components and theme helpers.
@@ -450,7 +469,8 @@ for the general rules. These facts belong to this library.
   styles with the design system's `tokens.css` variable names; the library
   declares them.
 - **Two undeclared tokens.** The library does not declare
-  `--color-nav-current-text` or `--color-segmented-current-text`. Write each
+  `--color-nav-current-text` or `--color-segmented-current-text`, except
+  where a theme file sets one, as Catppuccin and GitHub do. Write each
   with the fallback the library uses:
   `var(--color-nav-current-text, var(--color-accent))` and
   `var(--color-segmented-current-text, var(--color-accent))`. Without a
@@ -485,33 +505,32 @@ pnpm verify
 The theme token values and the IBM Plex fonts live in
 [`@filipgutica/design-system`](https://github.com/filipgutica/design-system).
 `pnpm themes:build` builds `src/theme.css`, `src/themes/` (every class-flavour
-theme: Graphite Indigo, Pine, and Mauve), `src/fonts.css`, and `src/fonts/`
-from the pinned package's `tokens.css`, `themes/*.css`, and fonts.
+theme the package ships, with its licence and notice files), `src/fonts.css`,
+and `src/fonts/` from the pinned package's `tokens.css`, `themes/*`, and fonts.
 
 - A design-system token and the variable of the same name here are one
   variable.
 - [`scripts/theme-variables.mjs`](scripts/theme-variables.mjs) lists what this
   library adds:
   - the variables each theme file declares, and their order
-  - the component roles, such as `--color-button-bg`, and the token each one
-    carries
   - the tokens only the theme files declare
   - the tokens components read with a fallback and never declare
   - the variables `src/theme.css` declares with values of its own
-- In `src/theme.css` the build rewrites only the values of tokens and
-  component roles.
+- In `src/theme.css` the build rewrites only the values of tokens.
 
 `pnpm themes:check` fails when any of these files differs from what the
 package builds. The build also fails when the package lacks a token that the
 list names, or when a value refers to a variable that its file does not
 declare.
-When the package adds a theme, add its `./themes/<name>.css` export to
-`package.json`; `tests/graphite-indigo.test.js` fails until it is there.
+`./themes/*.css` exports every theme. When the package adds a licence or
+notice file, list it in `package.json` `files`;
+`tests/graphite-indigo.test.js` fails until it is there.
 
-To update the values, bump the package and rebuild:
+The package is a runtime dependency with an exact pin. To update the values,
+bump the package and rebuild:
 
 ```sh
-pnpm add -D -E @filipgutica/design-system@<version>
+pnpm add -E @filipgutica/design-system@<version>
 pnpm themes:build
 ```
 

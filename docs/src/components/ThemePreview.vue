@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { themeVariables } from '@filipgutica/design-system/theme-mapper'
 import { computed } from 'vue'
 
 import type { CSSProperties } from 'vue'
@@ -31,14 +32,17 @@ const { appearance, theme = undefined } = defineProps<{
   theme?: NormalizedTheme
 }>()
 
-const previewStyle = computed<CSSProperties>(() => theme
-  ? {
-      '--preview-bg': theme.tokens.pageBackground,
-      '--preview-surface': theme.tokens.surface,
-      '--preview-raised': theme.tokens.surfaceRaised,
-      '--preview-border': theme.tokens.border,
-      '--preview-muted': theme.tokens.textMuted,
-      '--preview-accent': theme.tokens.accent,
-    }
-  : builtInPreviewStyle(appearance))
+const previewStyle = computed<CSSProperties>(() => {
+  if (!theme) return builtInPreviewStyle(appearance)
+  // The values the theme sets on the page, in its own mode. The accent is the project hue.
+  const variables = themeVariables(theme)
+  return {
+    '--preview-bg': variables['--color-bg'],
+    '--preview-surface': variables['--color-surface'],
+    '--preview-raised': variables['--color-surface-raised'],
+    '--preview-border': variables['--color-border'],
+    '--preview-muted': variables['--color-muted'],
+    '--preview-accent': variables['--color-project'],
+  }
+})
 </script>

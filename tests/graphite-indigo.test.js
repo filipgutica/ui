@@ -4,10 +4,12 @@ import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 
 import { tokens } from '@filipgutica/design-system'
+import { themeVariables } from '@filipgutica/design-system/theme-mapper'
 import { describe, expect, it } from 'vitest'
 
 import { pinnedPackageRoot, renderTheme, renderThemeCss, vendorDesignSystem } from '../scripts/vendor-design-system.mjs'
-import { semanticCssVariables } from '../src/theme/index.ts'
+import { useSiteTokens } from '../scripts/theme-variables.mjs'
+import { parseVsCodeTheme } from '../src/theme/index.ts'
 import { contrast } from './contrast.ts'
 
 const read = (path) => readFileSync(resolve(process.cwd(), path), 'utf8')
@@ -17,13 +19,15 @@ const graphiteIndigo = tokens.themes['graphite-indigo']
 const variablesIn = (css) => new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(([, name]) => name))
 
 describe('Graphite Indigo files', () => {
-  it('give the library theme every role the theme importer controls', () => {
+  // Removing an imported theme falls back to these declarations, so each variable it sets needs one.
+  it('give the library theme every variable an imported theme sets, but the site hooks', () => {
     const defined = variablesIn(read('src/themes/graphite-indigo.css'))
-    const missing = [
-      ...Object.values(semanticCssVariables),
-      ...['comment', 'keyword', 'string', 'number', 'function', 'type', 'variable', 'operator', 'punctuation', 'tag', 'attribute']
-        .map(role => `--color-syntax-${role}`),
-    ].filter(variable => !defined.has(variable))
+    const imported = parseVsCodeTheme({
+      fileName: 'theme.json',
+      source: JSON.stringify({ colors: { 'editor.background': '#151515', 'editor.foreground': '#eeeeee' } }),
+    })
+    const missing = Object.keys(themeVariables(imported))
+      .filter(variable => !defined.has(variable) && !useSiteTokens.includes(variable))
 
     expect(missing).toEqual([])
   })
@@ -48,7 +52,7 @@ describe('Graphite Indigo files', () => {
   })
 })
 
-// Every class-flavour theme the design system ships: Graphite Indigo, Pine, and Mauve.
+// Every class-flavour theme the design system ships, such as Graphite Indigo and Catppuccin.
 const themeFiles = readdirSync(resolve(process.cwd(), 'src/themes')).filter(file => file.endsWith('.css')).sort()
 
 describe('Class-flavour theme files', () => {
@@ -60,17 +64,23 @@ describe('Class-flavour theme files', () => {
     expect(themeFiles.map(file => file.replace('.css', ''))).toEqual(Object.keys(tokens.themes).sort())
   })
 
-  it('exports each theme as @filipgutica/ui/themes/<name>.css, and nothing else under themes', () => {
-    const { exports } = JSON.parse(read('package.json'))
+  it('exports each theme as @filipgutica/ui/themes/<name>.css, and publishes its licences', () => {
+    const { exports, files } = JSON.parse(read('package.json'))
     const themeExports = Object.entries(exports).filter(([path]) => path.startsWith('./themes/'))
+    const notices = readdirSync(resolve(process.cwd(), 'src/themes')).filter(file => !file.endsWith('.css'))
 
-    expect(Object.fromEntries(themeExports)).toEqual(Object.fromEntries(themeFiles.map(file => [`./themes/${file}`, `./src/themes/${file}`])))
+    expect(Object.fromEntries(themeExports)).toEqual({ './themes/*.css': './src/themes/*.css' })
+    // files lists explicit paths, so a *.css entry does not publish the licence and notice files.
+    expect(notices.length).toBeGreaterThan(0)
+    expect(notices.filter(file => !files.includes(`src/themes/${file}`))).toEqual([])
   })
 
-  it.each(themeFiles)('gives %s the same roles as Graphite Indigo, with one :root.dark block from its own tokens', (file) => {
+  it.each(themeFiles)('gives %s Graphite Indigo\'s roles and everything its package theme sets, with one :root.dark block from its own tokens', (file) => {
     const css = read(`src/themes/${file}`)
+    const packageVariables = variablesIn(readPackage(`themes/${file}`))
 
-    expect(variablesIn(css)).toEqual(variablesIn(read('src/themes/graphite-indigo.css')))
+    expect([...variablesIn(read('src/themes/graphite-indigo.css'))].filter(name => !variablesIn(css).has(name))).toEqual([])
+    expect([...packageVariables].filter(name => !variablesIn(css).has(name))).toEqual([])
     expect(css).not.toMatch(/@import[^;]*design-system/)
     expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
     expect(/:root\.dark\s*\{([^}]+)\}/.exec(css)?.[1]).toContain(`--color-bg: ${tokens.themes[file.replace('.css', '')].dark['color-bg']}`)
@@ -84,21 +94,21 @@ describe('Vendoring into a copy of the repository', () => {
       mkdirSync(join(root, 'src/fonts'), { recursive: true })
       cpSync(resolve(process.cwd(), 'src/theme.css'), join(root, 'src/theme.css'))
       cpSync(resolve(process.cwd(), 'src/themes'), join(root, 'src/themes'), { recursive: true })
-      writeFileSync(join(root, 'src/themes/pine.css'), '/* edited */')
-      rmSync(join(root, 'src/themes/mauve.css'))
+      writeFileSync(join(root, 'src/themes/copper.css'), '/* edited */')
+      rmSync(join(root, 'src/themes/fern.css'))
       writeFileSync(join(root, 'src/themes/retired.css'), '/* a theme the package dropped */')
       writeFileSync(join(root, 'src/themes/README.md'), 'Notes')
 
       const stale = vendorDesignSystem({ root, check: true })
-      expect(stale).toEqual(expect.arrayContaining(['src/themes/pine.css', 'src/themes/mauve.css', 'src/themes/retired.css']))
+      expect(stale).toEqual(expect.arrayContaining(['src/themes/copper.css', 'src/themes/fern.css', 'src/themes/retired.css']))
       expect(stale).not.toContain('src/themes/graphite-indigo.css')
       expect(stale).not.toContain('src/themes/README.md')
       expect(existsSync(join(root, 'src/themes/retired.css'))).toBe(true)
 
       vendorDesignSystem({ root })
-      expect(readdirSync(join(root, 'src/themes')).sort()).toEqual([...themeFiles, 'README.md'].sort())
+      expect(readdirSync(join(root, 'src/themes')).sort()).toEqual([...readdirSync(resolve(process.cwd(), 'src/themes')), 'README.md'].sort())
       expect(readFileSync(join(root, 'src/themes/README.md'), 'utf8')).toBe('Notes')
-      expect(readFileSync(join(root, 'src/themes/pine.css'), 'utf8')).toBe(read('src/themes/pine.css'))
+      expect(readFileSync(join(root, 'src/themes/copper.css'), 'utf8')).toBe(read('src/themes/copper.css'))
       expect(vendorDesignSystem({ root, check: true })).toEqual([])
     } finally {
       rmSync(root, { recursive: true, force: true })
@@ -134,7 +144,7 @@ describe('Design-system token vendoring', () => {
     expect(() => renderThemeCss({ themeCss: noProjectDark, tokensCss })).toThrow('--color-project-dark')
   })
 
-  it('fails when the package drops a token that a component role carries', () => {
+  it('fails when the package drops a token that the theme files declare', () => {
     const noAccentText = tokensCss.replace(/\n {2}--color-accent-text: [^\n]+/, '')
 
     expect(() => renderThemeCss({ themeCss, tokensCss: noAccentText })).toThrow('tokens.css does not declare --color-accent-text')
@@ -152,10 +162,26 @@ describe('Design-system token vendoring', () => {
     expect(() => renderThemeCss({ themeCss, tokensCss: dangling })).toThrow('--color-link refers to --color-missing')
   })
 
-  it('fails when a package theme does not set its dark hue', () => {
-    const inputsCss = readPackage('themes/pine.css').replace(/\n {2}--color-project-dark: [^\n]+/, '')
+  // Catppuccin sets its own dark neutrals in a :root[data-theme="dark"] block, plus fonts and the
+  // nav-current text. The class-flavour file carries them in its one :root.dark block and its :root.
+  it('carries a package theme\'s dark block and fonts into the class-flavour file', () => {
+    const inputsCss = readPackage('themes/catppuccin.css')
+    const css = renderTheme({ id: 'catppuccin', tokensCss, inputsCss })
+    const block = (selector) => new RegExp(`^${selector.replace('.', String.raw`\.`)} \\{\\n([\\s\\S]*?)^\\}$`, 'm').exec(css)?.[1]
 
-    expect(() => renderTheme({ id: 'pine', tokensCss, inputsCss })).toThrow('themes/pine.css must declare --color-project-dark')
+    expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
+    expect(css).not.toContain('@media')
+    expect(block(':root')).toContain('--font-ui: "IBM Plex Sans"')
+    expect(block(':root')).toContain('--color-nav-current-text: var(--color-text);')
+    expect(block(':root.dark')).toContain('--color-bg: #11111b;')
+    expect(block(':root.dark')).toContain('--color-border: #7f849c;')
+    expect(block(':root.dark')).toContain('--color-nav-current-text: var(--color-accent);')
+  })
+
+  it('fails when a package theme does not set its dark hue', () => {
+    const inputsCss = readPackage('themes/copper.css').replace(/\n {2}--color-project-dark: [^\n]+/, '')
+
+    expect(() => renderTheme({ id: 'copper', tokensCss, inputsCss })).toThrow('themes/copper.css must declare --color-project-dark')
   })
 
   // The package's standalone files carry values only: no comments name ui variables, and no
@@ -176,7 +202,8 @@ describe('Design-system token vendoring', () => {
       cpSync(resolve(process.cwd(), 'src/theme.css'), join(root, 'src/theme.css'))
 
       vendorDesignSystem({ root, packageRoot })
-      for (const path of ['src/theme.css', 'src/fonts.css', ...themeFiles.map(file => `src/themes/${file}`)]) {
+      const vendoredThemeFiles = readdirSync(resolve(process.cwd(), 'src/themes')).map(file => `src/themes/${file}`)
+      for (const path of ['src/theme.css', 'src/fonts.css', ...vendoredThemeFiles]) {
         expect(readFileSync(join(root, path), 'utf8'), path).toBe(read(path))
       }
     } finally {
@@ -209,7 +236,7 @@ describe.each(['light', 'dark'])('Graphite Indigo %s contrast', (mode) => {
     else expect(luminance(color('color-surface'))).toBeGreaterThan(luminance(color('color-bg')))
   })
 
-  // --color-status-text takes the text token.
+  // Alert body text on the status fills is --color-text.
   it.each(['success', 'warning', 'error', 'info'])(
     'keeps status text readable on the %s fill', (status) => {
       expect(contrast(color('color-text'), color(`color-${status}-surface`))).toBeGreaterThanOrEqual(4.5)

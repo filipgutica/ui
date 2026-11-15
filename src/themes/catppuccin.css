@@ -1,34 +1,27 @@
-/* Generated from tokens/core.json and tokens/themes/mauve.json by scripts/build-tokens.mjs in @filipgutica/design-system. Do not edit.
- * Opt-in Mauve roles for the class flavour. Import after class/base.css (theme.css in @filipgutica/ui).
+/* Generated from tokens/core.json and tokens/themes/catppuccin.json by scripts/build-tokens.mjs in @filipgutica/design-system. Do not edit.
+ * Opt-in Catppuccin roles for the class flavour. Import after class/base.css (theme.css in @filipgutica/ui).
  * Dark mode uses the same .dark class as the base. Keep exactly one :root.dark block:
  * sites copy it into a <noscript> prefers-color-scheme rule. */
 
 :root {
   color-scheme: light;
-  --color-project: #6c5267;
-  --color-project-dark: #d1b3c8;
-  --color-bg: #f4f5f6;
-  --color-surface: #e9ebed;
-  --color-surface-raised: #fbfbfc;
-  --color-surface-muted: #e2e5e8;
-  --color-text: #101315;
-  --color-muted: #50575e;
+  --color-project: #8839ef;
+  --color-project-dark: #cba6f7;
+  --color-bg: #eff1f5;
+  --color-surface: #e6e9ef;
+  --color-surface-raised: #eff1f5;
+  --color-surface-muted: #dce0e8;
+  --color-text: #4c4f69;
+  --color-muted: #5c5f77;
   --color-link: #0b5f7c;
   --color-accent: var(--color-project);
   --color-accent-text: var(--color-bg);
   --color-focus: var(--color-accent);
-  --color-border: #6d747b;
-  --color-border-subtle: #d3d8dd;
-  --color-button-bg: var(--color-accent);
-  --color-button-text: var(--color-accent-text);
+  --color-border: #7c7f93;
+  --color-border-subtle: #ccd0da;
   --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
-  --color-input-bg: var(--color-surface-raised);
-  --color-input-text: var(--color-text);
-  --color-input-border: var(--color-border);
-  --color-input-placeholder: var(--color-muted);
-  --color-row-hover: #e2e5e8;
+  --color-row-hover: #dce0e8;
   --color-row-selected: var(--color-surface-raised);
-  --color-row-selected-text: var(--color-text);
   --color-code: var(--color-surface);
   --color-code-text: var(--color-text);
   --color-syntax-comment: #626772;
@@ -46,13 +39,11 @@
   --color-warning: #86532e;
   --color-success: #157249;
   --color-info: #175cd3;
-  --color-progress: var(--color-accent);
   --color-error-surface: #efe4e4;
   --color-warning-surface: #e7e2de;
   --color-success-surface: #d9e5e1;
   --color-info-surface: #d9e3f2;
   --shadow-dialog: 0 8px 24px rgb(16 16 24 / 12%), 0 0 0 1px var(--color-border-subtle);
-  --color-status-text: var(--color-text);
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
@@ -70,34 +61,30 @@
   --space-24: 6rem;
   --row: 2.25rem;
   --page-wide: 1120px;
+  --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --color-nav-current-text: var(--color-text);
 }
 
 :root.dark {
   color-scheme: dark;
   --color-project: var(--color-project-dark);
-  --color-project-dark: #d1b3c8;
-  --color-bg: #0d1012;
-  --color-surface: #13171a;
-  --color-surface-raised: #181d21;
-  --color-surface-muted: #20262b;
-  --color-text: #e6e9eb;
-  --color-muted: #9aa3ab;
+  --color-project-dark: #cba6f7;
+  --color-bg: #11111b;
+  --color-surface: #181825;
+  --color-surface-raised: #1e1e2e;
+  --color-surface-muted: #313244;
+  --color-text: #cdd6f4;
+  --color-muted: #a6adc8;
   --color-link: #67c1df;
   --color-accent: var(--color-project);
   --color-accent-text: var(--color-bg);
   --color-focus: var(--color-accent);
-  --color-border: #78818a;
-  --color-border-subtle: #262d33;
-  --color-button-bg: var(--color-accent);
-  --color-button-text: var(--color-accent-text);
+  --color-border: #7f849c;
+  --color-border-subtle: #45475a;
   --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
-  --color-input-bg: var(--color-surface-raised);
-  --color-input-text: var(--color-text);
-  --color-input-border: var(--color-border);
-  --color-input-placeholder: var(--color-muted);
-  --color-row-hover: #20262b;
+  --color-row-hover: #313244;
   --color-row-selected: var(--color-surface-raised);
-  --color-row-selected-text: var(--color-text);
   --color-code: var(--color-surface);
   --color-code-text: var(--color-text);
   --color-syntax-comment: #a0a6b1;
@@ -115,13 +102,11 @@
   --color-warning: #e2a54b;
   --color-success: #4cc38a;
   --color-info: #84adff;
-  --color-progress: var(--color-accent);
   --color-error-surface: #312020;
   --color-warning-surface: #2f281b;
   --color-success-surface: #172d25;
   --color-info-surface: #202938;
   --shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-subtle);
-  --color-status-text: var(--color-text);
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
@@ -130,4 +115,7 @@
   --color-accent-hover: var(--color-text);
   --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
   --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
+  --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --color-nav-current-text: var(--color-accent);
 }

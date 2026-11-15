@@ -19,16 +19,9 @@
   --color-focus: var(--color-accent);
   --color-border: #6d747b;
   --color-border-subtle: #d3d8dd;
-  --color-button-bg: var(--color-accent);
-  --color-button-text: var(--color-accent-text);
   --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
-  --color-input-bg: var(--color-surface-raised);
-  --color-input-text: var(--color-text);
-  --color-input-border: var(--color-border);
-  --color-input-placeholder: var(--color-muted);
   --color-row-hover: #e2e5e8;
   --color-row-selected: var(--color-surface-raised);
-  --color-row-selected-text: var(--color-text);
   --color-code: var(--color-surface);
   --color-code-text: var(--color-text);
   --color-syntax-comment: #626772;
@@ -46,13 +39,11 @@
   --color-warning: #86532e;
   --color-success: #157249;
   --color-info: #175cd3;
-  --color-progress: var(--color-accent);
   --color-error-surface: #efe4e4;
   --color-warning-surface: #e7e2de;
   --color-success-surface: #d9e5e1;
   --color-info-surface: #d9e3f2;
   --shadow-dialog: 0 8px 24px rgb(16 16 24 / 12%), 0 0 0 1px var(--color-border-subtle);
-  --color-status-text: var(--color-text);
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
@@ -70,6 +61,8 @@
   --space-24: 6rem;
   --row: 2.25rem;
   --page-wide: 1120px;
+  --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 :root.dark {
@@ -88,16 +81,9 @@
   --color-focus: var(--color-accent);
   --color-border: #78818a;
   --color-border-subtle: #262d33;
-  --color-button-bg: var(--color-accent);
-  --color-button-text: var(--color-accent-text);
   --color-button-hover: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
-  --color-input-bg: var(--color-surface-raised);
-  --color-input-text: var(--color-text);
-  --color-input-border: var(--color-border);
-  --color-input-placeholder: var(--color-muted);
   --color-row-hover: #20262b;
   --color-row-selected: var(--color-surface-raised);
-  --color-row-selected-text: var(--color-text);
   --color-code: var(--color-surface);
   --color-code-text: var(--color-text);
   --color-syntax-comment: #a0a6b1;
@@ -115,13 +101,11 @@
   --color-warning: #e2a54b;
   --color-success: #4cc38a;
   --color-info: #84adff;
-  --color-progress: var(--color-accent);
   --color-error-surface: #312020;
   --color-warning-surface: #2f281b;
   --color-success-surface: #172d25;
   --color-info-surface: #202938;
   --shadow-dialog: 0 8px 24px rgb(0 0 0 / 45%), 0 0 0 1px var(--color-border-subtle);
-  --color-status-text: var(--color-text);
   --color-terminal: #0a0c0e;
   --color-terminal-text: #e6e9eb;
   --color-terminal-border: #2a3036;
@@ -130,4 +114,6 @@
   --color-accent-hover: var(--color-text);
   --color-command-bg: color-mix(in srgb, var(--color-project) 16%, black);
   --color-command-border: color-mix(in srgb, var(--color-project) 28%, black);
+  --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
