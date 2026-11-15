@@ -175,7 +175,7 @@ test.describe('desktop', () => {
         const rail = await box(page.locator(selector))
         expect(rail.y + rail.height, selector).toBeLessThanOrEqual(footer)
       }
-      // Without Find, as the docs site mounts the rail, its menu also ends at or above the footer rule.
+      // Without Find, as the filip-stack site mounts the rail, its menu also ends at or above the footer rule.
       await page.goto(`${site}?shell&long`)
       await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
       const menu = await box(page.locator('.fg-site-rail__menu'))
