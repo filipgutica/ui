@@ -73,7 +73,7 @@ test.describe('code block frame', () => {
     expect(await geometry(bare)).toEqual({ frame: '16px', panel: '12px', top: 4, left: 4, bottom: 4, right: 4, copyRight: null })
   })
 
-  test('the frame is raised with a subtle edge, and the command plate darkens its panel', async ({ page }) => {
+  test('the frame is raised with a subtle edge, and a command is the same block with an accent prompt', async ({ page }) => {
     for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme })
       const block = await sandbox(page, { variant: 'default' })
@@ -88,10 +88,32 @@ test.describe('code block frame', () => {
       await expect(block, colorScheme).toHaveCSS('border-top-color', tokens.edge)
       await expect(block.locator('pre'), colorScheme).toHaveCSS('background-color', tokens.code)
 
+      // A command draws the same frame and code well as a compact source block.
+      const surface = (element: HTMLElement) => {
+        const [frame, pre] = [getComputedStyle(element), getComputedStyle(element.querySelector('pre')!)]
+        return { background: frame.backgroundColor, border: frame.borderTopColor, shadow: frame.boxShadow, panel: pre.backgroundColor, text: pre.color }
+      }
+      const source = await (await sandbox(page, { variant: 'compact', language: 'typescript' })).evaluate(surface)
       const command = await sandbox(page, { variant: 'compact', language: 'bash' })
       await expect(command).toHaveAttribute('data-command', 'true')
-      const [plate, panel] = await Promise.all([hexOf(command, 'backgroundColor'), hexOf(command.locator('pre'), 'backgroundColor')])
-      expect(panel, `${colorScheme} command panel`).not.toBe(plate)
+      expect(await command.evaluate(surface), `${colorScheme} command`).toEqual(source)
+      expect(source.panel, colorScheme).toBe(tokens.code)
+      // Its prompt is the accent and reads at 3:1 on the code well.
+      const prompt = await command.evaluate((element) => {
+        const context = document.createElement('canvas').getContext('2d')!
+        const hex = (color: string) => {
+          context.fillStyle = color
+          context.fillRect(0, 0, 1, 1)
+          return '#' + [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(channel => channel.toString(16).padStart(2, '0')).join('')
+        }
+        return {
+          color: hex(getComputedStyle(element.querySelector('.fg-code-block__line')!, '::before').color),
+          accent: hex(getComputedStyle(element).getPropertyValue('--color-accent')),
+          panel: hex(getComputedStyle(element.querySelector('pre')!).backgroundColor),
+        }
+      })
+      expect(prompt.color, `${colorScheme} prompt`).toBe(prompt.accent)
+      expect(contrast(prompt.color, prompt.panel), `${colorScheme} prompt on ${prompt.panel}`).toBeGreaterThanOrEqual(3)
     }
   })
 
@@ -210,7 +232,7 @@ test('muted Copy at rest reads at 4.5:1 on every code block surface, in light an
     const surfaces: [string, () => Promise<Locator>][] = [
       ['header block', () => sandbox(page, { variant: 'default' })],
       ['compact block', () => sandbox(page, { variant: 'compact', language: 'typescript' })],
-      ['command plate', () => sandbox(page, { variant: 'compact', language: 'bash' })],
+      ['command', () => sandbox(page, { variant: 'compact', language: 'bash' })],
       ['example source', async () => {
         await page.goto('/#/components/card')
         return page.locator('.fg-example > .fg-code-block').first()

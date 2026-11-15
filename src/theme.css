@@ -116,7 +116,7 @@
   --color-accent-hover: var(--color-text);
   --color-project-dark: #a5a1ff;
   --color-status-ink: black;
-  /* Commands carry the project hue; terminal captures keep their neutral palette. */
+  /* Commands use the code well; terminal captures keep their neutral palette. */
   --color-command-bg: var(--color-code);
   --color-command-border: var(--color-border-subtle);
   --color-terminal: #0a0c0e;

@@ -367,13 +367,13 @@ Navigation rows in the rail and the drawer are `--row`
 (2.25rem) tall, and `--control-lg` at 800px and below.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
-Set `--color-project-dark` to the dark variant in both appearances, so prompts,
-capture tab underlines, and focus rings stay readable on terminal plates. The default hue
+Set `--color-project-dark` to the dark variant in both appearances, so capture
+tab underlines and focus rings stay readable on terminal captures. The default hue
 belongs to ui. Primary buttons use `--color-accent` with `--color-accent-text` in both appearances.
 Focus rings use `--color-focus`, the accent, at `--focus-width` with a `--focus-offset` gap.
 A focused field draws no ring: its edge turns accent, and its fill does not change.
-Command plates use `--color-command-bg` and `--color-command-border`, derived from the
-project hue. Terminal captures keep the neutral `--color-terminal` palette.
+Commands use the normal code block, with a `$ ` prompt in `--color-accent`.
+Terminal captures keep the neutral `--color-terminal` palette.
 
 Compact shell or plain-text `UiCodeBlock` rows and untitled shell blocks are
 terminal commands. Their CSS prompt stays out of copied and accessible text.
