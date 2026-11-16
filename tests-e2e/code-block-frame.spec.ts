@@ -76,6 +76,8 @@ test.describe('code block frame', () => {
   test('the frame is raised with a subtle edge, and a command uses the same frame, well, and edge', async ({ page }) => {
     for (const colorScheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme })
+      // Wait for the scheme class before reading tokens; see the Copy contrast test below.
+      await expect(page.locator('html')).toHaveClass(colorScheme === 'dark' ? /\bdark\b/ : /^(?!.*\bdark\b)/)
       const block = await sandbox(page, { variant: 'default' })
       const tokens = await block.evaluate((element) => {
         const probe = element.appendChild(document.createElement('i'))
