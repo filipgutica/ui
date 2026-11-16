@@ -454,7 +454,8 @@
   .fg-capture__screen > * { width: max-content; margin: 0; }
   /* Terminal colors for checked-in capture markup: .term and the ANSI classes the capture
    * converter emits. Each color reads the site's --t* value first, so a site palette on
-   * :root still wins, and these defaults apply only where a site sets none. */
+   * :root still wins, and the design system's --color-terminal-ansi-* colors apply only where a
+   * site sets none. */
   .fg-capture__screen .term {
     padding: var(--space-4);
     color: var(--t-fg, var(--color-terminal-text));
@@ -463,39 +464,39 @@
     tab-size: 8;
   }
   .fg-capture__screen .term i { display: inline-block; width: 1ch; overflow: visible; font-style: normal; }
-  .fg-capture__screen .tf0 { color: var(--t0, #2b2b31); }
-  .fg-capture__screen .tf1 { color: var(--t1, #f0776c); }
-  .fg-capture__screen .tf2 { color: var(--t2, #4cc38a); }
-  .fg-capture__screen .tf3 { color: var(--t3, #e2a54b); }
-  .fg-capture__screen .tf4 { color: var(--t4, #7d97ff); }
-  .fg-capture__screen .tf5 { color: var(--t5, #c792ea); }
-  .fg-capture__screen .tf6 { color: var(--t6, #5fd3d9); }
-  .fg-capture__screen .tf7 { color: var(--t7, #c8c8d0); }
-  .fg-capture__screen .tf8 { color: var(--t8, #a0a0ab); }
-  .fg-capture__screen .tf9 { color: var(--t9, #ff8f85); }
-  .fg-capture__screen .tf10 { color: var(--t10, #6fd3a0); }
-  .fg-capture__screen .tf11 { color: var(--t11, #e8b56a); }
-  .fg-capture__screen .tf12 { color: var(--t12, #7d97ff); }
-  .fg-capture__screen .tf13 { color: var(--t13, #d9a8f0); }
-  .fg-capture__screen .tf14 { color: var(--t14, #8ee3e8); }
-  .fg-capture__screen .tf15 { color: var(--t15, #ffffff); }
-  .fg-capture__screen .tb0 { background: var(--t0, #2b2b31); }
-  .fg-capture__screen .tb1 { background: var(--t1, #f0776c); }
-  .fg-capture__screen .tb2 { background: var(--t2, #4cc38a); }
-  .fg-capture__screen .tb3 { background: var(--t3, #e2a54b); }
-  .fg-capture__screen .tb4 { background: var(--t4, #3354c4); }
-  .fg-capture__screen .tb5 { background: var(--t5, #c792ea); }
-  .fg-capture__screen .tb6 { background: var(--t6, #5fd3d9); }
-  .fg-capture__screen .tb7 { background: var(--t7, #c8c8d0); }
-  .fg-capture__screen .tb8 { background: var(--t8, #a0a0ab); }
-  .fg-capture__screen .tb9 { background: var(--t9, #ff8f85); }
-  .fg-capture__screen .tb10 { background: var(--t10, #6fd3a0); }
-  .fg-capture__screen .tb11 { background: var(--t11, #e8b56a); }
-  .fg-capture__screen .tb12 { background: var(--t12, #7d97ff); }
-  .fg-capture__screen .tb13 { background: var(--t13, #d9a8f0); }
-  .fg-capture__screen .tb14 { background: var(--t14, #8ee3e8); }
-  .fg-capture__screen .tb15 { background: var(--t15, #ffffff); }
-  .fg-capture__screen .tf-dim { color: var(--t-dim, #a0a0ab); }
+  .fg-capture__screen .tf0 { color: var(--t0, var(--color-terminal-ansi-0)); }
+  .fg-capture__screen .tf1 { color: var(--t1, var(--color-terminal-ansi-1)); }
+  .fg-capture__screen .tf2 { color: var(--t2, var(--color-terminal-ansi-2)); }
+  .fg-capture__screen .tf3 { color: var(--t3, var(--color-terminal-ansi-3)); }
+  .fg-capture__screen .tf4 { color: var(--t4, var(--color-terminal-ansi-4)); }
+  .fg-capture__screen .tf5 { color: var(--t5, var(--color-terminal-ansi-5)); }
+  .fg-capture__screen .tf6 { color: var(--t6, var(--color-terminal-ansi-6)); }
+  .fg-capture__screen .tf7 { color: var(--t7, var(--color-terminal-ansi-7)); }
+  .fg-capture__screen .tf8 { color: var(--t8, var(--color-terminal-ansi-8)); }
+  .fg-capture__screen .tf9 { color: var(--t9, var(--color-terminal-ansi-9)); }
+  .fg-capture__screen .tf10 { color: var(--t10, var(--color-terminal-ansi-10)); }
+  .fg-capture__screen .tf11 { color: var(--t11, var(--color-terminal-ansi-11)); }
+  .fg-capture__screen .tf12 { color: var(--t12, var(--color-terminal-ansi-12)); }
+  .fg-capture__screen .tf13 { color: var(--t13, var(--color-terminal-ansi-13)); }
+  .fg-capture__screen .tf14 { color: var(--t14, var(--color-terminal-ansi-14)); }
+  .fg-capture__screen .tf15 { color: var(--t15, var(--color-terminal-ansi-15)); }
+  .fg-capture__screen .tb0 { background: var(--t0, var(--color-terminal-ansi-0)); }
+  .fg-capture__screen .tb1 { background: var(--t1, var(--color-terminal-ansi-1)); }
+  .fg-capture__screen .tb2 { background: var(--t2, var(--color-terminal-ansi-2)); }
+  .fg-capture__screen .tb3 { background: var(--t3, var(--color-terminal-ansi-3)); }
+  .fg-capture__screen .tb4 { background: var(--t4, var(--color-terminal-ansi-4-bg)); }
+  .fg-capture__screen .tb5 { background: var(--t5, var(--color-terminal-ansi-5)); }
+  .fg-capture__screen .tb6 { background: var(--t6, var(--color-terminal-ansi-6)); }
+  .fg-capture__screen .tb7 { background: var(--t7, var(--color-terminal-ansi-7)); }
+  .fg-capture__screen .tb8 { background: var(--t8, var(--color-terminal-ansi-8)); }
+  .fg-capture__screen .tb9 { background: var(--t9, var(--color-terminal-ansi-9)); }
+  .fg-capture__screen .tb10 { background: var(--t10, var(--color-terminal-ansi-10)); }
+  .fg-capture__screen .tb11 { background: var(--t11, var(--color-terminal-ansi-11)); }
+  .fg-capture__screen .tb12 { background: var(--t12, var(--color-terminal-ansi-12)); }
+  .fg-capture__screen .tb13 { background: var(--t13, var(--color-terminal-ansi-13)); }
+  .fg-capture__screen .tb14 { background: var(--t14, var(--color-terminal-ansi-14)); }
+  .fg-capture__screen .tb15 { background: var(--t15, var(--color-terminal-ansi-15)); }
+  .fg-capture__screen .tf-dim { color: var(--t-dim, var(--color-terminal-ansi-8)); }
   .fg-capture__screen .tf-bg { color: var(--t-bg, var(--color-terminal)); }
   .fg-capture__screen .tb-fg { background: var(--t-fg, var(--color-terminal-text)); }
   /* Text on the light selection row stays dark, whatever its own colour class. */

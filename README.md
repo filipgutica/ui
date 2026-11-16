@@ -410,8 +410,8 @@ holds the active ID and defaults to the first item. Each capture has the ID
 selects its tab on load and on hash change. Without JavaScript every capture is
 listed under its own heading and scrolls at full size. Captures use a dark
 terminal palette for the `.term` root and the converter's ANSI classes (`.tf0`
-to `.tf15`, `.tb0` to `.tb15`, `.tf-dim`, `.tbold`, and the others). To change
-it, set `--site-capture-bg`, `--t-bg`, `--t-fg`, `--t-dim`, or `--t0` to `--t15`
+to `.tf15`, `.tb0` to `.tb15`, `.tf-dim`, `.tbold`, and the others). The colors
+are the design system's `--color-terminal-ansi-*` tokens. To change them, set `--site-capture-bg`, `--t-bg`, `--t-fg`, `--t-dim`, or `--t0` to `--t15`
 on `:root`, because the dialog renders outside the panel.
 
 `UiCommandList` renders a table of monospace commands and descriptions. Use the
