@@ -22,79 +22,79 @@ importers:
         version: 3.23.0
     devDependencies:
       '@axe-core/playwright':
-        specifier: ^4.14.0
+        specifier: 4.14.0
         version: 4.14.0(playwright-core@1.62.1)
       '@commitlint/cli':
-        specifier: ^21.2.2
+        specifier: 21.2.2
         version: 21.2.2(@types/node@26.4.1)(conventional-commits-parser@7.1.2)(typescript@5.9.3)
       '@commitlint/config-conventional':
-        specifier: ^21.2.2
+        specifier: 21.2.2
         version: 21.2.2
       '@eslint/js':
-        specifier: ^10.0.1
+        specifier: 10.0.1
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0))
       '@playwright/test':
-        specifier: ^1.62.1
+        specifier: 1.62.1
         version: 1.62.1
       '@semantic-release/commit-analyzer':
         specifier: 13.0.1
         version: 13.0.1(semantic-release@25.0.9(typescript@5.9.3))
       '@tailwindcss/vite':
-        specifier: ^4.3.3
+        specifier: 4.3.3
         version: 4.3.3(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0))
       '@types/node':
-        specifier: ^26.0.0
+        specifier: 26.4.1
         version: 26.4.1
       '@vitejs/plugin-vue':
-        specifier: ^6.0.0
+        specifier: 6.0.8
         version: 6.0.8(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0))(vue@3.5.42(typescript@5.9.3))
       '@vue/test-utils':
-        specifier: ^2.4.6
+        specifier: 2.5.0
         version: 2.5.0(@vue/compiler-dom@3.5.42)(@vue/server-renderer@3.5.42)(vue@3.5.42(typescript@5.9.3))
       conventional-changelog-conventionalcommits:
-        specifier: ^9.3.1
+        specifier: 9.3.1
         version: 9.3.1
       eslint:
-        specifier: ^10.9.1
+        specifier: 10.9.1
         version: 10.9.1(jiti@2.7.0)
       eslint-plugin-vue:
-        specifier: ^10.10.0
+        specifier: 10.10.0
         version: 10.10.0(@typescript-eslint/parser@8.69.0(eslint@10.9.1(jiti@2.7.0))(typescript@5.9.3))(eslint@10.9.1(jiti@2.7.0))(vue-eslint-parser@10.4.1(eslint@10.9.1(jiti@2.7.0)))
       globals:
-        specifier: ^17.12.0
+        specifier: 17.12.0
         version: 17.12.0
       happy-dom:
-        specifier: ^20.12.2
+        specifier: 20.12.2
         version: 20.12.2
       publint:
-        specifier: ^0.3.24
+        specifier: 0.3.24
         version: 0.3.24
       semantic-release:
-        specifier: ^25.0.9
+        specifier: 25.0.9
         version: 25.0.9(typescript@5.9.3)
       swrv:
-        specifier: ^1.2.0
+        specifier: 1.2.0
         version: 1.2.0(vue@3.5.42(typescript@5.9.3))
       tailwindcss:
-        specifier: ^4.3.3
+        specifier: 4.3.3
         version: 4.3.3
       typescript:
-        specifier: ^5.9.3
+        specifier: 5.9.3
         version: 5.9.3
       typescript-eslint:
-        specifier: ^8.69.0
+        specifier: 8.69.0
         version: 8.69.0(eslint@10.9.1(jiti@2.7.0))(typescript@5.9.3)
       vite:
-        specifier: ^8.2.2
+        specifier: 8.2.2
         version: 8.2.2(@types/node@26.4.1)(jiti@2.7.0)
       vitest:
-        specifier: ^4.1.11
+        specifier: 4.1.11
         version: 4.1.11(@types/node@26.4.1)(happy-dom@20.12.2)(vite@8.2.2(@types/node@26.4.1)(jiti@2.7.0))
       vue:
-        specifier: ^3.5.42
+        specifier: 3.5.42
         version: 3.5.42(typescript@5.9.3)
       vue-tsc:
-        specifier: ^3.3.11
+        specifier: 3.3.11
         version: 3.3.11(typescript@5.9.3)
 
 packages:
@@ -2937,7 +2937,7 @@ snapshots:
   '@commitlint/is-ignored@21.2.2':
     dependencies:
       '@commitlint/types': 21.2.0
-      semver: 7.8.5
+      semver: 7.8.6
 
   '@commitlint/lint@21.2.2':
     dependencies:
@@ -3009,7 +3009,7 @@ snapshots:
     dependencies:
       '@simple-libs/child-process-utils': 2.0.0
       '@simple-libs/stream-utils': 2.0.0
-      semver: 7.8.5
+      semver: 7.8.6
     optionalDependencies:
       conventional-commits-parser: 7.1.2
 
@@ -3317,7 +3317,7 @@ snapshots:
       read-pkg: 10.1.0
       registry-auth-token: 5.1.1
       semantic-release: 25.0.9(typescript@5.9.3)
-      semver: 7.8.5
+      semver: 7.8.6
       tempy: 3.2.0
 
   '@semantic-release/release-notes-generator@14.1.1(semantic-release@25.0.9(typescript@5.9.3))':
@@ -3565,7 +3565,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.69.0
       debug: 4.4.3
       minimatch: 10.2.6
-      semver: 7.8.5
+      semver: 7.8.6
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
@@ -4013,7 +4013,7 @@ snapshots:
       '@one-ini/wasm': 0.2.1
       commander: 14.0.3
       minimatch: 10.2.6
-      semver: 7.8.5
+      semver: 7.8.6
 
   emoji-regex@10.6.0: {}
 
@@ -4060,7 +4060,7 @@ snapshots:
       natural-compare: 1.4.0
       nth-check: 2.1.1
       postcss-selector-parser: 7.1.5
-      semver: 7.8.5
+      semver: 7.8.6
       vue-eslint-parser: 10.4.1(eslint@10.9.1(jiti@2.7.0))
       xml-name-validator: 5.0.0
     optionalDependencies:
@@ -4710,13 +4710,13 @@ snapshots:
   normalize-package-data@6.0.2:
     dependencies:
       hosted-git-info: 7.0.2
-      semver: 7.8.5
+      semver: 7.8.6
       validate-npm-package-license: 3.0.4
 
   normalize-package-data@8.0.0:
     dependencies:
       hosted-git-info: 9.0.3
-      semver: 7.8.5
+      semver: 7.8.6
       validate-npm-package-license: 3.0.4
 
   normalize-url@9.0.1: {}
@@ -5042,7 +5042,7 @@ snapshots:
       p-reduce: 3.0.0
       read-package-up: 12.0.0
       resolve-from: 5.0.0
-      semver: 7.8.5
+      semver: 7.8.6
       signale: 1.4.0
       yargs: 18.1.0
     transitivePeerDependencies:
