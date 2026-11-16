@@ -200,6 +200,9 @@ test('colors captures with the default terminal palette unless the site sets its
   const accent = page.locator('.fg-capture[data-enhanced="true"] .tf6').first()
   await expect(accent).toHaveCSS('color', 'rgb(95, 211, 217)')
   await expect(page.locator('.fg-capture[data-enhanced="true"] .fg-capture__screen').first()).toHaveCSS('background-color', 'rgb(10, 12, 14)')
+  // The default is the design system's ANSI token, and a site's --t* value still wins over it.
+  await page.addStyleTag({ content: ':root { --color-terminal-ansi-6: #00ff00; }' })
+  await expect(accent).toHaveCSS('color', 'rgb(0, 255, 0)')
   await page.addStyleTag({ content: ':root { --t6: #ff0000; }' })
   await expect(accent).toHaveCSS('color', 'rgb(255, 0, 0)')
   // Plain output uses the same terminal plate and its own light foreground.
