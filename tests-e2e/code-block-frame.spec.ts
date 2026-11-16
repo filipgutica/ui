@@ -224,6 +224,10 @@ test('muted Copy at rest reads at 4.5:1 on every code block surface, in light an
   await page.setViewportSize({ width: 1280, height: 900 })
   for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme })
+    // The site applies the scheme as a .dark class after the media change. A Copy mounted before the
+    // class lands transitions from the other scheme's muted colour, so wait for it before opening a
+    // surface. On the first pass the page is still about:blank, so the light check passes at once.
+    await expect(page.locator('html')).toHaveClass(colorScheme === 'dark' ? /\bdark\b/ : /^(?!.*\bdark\b)/)
     const surfaces: [string, () => Promise<Locator>][] = [
       ['header block', () => sandbox(page, { variant: 'default' })],
       ['compact block', () => sandbox(page, { variant: 'compact', language: 'typescript' })],
