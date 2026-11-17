@@ -52,13 +52,45 @@ test('follows the menu button keyboard pattern', async ({ page }) => {
   await expect(trigger(page)).toHaveAttribute('aria-expanded', 'false')
 })
 
-test('closes on Tab and moves focus on from the trigger', async ({ page }) => {
+test('closes on Tab in either direction and lets focus move on', async ({ page }) => {
   await page.goto(fixture)
   await openWith(page, 'Enter')
   await expect(trigger(page)).toHaveAttribute('aria-expanded', 'true')
   await page.keyboard.press('Tab')
   await expect(menu(page)).toBeHidden()
   await expect(page.getByRole('button', { name: 'Next control' })).toBeFocused()
+
+  await openWith(page, 'Enter')
+  await page.keyboard.press('Shift+Tab')
+  await expect(menu(page)).toBeHidden()
+  await expect(trigger(page)).toHaveAttribute('aria-expanded', 'false')
+  await expect(trigger(page)).toBeFocused()
+
+  // The closed menu leaves nothing behind: after an item runs, Escape still returns focus.
+  await openWith(page, 'Enter')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#selected')).toHaveText('rename')
+  await expect(trigger(page)).toBeFocused()
+  await openWith(page, 'Enter')
+  await page.keyboard.press('Escape')
+  await expect(menu(page)).toBeHidden()
+  await expect(trigger(page)).toBeFocused()
+})
+
+test('draws a highlighted danger item in the system highlight colours in forced colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' })
+  await page.goto(fixture)
+  for (const dark of [false, true]) {
+    await page.evaluate(dark => document.documentElement.classList.toggle('dark', dark), dark)
+    await openWith(page, 'Enter')
+    const highlighted = async (key: string, name: string) => {
+      await page.keyboard.press(key)
+      await expect(item(page, name)).toHaveAttribute('data-highlighted', '')
+      return item(page, name).evaluate(element => getComputedStyle(element).color)
+    }
+    expect(await highlighted('End', 'Delete…'), `dark=${dark}`).toBe(await highlighted('Home', 'Rename'))
+    await page.keyboard.press('Escape')
+  }
 })
 
 test('puts the destructive item last, after a separator', async ({ page }) => {

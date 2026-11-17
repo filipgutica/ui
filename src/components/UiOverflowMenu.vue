@@ -69,6 +69,14 @@ const focusLast = (event: Event) => {
   last.focus()
 }
 
+// Tab in either direction closes the menu. Reka dismisses it when focus leaves for the next
+// control, but keeps it open when Shift+Tab lands on the trigger, so close it once focus has moved.
+const closeAfterTab = () => {
+  setTimeout(() => {
+    open.value = false
+  })
+}
+
 // A selected item emits only once the menu has closed and focus is back on the trigger, so a
 // confirm dialog the caller opens from it returns focus to the trigger when it closes.
 let selectedId: string | undefined
@@ -124,6 +132,7 @@ const emitSelected = (event: Event) => {
         loop
         @open-auto-focus="focusLast"
         @close-auto-focus="emitSelected"
+        @keydown.tab="closeAfterTab"
       >
         <template
           v-for="{ item, separatorBefore } in rows"

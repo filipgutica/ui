@@ -47,9 +47,10 @@
     cursor: pointer;
   }
   .fg-overflow-menu__item svg { width: 16px; height: 16px; flex: none; }
-  /* The danger button's text colour. */
+  /* The danger button's text colour. :where keeps the dark rule at the light rule's weight, so the
+   * forced-colors highlight below still wins in dark mode. */
   .fg-overflow-menu__item[data-tone="danger"] { color: color-mix(in srgb, var(--color-error) 75%, var(--color-status-ink)); }
-  :root.dark .fg-overflow-menu__item[data-tone="danger"] { color: color-mix(in srgb, var(--color-error) 85%, var(--color-status-ink)); }
+  :where(:root.dark) .fg-overflow-menu__item[data-tone="danger"] { color: color-mix(in srgb, var(--color-error) 85%, var(--color-status-ink)); }
   /* Reka highlights an item while a mouse hovers it or it has focus, and never a disabled one. */
   .fg-overflow-menu__item[data-highlighted] { background: var(--color-row-hover); }
   /* An inset ring, as the project menu's rows draw, so it stays inside the menu and off the next row. */
