@@ -53,6 +53,8 @@ const rows = computed(() => {
 // Enter, Space, and Down Arrow, so Up Arrow opens the menu here and moves focus once it mounts.
 let focusLastOnOpen = false
 const openOnLast = () => {
+  // Shift+Tab from an item leaves the menu open with focus on the trigger; nothing mounts then.
+  if (open.value) return
   focusLastOnOpen = true
   open.value = true
 }
