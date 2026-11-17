@@ -297,7 +297,7 @@ const supportsControlSize = computed(() => [
       <output for="progress-value">{{ progressValue }}%</output>
     </template>
 
-    <template v-else-if="slug === 'slider'">
+    <template v-else-if="slug === 'slider' || slug === 'overflow-menu'">
       <UiCheckbox v-model="disabled">
         Disabled
       </UiCheckbox>
