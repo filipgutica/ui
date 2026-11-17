@@ -199,6 +199,37 @@ export const componentDocs: ComponentDoc[] = [
     },
   },
   {
+    category: 'Actions',
+    slug: 'overflow-menu',
+    name: 'UiOverflowMenu',
+    title: 'Overflow menu',
+    summary: 'Holds two or more secondary actions of a row, card, or toolbar behind a More button.',
+    usage: [
+      'Use it for two or more secondary actions, ordered by how often they are used. Put the trigger at the end of its row, card, or toolbar.',
+      'Keep the primary action, a recovery action such as Retry, a single action, and links to other pages as buttons or links.',
+      'Name what the trigger acts on in label, such as More actions for API latency.',
+      'A danger item renders last, after a separator, in whatever order items lists it. Confirm it in a dialog: the menu never confirms.',
+      'Enter, Space, or Down Arrow opens the menu on the first item, and Up Arrow on the last. The arrows wrap and skip disabled items; Home, End, and a first letter move too. Escape returns focus to the trigger, and Tab closes the menu and moves on.',
+      'select emits once the menu has closed and focus is back on the trigger, so a dialog opened from it returns focus there when it closes.',
+    ],
+    props: [
+      { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'Disables the trigger.' },
+      { name: 'items', required: true, type: "readonly { id: string; label: string; tone?: 'danger'; disabled?: boolean }[]", description: 'The actions. A disabled item uses native disabled, and the arrow keys skip it.' },
+      { name: 'label', required: true, type: 'string', description: 'Accessible name of the trigger, which shows only an icon. It also names the menu.' },
+    ],
+    slots: [
+      { name: 'icon', type: '{ item: UiOverflowMenuItem }', description: 'A 16px icon before an item label. Mark it aria-hidden.' },
+    ],
+    events: [
+      { name: 'select', type: 'string', description: 'Emits the id of the item that ran, after the menu closes. Disabled items never emit.' },
+    ],
+    example: {
+      title: 'Monitor actions',
+      description: 'Export is disabled. Delete comes last after a separator and opens a confirm dialog.',
+      code: `<UiOverflowMenu\n  label="More actions for API latency"\n  :items="[\n    { id: 'rename', label: 'Rename' },\n    { id: 'duplicate', label: 'Duplicate' },\n    { id: 'export', label: 'Export', disabled: true },\n    { id: 'delete', label: 'Delete…', tone: 'danger' },\n  ]"\n  @select="id => { if (id === 'delete') confirmOpen = true }"\n/>`,
+    },
+  },
+  {
     category: 'Forms',
     slug: 'checkbox',
     name: 'UiCheckbox',

@@ -20,6 +20,7 @@ import {
   UiFigure,
   UiImageViewer,
   UiInput,
+  UiOverflowMenu,
   UiProgress,
   UiRadioCard,
   UiRadioCardGroup,
@@ -89,6 +90,13 @@ const dialogOpen = ref(false)
 const drawerOpen = ref(false)
 const imageViewerOpen = ref(false)
 const selectedTab = ref('list')
+const overflowItems = [
+  { id: 'rename', label: 'Rename' },
+  { id: 'duplicate', label: 'Duplicate' },
+  { id: 'export', label: 'Export', disabled: true },
+  { id: 'delete', label: 'Delete…', tone: 'danger' as const },
+]
+const confirmOpen = ref(false)
 
 type CodeLanguage = 'vue' | 'typescript' | 'javascript' | 'json' | 'yaml' | 'css' | 'html' | 'bash' | 'text'
 
@@ -451,6 +459,40 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
           Failed
         </option>
       </UiSelect>
+
+      <div
+        v-else-if="slug === 'overflow-menu'"
+        class="overflow-example"
+      >
+        <span>API latency</span>
+        <UiOverflowMenu
+          label="More actions for API latency"
+          :items="overflowItems"
+          :disabled="disabled"
+          @select="id => { if (id === 'delete') confirmOpen = true }"
+        />
+        <UiDialog
+          v-model:open="confirmOpen"
+          title="Delete monitor"
+          description="This removes its history."
+        >
+          API p95 latency stops alerting at once.
+          <template #footer>
+            <UiButton
+              variant="secondary"
+              @click="confirmOpen = false"
+            >
+              Cancel
+            </UiButton>
+            <UiButton
+              variant="danger"
+              @click="confirmOpen = false"
+            >
+              Delete
+            </UiButton>
+          </template>
+        </UiDialog>
+      </div>
 
       <UiSlider
         v-else-if="slug === 'slider'"

@@ -1,0 +1,79 @@
+@layer components {
+  /* Overflow menu: a quiet-action trigger and a floating list of actions (the WAI-ARIA menu button
+   * pattern). The design system's catalogue recipe, on reka-ui's DropdownMenu. */
+  .fg-overflow-menu { display: inline-flex; }
+
+  .fg-overflow-menu__trigger {
+    display: inline-grid;
+    flex: none;
+    width: var(--control-sm);
+    height: var(--control-sm);
+    padding: 0;
+    place-items: center;
+    color: var(--color-muted);
+  }
+  .fg-overflow-menu__trigger svg { width: 1rem; height: 1rem; }
+  /* While the menu is open the trigger keeps the 6% hover tint. One class, so the quiet action's
+   * 12% press still wins. */
+  :where(.fg-overflow-menu__trigger)[aria-expanded="true"] { background: color-mix(in srgb, currentColor 6%, transparent); }
+
+  /* Focus moves to the items; the content takes focus only as reka's entry point. */
+  .fg-overflow-menu__content {
+    z-index: 3;
+    display: grid;
+    min-width: 180px;
+    padding: var(--space-1);
+    border: 1px solid transparent;
+    border-radius: var(--radius-panel);
+    outline: none;
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-dialog);
+  }
+
+  /* --row is declared only by the theme files, so the fallback keeps rows tall under theme.css alone. */
+  .fg-overflow-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--row, 2.25rem);
+    padding: 0 var(--space-3);
+    border: 1px solid transparent;
+    border-radius: calc(var(--radius-panel) - var(--space-1));
+    color: var(--color-text);
+    background: transparent;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .fg-overflow-menu__item svg { width: 16px; height: 16px; flex: none; }
+  /* The danger button's text colour. */
+  .fg-overflow-menu__item[data-tone="danger"] { color: color-mix(in srgb, var(--color-error) 75%, var(--color-status-ink)); }
+  :root.dark .fg-overflow-menu__item[data-tone="danger"] { color: color-mix(in srgb, var(--color-error) 85%, var(--color-status-ink)); }
+  /* Reka highlights an item while a mouse hovers it or it has focus, and never a disabled one. */
+  .fg-overflow-menu__item[data-highlighted] { background: var(--color-row-hover); }
+  /* An inset ring, as the project menu's rows draw, so it stays inside the menu and off the next row. */
+  .fg-overflow-menu__item:focus-visible {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: calc(var(--focus-width) * -1);
+  }
+  .fg-overflow-menu__item:disabled { opacity: 0.58; cursor: not-allowed; }
+
+  .fg-overflow-menu__separator {
+    margin: var(--space-1) calc(var(--space-1) * -1);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  /* Touch: at tablet width the trigger and each item grow to --control-lg. */
+  @media (max-width: 800px) {
+    .fg-overflow-menu__trigger { width: var(--control-lg); height: var(--control-lg); }
+    .fg-overflow-menu__item { min-height: var(--control-lg); }
+  }
+
+  @media (forced-colors: active) {
+    .fg-overflow-menu__item[data-highlighted] { forced-color-adjust: none; color: HighlightText; background: Highlight; }
+    /* The highlighted item opts out of adjustment, so its inset ring would keep the accent. */
+    .fg-overflow-menu__item[data-highlighted]:focus-visible { outline-color: HighlightText; }
+    .fg-overflow-menu__separator { border-top-color: CanvasText; }
+  }
+}

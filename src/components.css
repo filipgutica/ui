@@ -1,12 +1,14 @@
 @import './components/breadcrumbs.css';
 @import './components/drawer.css';
+@import './components/overflow-menu.css';
 @import './components/tabs.css';
 
 @layer components {
   /* Package-owned typography keeps controls consistent across consuming apps. */
   .fg-button, .fg-input, .fg-select, .fg-checkbox, .fg-field,
   .fg-radio-card, .fg-badge, .fg-alert, .fg-surface, .fg-card,
-  .fg-dialog__content, .fg-code-block, .fg-toggle-button, .fg-switch, .fg-segmented {
+  .fg-dialog__content, .fg-code-block, .fg-toggle-button, .fg-switch, .fg-segmented,
+  .fg-overflow-menu__content {
     font-family: var(--font-ui);
     font-size: var(--text-md);
     font-weight: var(--weight-regular);
