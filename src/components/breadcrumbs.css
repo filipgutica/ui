@@ -82,8 +82,8 @@
   }
 
   @media (max-width: 800px) {
-    .fg-breadcrumbs ol { margin-block: calc((1lh - var(--control-lg)) / 2) calc((var(--control-lg) - 1lh) / 2); }
-    .fg-breadcrumbs .fg-breadcrumbs__link { min-height: var(--control-lg); }
+    .fg-breadcrumbs ol { margin-block: calc((1lh - var(--control-touch)) / 2) calc((var(--control-touch) - 1lh) / 2); }
+    .fg-breadcrumbs .fg-breadcrumbs__link { min-height: var(--control-touch); }
   }
 
   /* Phones show only the parent of a trail of three or more, as a back link with a chevron that

@@ -49,7 +49,7 @@ test('shows the full trail, with the current page as text and chevrons that add 
   // The fixture page is .fg-site-prose, as on the project sites, whose list links are underlined.
   const link = deep(page).getByRole('link', { name: 'Skills' })
   await expect(link).toHaveCSS('text-decoration-line', 'none')
-  expect((await link.boundingBox())?.height).toBe(32)
+  expect((await link.boundingBox())?.height).toBe(28)
   await page.setViewportSize({ width: 800, height: 800 })
   expect((await link.boundingBox())?.height).toBe(44)
 })

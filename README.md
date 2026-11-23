@@ -220,7 +220,7 @@ import { UiSiteHeader } from '@filipgutica/ui/site'
 `project` is the site's id in [`src/site/projects.json`](src/site/projects.json),
 such as `wtree`, `devps`, or `ui`. The project menu is a native disclosure that
 works without JavaScript; Escape closes it and returns focus to its button.
-`links` are a navigation strip: rows 44px tall with 6px corners. A link with `current: true` gets `aria-current="page"` and the
+`links` are a navigation strip: rows 44px tall with 8px corners. A link with `current: true` gets `aria-current="page"` and the
 current-page fill. Each link is as wide as its label at the current link's
 medium weight, so changing the current link moves no other link; browsers
 without the `lh` unit skip this. Where the strip does not fit, it scrolls sideways and fades
@@ -320,9 +320,9 @@ The control's accessible name is its visible text, so it changes with the
 current page or section.
 
 The phone control is the design system's labelled trigger. It is a secondary
-button at least `--control-lg` tall, with `--space-2` block padding, so a long
+button at least `--control-touch` tall, with `--space-2` block padding, so a long
 label wraps and grows it. A 14×10 menu glyph sits `--space-3` before the label,
-and the button takes the 10px field corner. It sits at the start, `--space-2`
+and the button takes the 8px field corner. It sits at the start, `--space-2`
 below the header, and is the page's only navigation trigger. Without
 JavaScript it is a native `<details>` summary with a chevron, and the rows open
 in place under it.
@@ -364,7 +364,7 @@ identity's decorative `## ` mark, with `0.08em` tracking. Set `--heading-mark`
 on a page or section to change it; `--heading-mark: none` removes it. The
 default is `--heading-mark: "## "`. The mark is excluded from accessible text.
 Navigation rows in the rail and the drawer are `--row`
-(2.25rem) tall, and `--control-lg` at 800px and below.
+(2.25rem) tall, and `--control-touch` at 800px and below.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
 Set `--color-project-dark` to the dark variant in both appearances, so capture tab
@@ -428,7 +428,7 @@ wraps, with 8px block padding and the copy button centred beside both.
 `site.css` also includes page helpers: `.fg-site-steps` for an ordered list with
 numbered markers (each `li` holds an `h3` title and short paragraphs; mark the last
 step's outcome with `.fg-site-steps__result`), `.fg-site-facts` for an inline `dl` of short label and value
-pairs whose links get a `--control-lg` hit area at 640px and below,
+pairs whose links get a `--control-touch` hit area at 640px and below,
 `.fg-site-definitions` for a two-column `dl` of `dt` and `dd` that stacks on
 phones and keeps `code` such as `--all` on one line, `.fg-site-sr-only` for
 visually hidden text, and `.fg-site-skip` for a skip link that appears on focus.

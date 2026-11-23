@@ -201,7 +201,7 @@ test('marks a pressed toggle card with its switch and a faint hairline, on squar
   const card = page.locator('.fg-toggle-button').first()
   if ((await card.getAttribute('aria-pressed')) !== 'true') await card.click()
   await page.locator('h1').click()
-  await expect(card).toHaveCSS('border-top-left-radius', '10px')
+  await expect(card).toHaveCSS('border-top-left-radius', '8px')
   const { edge, accent } = await card.evaluate(element => ({
     edge: getComputedStyle(element).borderTopColor,
     accent: getComputedStyle(element).getPropertyValue('--color-accent').trim(),

@@ -51,8 +51,8 @@
   .fg-drawer__close {
     display: inline-grid;
     flex: none;
-    min-width: var(--control-lg);
-    min-height: var(--control-lg);
+    min-width: var(--control-touch);
+    min-height: var(--control-touch);
     padding: 0;
     place-items: center;
     color: var(--color-muted);
