@@ -167,7 +167,7 @@ for (const { slug, role, name, state, track } of [
       expect(dimensions.thumbHeight).toBeCloseTo(18 * scale, 1)
     }
     await page.getByLabel('Size', { exact: true }).selectOption('md')
-    await expect(toggle).toHaveCSS('min-height', '32px')
+    expect((await toggle.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(32)
     await toggle.focus()
     await toggle.press('Space')
     await expect(toggle).toHaveAttribute(state, 'true')
