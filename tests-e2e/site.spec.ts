@@ -360,34 +360,34 @@ test('rings the project trigger in the accent, like the other quiet actions', as
 
 test('gives each site control the corner of its role', async ({ page }) => {
   await page.goto(fixture)
-  // One-line controls that are not actions take the field corner; buttons that act stay pills.
+  // The project trigger takes the field corner.
   const trigger = page.locator('.fg-site-projects > summary')
-  await expect(trigger).toHaveCSS('border-radius', '10px')
+  await expect(trigger).toHaveCSS('border-radius', '8px')
   await trigger.click()
-  // Rows in the floating project menu are concentric with its 16px corner.
+  // Rows in the floating project menu are concentric with its 12px corner.
   const menu = page.locator('.fg-site-projects__menu')
-  await expect(menu).toHaveCSS('border-radius', '16px')
-  await expect(menu.locator('a').first()).toHaveCSS('border-radius', '12px')
+  await expect(menu).toHaveCSS('border-radius', '12px')
+  await expect(menu.locator('a').first()).toHaveCSS('border-radius', '8px')
   await trigger.click()
   // Rail rows are navigation rows.
-  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('border-radius', '6px')
-  await expect(page.locator('.fg-site-appearance .fg-segmented__item').first()).toHaveCSS('border-radius', '999px')
+  await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('border-radius', '8px')
+  await expect(page.locator('.fg-site-appearance .fg-segmented__item').first()).toHaveCSS('border-radius', '6px')
   // The skip link appears on focus as a one-line control.
   await page.evaluate(() => {
     const skip = Object.assign(document.createElement('a'), { className: 'fg-site-skip', href: '#main', textContent: 'Skip to content' })
     document.body.prepend(skip)
   })
-  await expect(page.locator('.fg-site-skip')).toHaveCSS('border-radius', '10px')
+  await expect(page.locator('.fg-site-skip')).toHaveCSS('border-radius', '8px')
   await expect(page.locator('.fg-site-skip')).toHaveCSS('text-decoration-line', 'none')
 
   // On phones the labelled contents trigger takes the field corner too.
   await page.setViewportSize({ width: 390, height: 900 })
-  await expect(page.locator('.fg-site-rail__toggle')).toHaveCSS('border-radius', '10px')
+  await expect(page.locator('.fg-site-rail__toggle')).toHaveCSS('border-radius', '8px')
   // Without JavaScript the rail is a disclosure whose summary is the same trigger.
   await page.locator('.fg-site-rail').evaluate((rail) => {
     rail.insertAdjacentHTML('beforeend', '<details class="fg-site-rail__menu"><summary class="fg-button fg-site-rail__summary" data-variant="secondary" data-size="lg">On this page</summary></details>')
   })
-  await expect(page.locator('.fg-site-rail__summary')).toHaveCSS('border-radius', '10px')
+  await expect(page.locator('.fg-site-rail__summary')).toHaveCSS('border-radius', '8px')
 })
 
 test('gives the rail section in view the current-page look without a pip', async ({ page }) => {
@@ -645,7 +645,7 @@ test('keeps selected tabs lifted, readable, and stable on docs and terminal surf
       expect(await other.evaluate(fillOf)).not.toBe(colors.fill)
       expect(await selected.evaluate(element => getComputedStyle(element, '::before').boxShadow)).not.toBe('none')
       await expect(selected).toHaveCSS('border-bottom-width', '0px')
-      await expect(selected).toHaveCSS('border-radius', '6px')
+      await expect(selected).toHaveCSS('border-radius', '8px')
       // The strip scrolls and clips, so it must leave room for the lifted shadow on every side.
       const [strip, fill] = [await tabs.boundingBox(), await selected.boundingBox()]
       expect(fill!.x - strip!.x, `${colorScheme} ${url} shadow room`).toBeGreaterThanOrEqual(3)

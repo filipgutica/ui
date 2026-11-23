@@ -107,8 +107,8 @@
     .fg-tabs__tab[aria-selected="true"]::before { content: none; }
   }
 
-  @media (max-width: 640px) {
-    .fg-tabs__tab { min-height: var(--control-lg); }
+  @media (max-width: 800px) {
+    .fg-tabs__tab { min-height: var(--control-touch); }
   }
 
   @media (prefers-reduced-motion: reduce) {

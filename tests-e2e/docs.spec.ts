@@ -55,7 +55,7 @@ for (const { slug, selector } of [
   })
 }
 
-test('rings the focused pressed segmented option visibly on its track in forced colors', async ({ page }) => {
+test('rings the focused pressed segmented option visibly on its fill in forced colors', async ({ page }) => {
   for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ forcedColors: 'active', colorScheme })
     await page.goto('/#/sandbox/segmented-control')
@@ -64,17 +64,16 @@ test('rings the focused pressed segmented option visibly on its track in forced 
     await expect(pressed).toBeFocused()
     const system = await pressed.evaluate(element => {
       const probe = document.createElement('span')
-      probe.style.cssText = 'forced-color-adjust: none; color: CanvasText; background: Canvas'
+      probe.style.cssText = 'forced-color-adjust: none; color: HighlightText'
       element.after(probe)
-      const style = getComputedStyle(probe)
-      const colors = { text: style.color, canvas: style.backgroundColor }
+      const colors = { text: getComputedStyle(probe).color, fill: getComputedStyle(element, '::before').backgroundColor }
       probe.remove()
       return colors
     })
-    // The inset ring sits on the Canvas track, so it must not be Canvas-coloured.
+    // The inset ring sits on the Highlight fill and takes its text colour.
     await expect(pressed).toHaveCSS('outline-style', 'solid')
     await expect(pressed).toHaveCSS('outline-color', system.text)
-    expect(system.text).not.toBe(system.canvas)
+    expect(system.text).not.toBe(system.fill)
   }
 })
 
@@ -168,7 +167,7 @@ for (const { slug, role, name, state, track } of [
       expect(dimensions.thumbHeight).toBeCloseTo(18 * scale, 1)
     }
     await page.getByLabel('Size', { exact: true }).selectOption('md')
-    expect((await toggle.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(36)
+    await expect(toggle).toHaveCSS('min-height', '32px')
     await toggle.focus()
     await toggle.press('Space')
     await expect(toggle).toHaveAttribute(state, 'true')
@@ -672,7 +671,7 @@ test('gives full-width controls a usable preview width', async ({ page }) => {
     if (slug === 'input' || slug === 'select') {
       for (const size of ['sm', 'md', 'lg']) {
         await page.getByLabel('Size', { exact: true }).selectOption(size)
-        await expect(page.locator(selector)).toHaveCSS('border-radius', '10px')
+        await expect(page.locator(selector)).toHaveCSS('border-radius', '8px')
       }
     }
   }
@@ -711,7 +710,7 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   })
   expect(picker.background).toBe(raisedFill)
   // A picker is a floating layer, so it takes the panel corner and the dialog's shadow.
-  expect(picker.radius).toBe('16px')
+  expect(picker.radius).toBe('12px')
   expect(picker.shadow).toBe(await select.evaluate((element) => {
     const probe = document.createElement('span')
     probe.style.boxShadow = 'var(--shadow-dialog)'
@@ -731,8 +730,8 @@ test('keeps selects compact and operates the themed picker with the keyboard', a
   await expect(select).toHaveCSS('border-top-color', accent)
   // The catalogue's rows render 38.4px tall with a fine pointer.
   expect((await select.locator('option').first().boundingBox())!.height).toBeCloseTo(38.4, 0)
-  // Option rows sit --space-1 inside the 16px picker, so they are concentric with it.
-  await expect(select.locator('option').first()).toHaveCSS('border-radius', '12px')
+  // Option rows sit --space-1 inside the picker, so they are concentric with it.
+  await expect(select.locator('option').first()).toHaveCSS('border-radius', '8px')
   await expect.poll(() => select.evaluate(element => getComputedStyle(element, '::picker-icon').transform)).toBe('matrix(-1, 0, 0, -1, 0, 0)')
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
@@ -840,7 +839,7 @@ test('keeps borderless controls edged and focus visible in forced colors', async
 test('slides the segmented thumb from the previous option and settles on the pressed one', async ({ page }) => {
   await page.goto('/#/sandbox/segmented-control')
   const control = page.locator('.playground-stage .fg-segmented')
-  // The thumb's page edges, and the edges of the CSS thumb inset inside a button.
+  // Measure the thumb against the option's edges, including its animated offsets.
   const thumbEdges = (index: number) => control.evaluate((element, index) => {
     const button = element.children[index]!
     const rect = button.getBoundingClientRect()
@@ -866,7 +865,7 @@ test('slides the segmented thumb from the previous option and settles on the pre
   await control.evaluate(element => element.getAnimations({ subtree: true }).forEach((animation) => { animation.currentTime = 100 }))
   const target = await control.evaluate((element) => {
     const rect = element.children[2]!.getBoundingClientRect()
-    return { left: rect.left + 2, right: rect.right - 2 }
+    return { left: rect.left, right: rect.right }
   })
   const glide = await thumbEdges(2)
   const leading = (glide.right - start.right) / (target.right - start.right)
@@ -889,20 +888,20 @@ test('slides the segmented thumb from the previous option and settles on the pre
 
   await control.evaluate(element => element.getAnimations({ subtree: true }).forEach(animation => animation.finish()))
   await expect.poll(runningAnimations).toBe(0)
-  expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
+  expect((await thumbEdges(1)).inset).toEqual(['0px', '0px'])
 
-  // Resizing moves no thumb and leaves it inside the pressed button.
+  // Resizing leaves the thumb flush with the pressed button.
   await page.setViewportSize({ width: 390, height: 800 })
   await control.evaluate(element => { element.style.fontSize = '20px' })
   expect(await runningAnimations()).toBe(0)
-  expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
+  expect((await thumbEdges(1)).inset).toEqual(['0px', '0px'])
 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.reload()
   await control.getByRole('button', { name: 'Board' }).click()
   await expect(control.getByRole('button', { name: 'Board' })).toHaveAttribute('aria-pressed', 'true')
   expect(await runningAnimations(), 'reduced motion changes the choice at once').toBe(0)
-  expect((await thumbEdges(1)).inset).toEqual(['2px', '2px'])
+  expect((await thumbEdges(1)).inset).toEqual(['0px', '0px'])
 })
 
 test('glides the selected tab fill from the previous tab and settles on the new one', async ({ page }) => {
@@ -1228,23 +1227,33 @@ test('keeps component browsing reachable after scrolling on phones and tablets',
   }
 })
 
-test('grows small and medium controls to the touch height at tablet width', async ({ page }) => {
+test('grows every control size to the touch height at tablet width', async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 900 })
-  for (const { path, selector } of [
-    { path: '/#/components/button', selector: 'section[aria-labelledby="example-heading"] .fg-button[data-size="sm"]' },
-    { path: '/#/sandbox/button', selector: '.playground-stage .fg-button' },
-    { path: '/#/sandbox/input', selector: '.playground-stage > .fg-input' },
-    { path: '/#/sandbox/select', selector: '.playground-stage > .fg-select' },
-    { path: '/#/sandbox/checkbox', selector: '.playground-stage .fg-checkbox' },
-    { path: '/#/sandbox/switch', selector: '.playground-stage .fg-switch__control' },
-    { path: '/#/sandbox/segmented-control', selector: '.playground-stage .fg-segmented__item' },
-    { path: '/#/sandbox/slider', selector: '.playground-stage .fg-slider' },
-    { path: '/#/sandbox/toggle-button', selector: '.playground-stage .fg-toggle-button' },
+  await page.goto('/#/components/button')
+  const example = page.locator('section[aria-labelledby="example-heading"] .fg-button[data-size="sm"]').first()
+  await expect(example).toBeVisible()
+  expect((await example.boundingBox())?.height).toBeGreaterThanOrEqual(44)
+
+  for (const { slug, selector } of [
+    { slug: 'button', selector: '.playground-stage .fg-button' },
+    { slug: 'input', selector: '.playground-stage > .fg-input' },
+    { slug: 'select', selector: '.playground-stage > .fg-select' },
+    { slug: 'checkbox', selector: '.playground-stage .fg-checkbox' },
+    { slug: 'switch', selector: '.playground-stage .fg-switch__control' },
+    { slug: 'segmented-control', selector: '.playground-stage .fg-segmented' },
+    { slug: 'slider', selector: '.playground-stage .fg-slider' },
+    { slug: 'toggle-button', selector: '.playground-stage .fg-toggle-button' },
   ]) {
-    await page.goto(path)
+    await page.goto(`/#/sandbox/${slug}`)
     const control = page.locator(selector).first()
     await expect(control).toBeVisible()
-    expect((await control.boundingBox())?.height, `${path} ${selector}`).toBeGreaterThanOrEqual(44)
+    for (const size of ['sm', 'md', 'lg']) {
+      await page.getByLabel('Size', { exact: true }).selectOption(size)
+      expect((await control.boundingBox())?.height, `${slug} ${size}`).toBeGreaterThanOrEqual(44)
+      if (slug === 'segmented-control') {
+        expect((await control.getByRole('button').first().boundingBox())?.height, size).toBe(40)
+      }
+    }
   }
 })
 

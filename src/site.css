@@ -43,7 +43,7 @@
     padding: 0 var(--space-1);
     border: 1px solid var(--color-border);
     border-bottom-width: 2px;
-    border-radius: var(--radius-inline);
+    border-radius: var(--radius-mark);
     background: var(--color-surface);
     font-size: var(--text-xs);
     white-space: nowrap;
@@ -93,7 +93,7 @@
   .fg-site-footer nav { display: flex; flex-wrap: wrap; gap: 0 var(--space-5); }
   .fg-site-footer a {
     display: inline-flex;
-    min-height: var(--control-lg);
+    min-height: var(--control-touch);
     align-items: center;
     color: var(--color-muted);
     text-decoration: none;
@@ -168,7 +168,7 @@
     gap: 0.125rem;
     padding: 0.125rem;
   }
-  .fg-site-header__links.fg-site-nav a { flex: none; min-height: var(--control-lg); white-space: nowrap; }
+  .fg-site-header__links.fg-site-nav a { flex: none; min-height: var(--control-touch); white-space: nowrap; }
   /* Becoming current moves no link: a hidden copy of the label (data-label, with empty alternative
    * text) at the current link's medium weight sets each link's width. It overlaps the label's line by
    * -1lh, so the link keeps one line's height; as a flex column it stacks on the label, not beside it.
@@ -192,7 +192,7 @@
   .fg-site-projects { position: relative; }
   .fg-site-projects__trigger {
     display: inline-flex;
-    min-height: var(--control-lg);
+    min-height: var(--control-touch);
     align-items: center;
     gap: var(--space-1);
     padding-inline: var(--space-3);
@@ -256,7 +256,7 @@
     border-radius: var(--radius-pill);
     background: var(--color-accent);
   }
-  /* Rows inside the floating project menu sit --space-1 inside its 16px corner, so they are concentric with it. */
+  /* Rows inside the floating project menu sit --space-1 inside its panel corner, so they are concentric with it. */
   .fg-site-projects__menu a { border-radius: calc(var(--radius-panel) - var(--space-1)); font-family: var(--font-mono); }
   /* In the section rail, the current section takes the current-page look, without the pip. It keeps
    * aria-current="location"; only the look changes. */
@@ -330,7 +330,7 @@
     place-items: center;
     translate: 0 -50%;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-inline);
+    border-radius: var(--radius-mark);
     background: var(--color-surface);
     color: var(--color-muted);
     font: var(--weight-medium) var(--text-xs) / 1 var(--font-mono);
@@ -412,7 +412,7 @@
     color: var(--color-terminal-text);
   }
   .fg-capture .fg-tabs__list { width: 100%; margin-block-end: 0; padding-inline: var(--space-2); }
-  .fg-capture .fg-tabs__tab { min-height: var(--control-lg); font-family: var(--font-mono); font-size: var(--text-sm); }
+  .fg-capture .fg-tabs__tab { min-height: var(--control-touch); font-family: var(--font-mono); font-size: var(--text-sm); }
   /* The Full size control sits at the end of the tab row. The list's margin, not its
    * padding, reserves the control's width, so the scroll area ends before it. */
   .fg-capture[data-enhanced="true"] .fg-tabs__list { width: auto; margin-inline-end: calc(var(--space-2) + 7rem); }
@@ -423,7 +423,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    min-height: var(--control-lg);
+    min-height: var(--control-touch);
     padding-inline: var(--space-2);
     color: var(--color-muted);
     font: var(--text-sm) / var(--leading) var(--font-mono);
@@ -576,8 +576,8 @@
   .fg-command-list td.fg-command-list__action { width: 1%; padding: var(--space-1) 0; }
   .fg-command-list__copy {
     display: inline-grid;
-    width: var(--control-lg);
-    height: var(--control-lg);
+    width: var(--control-touch);
+    height: var(--control-touch);
     padding: 0;
     place-items: center;
     color: var(--color-muted);
@@ -795,12 +795,12 @@
       gap: var(--space-3);
       width: max-content;
       max-width: 100%;
-      min-height: var(--control-lg);
+      min-height: var(--control-touch);
       white-space: normal;
       text-align: start;
       align-items: center;
       padding-inline: var(--space-3);
-      /* They show the page's contents and do not act, so they take the field corner, not the button pill. */
+      /* The contents trigger takes the field corner so wrapped labels sit square. */
       border-radius: var(--radius-field);
       list-style: none;
     }
@@ -829,7 +829,7 @@
     .fg-site-rail__menu > .fg-site-rail__content { padding-block: var(--space-4); }
     .fg-site-rail__menu .fg-site-rail__group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fg-site-rail__menu .fg-site-rail__group-label { grid-column: 1 / -1; }
-    .fg-site-rail__nav a { min-height: var(--control-lg); }
+    .fg-site-nav a { min-height: var(--control-touch); }
     /* With headerMenu the rows stay open in place without JavaScript, so the summary has nothing to do. */
     .fg-site-rail[data-header-menu] .fg-site-rail__summary { display: none; }
     /* The drawer title already shows the label; the heading still names the nav. */
@@ -878,20 +878,20 @@
     /* Expand the link target without adding space between the text rows. A later link fact
      * moves a full target below the one before it, so their targets never overlap. */
     .fg-site-facts { row-gap: var(--space-2); }
-    .fg-site-facts > div:has(a) ~ div:has(a) { margin-top: calc(var(--control-lg) - 1lh - var(--space-2)); }
+    .fg-site-facts > div:has(a) ~ div:has(a) { margin-top: calc(var(--control-touch) - 1lh - var(--space-2)); }
     .fg-site-facts a { position: relative; display: inline-block; max-width: 100%; }
     .fg-site-facts a::after {
       content: '';
       position: absolute;
       inset-inline: 0;
       top: 50%;
-      min-height: var(--control-lg);
+      min-height: var(--control-touch);
       height: 100%;
       transform: translateY(-50%);
     }
     /* Phones keep the icon; the accessible name still says Full size. */
-    .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-lg)); }
-    .fg-capture__full { min-width: var(--control-lg); justify-content: center; }
+    .fg-capture[data-enhanced="true"] .fg-tabs__list { margin-inline-end: calc(var(--space-2) + var(--control-touch)); }
+    .fg-capture__full { min-width: var(--control-touch); justify-content: center; }
     .fg-capture__full-label { display: none; }
     .fg-command-list__table,
     .fg-command-list tbody { display: block; }
@@ -924,7 +924,6 @@
   @media (max-width: 680px) {
     .fg-site-prose :where(h1) { font-size: 2rem; }
     .fg-site-header__end { gap: var(--space-2) var(--space-4); }
-    .fg-site-projects__menu a { min-height: var(--control-lg); }
     .fg-site-definitions { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-1); }
     .fg-site-definitions dd + dt { margin-top: var(--space-3); }
   }

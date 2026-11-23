@@ -65,10 +65,10 @@
     border-top: 1px solid var(--color-border-subtle);
   }
 
-  /* Touch: at tablet width the trigger and each item grow to --control-lg. */
+  /* Touch: at tablet width the trigger and each item grow to --control-touch. */
   @media (max-width: 800px) {
-    .fg-overflow-menu__trigger { width: var(--control-lg); height: var(--control-lg); }
-    .fg-overflow-menu__item { min-height: var(--control-lg); }
+    .fg-overflow-menu__trigger { width: var(--control-touch); height: var(--control-touch); }
+    .fg-overflow-menu__item { min-height: var(--control-touch); }
   }
 
   @media (forced-colors: active) {

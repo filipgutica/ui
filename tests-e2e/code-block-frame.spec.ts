@@ -60,17 +60,17 @@ const alphaOf = (value: string) => {
 test.describe('code block frame', () => {
   test.use({ viewport: { width: 1280, height: 900 } })
 
-  test('the source is a 12px panel 4px inside a 16px frame, with a 4px gap beside compact Copy', async ({ page }) => {
+  test('the source is an 8px panel 4px inside a 12px frame, with a 4px gap beside compact Copy', async ({ page }) => {
     const header = await sandbox(page, { variant: 'default' })
-    expect(await geometry(header)).toEqual({ frame: '16px', panel: '12px', top: 0, left: 4, bottom: 4, right: 4, copyRight: null })
+    expect(await geometry(header)).toEqual({ frame: '12px', panel: '8px', top: 0, left: 4, bottom: 4, right: 4, copyRight: null })
     for (const language of ['typescript', 'bash']) {
       const compact = await sandbox(page, { variant: 'compact', language })
-      expect(await geometry(compact), language).toEqual({ frame: '16px', panel: '12px', top: 4, left: 4, bottom: 4, right: 4, copyRight: 4 })
+      expect(await geometry(compact), language).toEqual({ frame: '12px', panel: '8px', top: 4, left: 4, bottom: 4, right: 4, copyRight: 4 })
     }
     // Without Copy or actions there is no header, so no gap: the panel sits 4px from the frame on every side.
     const bare = await sandbox(page, { variant: 'compact', language: 'typescript' })
     await bare.locator(':scope > .fg-code-block__header').evaluate(element => element.remove())
-    expect(await geometry(bare)).toEqual({ frame: '16px', panel: '12px', top: 4, left: 4, bottom: 4, right: 4, copyRight: null })
+    expect(await geometry(bare)).toEqual({ frame: '12px', panel: '8px', top: 4, left: 4, bottom: 4, right: 4, copyRight: null })
   })
 
   test('the frame is raised with a subtle edge, and a command uses the same frame, well, and edge', async ({ page }) => {

@@ -127,7 +127,7 @@ test.describe('desktop', () => {
     await page.goto(fixture)
     const current = page.locator('.fg-site-header__links a[aria-current="page"]')
     await expect(current).toHaveText('Guide')
-    await expect(current).toHaveCSS('border-radius', '6px')
+    await expect(current).toHaveCSS('border-radius', '8px')
     await expect(current).toHaveCSS('min-height', '44px')
     const fill = await current.evaluate((element) => {
       const probe = document.createElement('span')
@@ -141,13 +141,12 @@ test.describe('desktop', () => {
     await expect(page.locator('.fg-site-header__links a:not([aria-current])').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   })
 
-  test('keeps the desktop header and rail where they were before the phone shell changed', async ({ page }) => {
+  test('keeps the desktop header and rail aligned around the compact appearance picker', async ({ page }) => {
     await page.goto(fixture)
-    // Layout constants measured on main before the change; they do not depend on text widths.
     expect(await box(page.locator('.fg-site-header'))).toEqual({ x: 32, y: 0, width: 1216, height: 65 })
     const projects = await box(page.locator('.fg-site-projects'))
     expect([projects.x, projects.y, projects.height]).toEqual([32, 10, 44])
-    expect(await box(page.locator('.fg-site-header .fg-segmented'))).toEqual({ x: 1114, y: 9, width: 134, height: 46 })
+    expect(await box(page.locator('.fg-site-header .fg-segmented'))).toEqual({ x: 1144, y: 14, width: 104, height: 36 })
     for (const link of await page.locator('.fg-site-header__links a').all()) expect((await box(link)).y).toBe(10)
     const rail = await box(page.locator('.fg-site-rail'))
     expect([rail.x, rail.y, rail.width]).toEqual([32, 65, 224])
@@ -409,8 +408,8 @@ test.describe('phone', () => {
     await page.goto(`${fixture}#commands`)
     await expect(trigger(page)).toHaveText('On this page: Commands')
     await expect(trigger(page)).toHaveAccessibleName('On this page: Commands')
-    // The glyph: 14×10, --space-3 before the label, on a 10px field corner.
-    await expect(trigger(page)).toHaveCSS('border-radius', '10px')
+    // The glyph is 14×10, with --space-3 before the label.
+    await expect(trigger(page)).toHaveCSS('border-radius', '8px')
     await expect(trigger(page)).toHaveCSS('column-gap', '12px')
     expect(await trigger(page).evaluate((element) => {
       const glyph = getComputedStyle(element, '::before')
@@ -526,7 +525,7 @@ test.describe('without JavaScript', () => {
     const summary = noScript.locator('details.fg-site-rail__menu > summary')
     await expect(summary).toBeVisible()
     await expect(summary).toHaveText('On this page: Install')
-    await expect(summary).toHaveCSS('border-radius', '10px')
+    await expect(summary).toHaveCSS('border-radius', '8px')
     expect(await summary.evaluate(element => getComputedStyle(element, '::after').transform)).not.toBe('none')
     await expect(noScript.locator('.fg-site-rail__nav a').first()).toBeHidden()
     await summary.click()
