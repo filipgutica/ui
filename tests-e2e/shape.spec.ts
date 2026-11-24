@@ -1,7 +1,11 @@
+import { fileURLToPath } from 'node:url'
+
 import { expect, test, type Locator, type Page } from '@playwright/test'
 
-// Shape follows content: a lone icon on its own fill is a circle. See @filipgutica/design-system
-// language/decisions.md.
+// Shape follows content: a lone icon on its own fill is a circle, and an icon-only segmented control
+// is a pill. See @filipgutica/design-system language/decisions.md.
+
+const fixture = `/@fs${fileURLToPath(new URL('./fixtures/site.html', import.meta.url))}`
 
 const geometry = (locator: Locator) => locator.evaluate((element) => {
   const { width, height } = element.getBoundingClientRect()
@@ -57,4 +61,26 @@ test('documents an icon-only Send button as a 28px circle that keeps its name wh
   await send.evaluate(element => element.setAttribute('aria-busy', 'true'))
   await expect(send.locator('svg')).toBeHidden()
   expect(await geometry(send)).toEqual(box)
+})
+
+test('rounds the icon-only theme picker track and options, and keeps text segmented controls at 8px', async ({ page }) => {
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(fixture)
+    const track = page.locator('.fg-site-appearance')
+    const trackBox = await geometry(track)
+    expect(trackBox.radius, `track at ${width}px`).toBeGreaterThanOrEqual(trackBox.height / 2)
+    for (const option of await track.locator('.fg-segmented__item').all()) {
+      const box = await geometry(option)
+      expect(box.width, `option is square at ${width}px`).toBe(box.height)
+      expect(box.radius, `option is round at ${width}px`).toBeGreaterThanOrEqual(box.width / 2)
+    }
+    // The pressed option's thumb is its ::before layer, which takes the option's corner.
+    const thumb = await track.locator('.fg-segmented__item[aria-pressed="true"]').evaluate(element => Number.parseFloat(getComputedStyle(element, '::before').borderTopLeftRadius))
+    expect(thumb).toBeGreaterThanOrEqual(trackBox.height / 2 - 2)
+  }
+
+  await page.goto('/#/sandbox/segmented-control')
+  await expect(page.locator('.playground-stage .fg-segmented')).toHaveCSS('border-radius', '8px')
+  await expect(page.locator('.playground-stage .fg-segmented__item').first()).toHaveCSS('border-radius', '6px')
 })

@@ -970,6 +970,10 @@
     width: calc(var(--fg-segmented-item) - 2 * var(--fg-segmented-inset));
     padding: 0;
   }
+  /* Icon-only: a pill track with round options, concentric with it. The thumb is each option's
+   * ::before, which inherits the radius; a px radius keeps it a pill while it glides. */
+  .fg-segmented[data-icon-only="true"] { border-radius: var(--radius-pill); }
+  .fg-segmented[data-icon-only="true"] .fg-segmented__item { border-radius: calc(var(--radius-pill) - var(--fg-segmented-inset)); }
   .fg-segmented__item::before { content: ""; position: absolute; inset: 0; z-index: -2; border-radius: inherit; pointer-events: none; }
   @media (hover: hover) {
     .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }

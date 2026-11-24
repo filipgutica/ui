@@ -101,7 +101,9 @@ size's control height (28, 32, or 36px) with round corners, and it grows to a
 
 Only primary, secondary, and danger have an icon-only form. A see-through lone
 icon, such as Copy in a code block or a dialog's close button, is a quiet
-action (`fg-quiet-action`), an 8px tile, not a ghost or text button.
+action (`fg-quiet-action`), an 8px tile, not a ghost or text button. An
+icon-only `UiSegmentedControl`, such as the site theme picker, takes a pill
+track with round options.
 
 ## Dialogs
 

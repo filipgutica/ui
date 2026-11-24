@@ -371,7 +371,9 @@ test('gives each site control the corner of its role', async ({ page }) => {
   await trigger.click()
   // Rail rows are navigation rows.
   await expect(page.locator('.fg-site-rail__nav a').first()).toHaveCSS('border-radius', '8px')
-  await expect(page.locator('.fg-site-appearance .fg-segmented__item').first()).toHaveCSS('border-radius', '6px')
+  // The icon-only theme picker is a pill track with round options, concentric with it.
+  await expect(page.locator('.fg-site-appearance')).toHaveCSS('border-radius', '999px')
+  await expect(page.locator('.fg-site-appearance .fg-segmented__item').first()).toHaveCSS('border-radius', '997px')
   // The skip link appears on focus as a one-line control.
   await page.evaluate(() => {
     const skip = Object.assign(document.createElement('a'), { className: 'fg-site-skip', href: '#main', textContent: 'Skip to content' })
