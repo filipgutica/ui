@@ -177,11 +177,13 @@ export const componentDocs: ComponentDoc[] = [
       'Use one primary button for the main action in a region.',
       'For supporting actions, use secondary or ghost.',
       'Reserve danger for destructive actions.',
+      'For a lone icon that needs a fill, such as Send, set iconOnly and name the action with aria-label. Only primary, secondary, and danger have an icon-only form: a circle at the size\'s control height. A see-through lone icon is a quiet action, not a ghost or text button.',
       'For navigation, use a link. When the link should look like a button, give the <a> class="fg-button" with data-variant and data-size, as UiButton sets them.',
     ],
     props: [
       { name: 'disabled', required: false, type: 'boolean', default: 'false', description: 'When true, sets native disabled to prevent activation.' },
-      { name: 'loading', required: false, type: 'boolean', default: 'false', description: 'When true, disables the button, sets aria-busy="true", and adds a spinner, retaining the label.' },
+      { name: 'iconOnly', required: false, type: 'boolean', default: 'false', description: 'Draws a circle that holds one icon and no text, and grows to 44px at tablet width. Primary, secondary, and danger only. Name it with aria-label.' },
+      { name: 'loading', required: false, type: 'boolean', default: 'false', description: 'When true, disables the button, sets aria-busy="true", and adds a spinner, retaining the label. An icon-only button shows the spinner in place of its icon.' },
       { name: 'size', required: false, type: "UiControlSize | 'compact' | 'default'", default: "'md'", description: 'Prefer sm, md, or lg. Deprecated compact uses md minimum height and small text; default uses lg minimum height and text.' },
       { name: 'type', required: false, type: "'button' | 'submit' | 'reset'", default: "'button'", description: 'Native button type. Set submit or reset explicitly for those form actions.' },
       { name: 'variant', required: false, type: "'primary' | 'secondary' | 'ghost' | 'danger' | 'text'", default: "'primary'", description: 'Sets emphasis. The text variant underlines text and replaces the size’s minimum height and padding.' },
@@ -193,9 +195,9 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'click', type: 'MouseEvent', description: 'Native activation MouseEvent. Disabled and loading buttons prevent activation.' },
     ],
     example: {
-      title: 'Supporting action',
-      description: 'secondary and sm give Inspect evidence a compact raised appearance that sinks while pressed.',
-      code: `<UiButton variant="secondary" size="sm">\n  Inspect evidence\n</UiButton>`,
+      title: 'Supporting and icon-only actions',
+      description: 'secondary and sm give Inspect evidence a compact raised appearance that sinks while pressed. iconOnly makes Send a 28px circle at the end of the row.',
+      code: `<UiButton variant="secondary" size="sm">\n  Inspect evidence\n</UiButton>\n<UiButton icon-only size="sm" aria-label="Send">\n  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>\n</UiButton>`,
     },
   },
   {

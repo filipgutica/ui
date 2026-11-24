@@ -85,6 +85,24 @@ right above the h1 of every page below a site's home page. `UiBreadcrumbs`
 renders without JavaScript, and `site.css` sets the trail in the monospace
 font.
 
+## Icon-only buttons
+
+Shape follows content: text gets the 8px corner, and a lone icon that acts on
+its own fill gets a circle. Set `iconOnly` on a `UiButton` that holds one 16px
+icon and no text, and name it with `aria-label`. It is a square box at the
+size's control height (28, 32, or 36px) with round corners, and it grows to a
+44px circle at 800px and below. While `loading`, the spinner replaces the icon.
+
+```vue
+<UiButton icon-only size="sm" aria-label="Send">
+  <SendIcon aria-hidden="true" />
+</UiButton>
+```
+
+Only primary, secondary, and danger have an icon-only form. A see-through lone
+icon, such as Copy in a code block or a dialog's close button, is a quiet
+action (`fg-quiet-action`), an 8px tile, not a ghost or text button.
+
 ## Dialogs
 
 Bind `v-model:open` and put a single button in the optional `trigger` slot.

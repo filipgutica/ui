@@ -156,14 +156,43 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
       Preview
     </p>
     <div class="playground-stage">
+      <div
+        v-if="slug === 'button' && compact"
+        class="action-row"
+      >
+        <UiButton
+          variant="secondary"
+          size="sm"
+        >
+          Inspect evidence
+        </UiButton>
+        <UiButton
+          icon-only
+          size="sm"
+          aria-label="Send"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          ><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+        </UiButton>
+      </div>
+
       <UiButton
-        v-if="slug === 'button'"
+        v-else-if="slug === 'button'"
         :disabled="disabled"
         :loading="loading"
-        :size="compact ? 'sm' : controlSize"
-        :variant="compact ? 'secondary' : buttonVariant"
+        :size="controlSize"
+        :variant="buttonVariant"
       >
-        {{ compact ? 'Inspect evidence' : label }}
+        {{ label }}
       </UiButton>
 
       <UiAlert

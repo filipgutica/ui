@@ -126,7 +126,10 @@ test('keeps idle controls and surfaces to a quiet lift in both themes', async ({
     await page.goto('/#/components/code-block')
     expect(await shadowOf(page.locator('.fg-example__stage .fg-code-block').first()), `${colorScheme} code block`).toBe(surface)
     await page.goto('/#/components/button')
-    expect(await shadowOf(page.locator('.fg-example__stage .fg-button')), `${colorScheme} button`).toBe(raise)
+    // The example holds a labelled button and an icon-only one; both rise.
+    const buttons = await page.locator('.fg-example__stage .fg-button').all()
+    expect(buttons).toHaveLength(2)
+    for (const button of buttons) expect(await shadowOf(button), `${colorScheme} button`).toBe(raise)
     await page.goto('/#/components/segmented-control')
     expect(await shadowOf(page.locator('.fg-example__stage .fg-segmented__item[aria-pressed="true"]'), '::before'), `${colorScheme} segmented thumb`).toBe(raise)
   }

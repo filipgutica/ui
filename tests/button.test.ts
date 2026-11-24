@@ -19,6 +19,11 @@ describe('UiButton', () => {
     expect(wrapper.text()).toBe('Inspect evidence')
   })
 
+  it('marks only an icon-only button with data-icon-only, which the CSS matches by presence', () => {
+    expect(mount(UiButton).attributes()).not.toHaveProperty('data-icon-only')
+    expect(mount(UiButton, { props: { iconOnly: true } }).attributes('data-icon-only')).toBe('true')
+  })
+
   it('forwards native disabled behavior', async () => {
     const wrapper = mount(UiButton, { props: { disabled: true } })
 

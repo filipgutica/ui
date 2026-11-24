@@ -315,6 +315,23 @@
     font-size: var(--text-lg);
   }
 
+  /* An icon-only button is a circle: one 16px icon and no text, on a square box of the size's
+   * control height. A fixed width and height keep it round in a flex row with a taller sibling.
+   * Only primary, secondary, and danger have this form; a see-through lone icon is a quiet action. */
+  .fg-button[data-icon-only] {
+    --fg-button-size: var(--control-md);
+    flex: none;
+    width: var(--fg-button-size);
+    height: var(--fg-button-size);
+    min-height: var(--fg-button-size);
+    padding: 0;
+    border-radius: var(--radius-circle);
+  }
+  .fg-button[data-icon-only][data-size="sm"] { --fg-button-size: var(--control-sm); }
+  .fg-button[data-icon-only]:is([data-size="lg"], [data-size="default"]) { --fg-button-size: var(--control-lg); }
+  /* There is no room for both, so the spinner replaces the icon; the aria-label still names it. */
+  .fg-button[data-icon-only][aria-busy="true"] > * { display: none; }
+
   .fg-button[data-variant="secondary"] {
     color: var(--color-text);
     background: var(--color-control-thumb);
@@ -1289,6 +1306,8 @@
     .fg-input[data-size],
     .fg-select[data-size] { height: var(--control-touch); }
     .fg-segmented[data-size] { --fg-segmented-item: var(--control-touch); }
+    /* An icon-only button grows on both sides, so it stays a circle. */
+    .fg-button[data-icon-only][data-size] { --fg-button-size: var(--control-touch); }
   }
 
   @media (max-width: 640px) {
