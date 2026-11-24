@@ -128,7 +128,7 @@ test.describe('desktop', () => {
     const current = page.locator('.fg-site-header__links a[aria-current="page"]')
     await expect(current).toHaveText('Guide')
     await expect(current).toHaveCSS('border-radius', '8px')
-    await expect(current).toHaveCSS('min-height', '44px')
+    await expect.soft(current).toHaveCSS('min-height', '32px')
     const fill = await current.evaluate((element) => {
       const probe = document.createElement('span')
       probe.style.backgroundColor = 'var(--color-nav-current)'
@@ -145,15 +145,24 @@ test.describe('desktop', () => {
     await page.goto(fixture)
     expect(await box(page.locator('.fg-site-header'))).toEqual({ x: 32, y: 0, width: 1216, height: 65 })
     const projects = await box(page.locator('.fg-site-projects'))
-    expect([projects.x, projects.y, projects.height]).toEqual([32, 10, 44])
+    expect.soft([projects.x, projects.y, projects.height]).toEqual([32, 16, 32])
     expect(await box(page.locator('.fg-site-header .fg-segmented'))).toEqual({ x: 1144, y: 14, width: 104, height: 36 })
-    for (const link of await page.locator('.fg-site-header__links a').all()) expect((await box(link)).y).toBe(10)
+    for (const link of await page.locator('.fg-site-header__links a').all()) {
+      const { y, height } = await box(link)
+      expect.soft([y, height]).toEqual([16, 32])
+    }
     const rail = await box(page.locator('.fg-site-rail'))
     expect([rail.x, rail.y, rail.width]).toEqual([32, 65, 224])
     const main = await box(page.locator('main'))
     expect([main.x, main.y, main.width]).toEqual([288, 65, 960])
     await expect(find(page)).toBeVisible()
     await expect(trigger(page)).toHaveCount(0)
+
+    await page.setViewportSize({ width: 375, height: 844 })
+    expect((await box(page.locator('.fg-site-projects__trigger'))).height).toBe(44)
+    for (const link of await page.locator('.fg-site-header__links a').all()) {
+      expect((await box(link)).height).toBe(44)
+    }
   })
 
   for (const height of [600, 800]) {

@@ -51,13 +51,17 @@
   .fg-drawer__close {
     display: inline-grid;
     flex: none;
-    min-width: var(--control-touch);
-    min-height: var(--control-touch);
+    min-width: var(--control-md);
+    min-height: var(--control-md);
     padding: 0;
     place-items: center;
     color: var(--color-muted);
   }
   .fg-drawer__close svg { width: 1rem; height: 1rem; }
+
+  @media (max-width: 800px) {
+    .fg-drawer__close { min-width: var(--control-touch); min-height: var(--control-touch); }
+  }
 
   .fg-drawer__body {
     min-height: 0;

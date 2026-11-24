@@ -53,8 +53,8 @@ test('keeps a wrapped step title the same height with its number', async ({ page
   expect(withNumbers).toEqual(withoutNumbers)
 })
 
-test('keeps every capture tab clear of the Full size button', async ({ page }) => {
-  for (const width of [320, 390, 768, 1280]) {
+test('sizes capture tabs and Full size to the control scale and keeps their hit areas apart', async ({ page }) => {
+  for (const width of [320, 375, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(fixture)
     const capture = page.locator('.fg-capture[data-enhanced="true"]')
@@ -63,6 +63,12 @@ test('keeps every capture tab clear of the Full size button', async ({ page }) =
     const list = await tabs.boundingBox()
     const button = await fullSize.boundingBox()
     expect((list?.x ?? 0) + (list?.width ?? Infinity), `tab list end at ${width}px`).toBeLessThanOrEqual(button?.x ?? 0)
+    const height = width <= 800 ? 44 : 32
+    expect.soft(button?.height, `Full size height at ${width}px`).toBe(height)
+    for (const tab of await tabs.getByRole('tab').all()) {
+      expect.soft((await tab.boundingBox())?.height, `tab height at ${width}px`).toBe(height)
+      await expect(tab).toHaveCSS('padding-inline', '10px')
+    }
 
     // The last tab scrolls into the list when the keyboard selects it.
     await capture.getByRole('tab', { name: 'Browse', exact: true }).focus()
@@ -690,6 +696,7 @@ test('keeps site explanations readable and navigation rows 36px tall, 44px at ph
 })
 
 test('draws command rows as the catalogue does: centred, ruled below, with a muted description', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 })
   await page.goto(fixture)
   const list = page.locator('.fg-command-list')
   const muted = await list.evaluate((element) => {
@@ -709,10 +716,15 @@ test('draws command rows as the catalogue does: centred, ruled below, with a mut
     await expect(cell).toHaveCSS('border-top-width', '0px')
     await expect(cell).toHaveCSS('border-bottom-width', '1px')
   }
-  // The copy button sets the height: 44px, 4px above and below, and the rule.
-  for (const row of await rows.all()) expect((await row.boundingBox())?.height).toBe(53)
+  // The 32px copy button sets the row height, with 4px above and below and a 1px rule.
+  for (const row of await rows.all()) expect.soft((await row.boundingBox())?.height).toBe(41)
+  const copy = list.locator('.fg-command-list__copy').first()
+  const desktop = await copy.boundingBox()
+  expect.soft([desktop?.width, desktop?.height]).toEqual([32, 32])
 
-  await page.setViewportSize({ width: 390, height: 844 })
+  await page.setViewportSize({ width: 375, height: 844 })
+  const phone = await copy.boundingBox()
+  expect([phone?.width, phone?.height]).toEqual([44, 44])
   for (const row of await rows.all()) {
     await expect(row).toHaveCSS('display', 'grid')
     await expect(row).toHaveCSS('align-items', 'center')

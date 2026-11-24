@@ -60,6 +60,20 @@ const alphaOf = (value: string) => {
 test.describe('code block frame', () => {
   test.use({ viewport: { width: 1280, height: 900 } })
 
+  test('sizes labelled Copy without vertical padding on desktop and phones', async ({ page }) => {
+    const block = await sandbox(page, { variant: 'default' })
+    const copy = block.getByRole('button', { name: 'Copy code' })
+    await expect(copy).toHaveText('Copy')
+    for (const { width, size } of [{ width: 375, size: 44 }, { width: 1280, size: 32 }]) {
+      await page.setViewportSize({ width, height: 900 })
+      const geometry = await copy.evaluate(button => ({
+        height: button.getBoundingClientRect().height,
+        padding: getComputedStyle(button).padding,
+      }))
+      expect.soft(geometry, `labelled Copy at ${width}px`).toEqual({ height: size, padding: '0px 6px' })
+    }
+  })
+
   test('the source is an 8px panel 4px inside a 12px frame, with a 4px gap beside compact Copy', async ({ page }) => {
     const header = await sandbox(page, { variant: 'default' })
     expect(await geometry(header)).toEqual({ frame: '12px', panel: '8px', top: 0, left: 4, bottom: 4, right: 4, copyRight: null })

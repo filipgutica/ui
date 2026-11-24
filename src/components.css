@@ -60,9 +60,9 @@
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
-    min-width: var(--control-touch);
-    min-height: var(--control-touch);
-    padding: var(--space-1) 0.375rem;
+    min-width: var(--control-md);
+    min-height: var(--control-md);
+    padding: 0 0.375rem;
   }
   /* Copy is muted at rest. The code block has its own palette, so on hover and while the tick
    * shows (data-copied) it takes the block's text colour. */
@@ -109,6 +109,7 @@
     min-height: 0;
     padding: 0;
   }
+  .fg-code-block[data-variant="compact"] .fg-code-block__header { align-self: center; }
   .fg-code-block[data-variant="embedded"] .fg-code-block__header { padding: var(--space-1); }
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__actions {
     gap: var(--space-1);
@@ -1211,8 +1212,8 @@
   .fg-dialog__close {
     display: inline-grid;
     flex: none;
-    width: var(--control-touch);
-    min-height: var(--control-touch);
+    width: var(--control-md);
+    min-height: var(--control-md);
     padding: 0;
     place-items: center;
     color: var(--color-muted);
@@ -1302,6 +1303,8 @@
   /* Touch: at tablet width every control size grows to --control-touch. This follows the per-size
    * rules above, so it wins at equal specificity. */
   @media (max-width: 800px) {
+    .fg-code-block__copy { min-width: var(--control-touch); min-height: var(--control-touch); }
+    .fg-dialog__close { width: var(--control-touch); min-height: var(--control-touch); }
     .fg-button[data-size],
     .fg-checkbox[data-size],
     .fg-slider[data-size],
