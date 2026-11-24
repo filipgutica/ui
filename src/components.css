@@ -60,9 +60,9 @@
     align-items: center;
     justify-content: center;
     gap: 0.375rem;
-    min-width: var(--control-touch);
-    min-height: var(--control-touch);
-    padding: var(--space-1) 0.375rem;
+    min-width: var(--control-md);
+    min-height: var(--control-md);
+    padding: 0 0.375rem;
   }
   /* Copy is muted at rest. The code block has its own palette, so on hover and while the tick
    * shows (data-copied) it takes the block's text colour. */
@@ -109,6 +109,7 @@
     min-height: 0;
     padding: 0;
   }
+  .fg-code-block[data-variant="compact"] .fg-code-block__header { align-self: center; }
   .fg-code-block[data-variant="embedded"] .fg-code-block__header { padding: var(--space-1); }
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__actions {
     gap: var(--space-1);
@@ -314,6 +315,23 @@
     padding: 0 var(--space-4);
     font-size: var(--text-lg);
   }
+
+  /* An icon-only button is a circle: one 16px icon and no text, on a square box of the size's
+   * control height. A fixed width and height keep it round in a flex row with a taller sibling.
+   * Only primary, secondary, and danger have this form; a see-through lone icon is a quiet action. */
+  .fg-button[data-icon-only] {
+    --fg-button-size: var(--control-md);
+    flex: none;
+    width: var(--fg-button-size);
+    height: var(--fg-button-size);
+    min-height: var(--fg-button-size);
+    padding: 0;
+    border-radius: var(--radius-circle);
+  }
+  .fg-button[data-icon-only][data-size="sm"] { --fg-button-size: var(--control-sm); }
+  .fg-button[data-icon-only]:is([data-size="lg"], [data-size="default"]) { --fg-button-size: var(--control-lg); }
+  /* There is no room for both, so the spinner replaces the icon; the aria-label still names it. */
+  .fg-button[data-icon-only][aria-busy="true"] > * { display: none; }
 
   .fg-button[data-variant="secondary"] {
     color: var(--color-text);
@@ -953,6 +971,10 @@
     width: calc(var(--fg-segmented-item) - 2 * var(--fg-segmented-inset));
     padding: 0;
   }
+  /* Icon-only: a pill track with round options, concentric with it. The thumb is each option's
+   * ::before, which inherits the radius; a px radius keeps it a pill while it glides. */
+  .fg-segmented[data-icon-only="true"] { border-radius: var(--radius-pill); }
+  .fg-segmented[data-icon-only="true"] .fg-segmented__item { border-radius: calc(var(--radius-pill) - var(--fg-segmented-inset)); }
   .fg-segmented__item::before { content: ""; position: absolute; inset: 0; z-index: -2; border-radius: inherit; pointer-events: none; }
   @media (hover: hover) {
     .fg-segmented__item:hover:not(:disabled, [aria-pressed="true"]) { color: var(--color-text); }
@@ -1190,8 +1212,8 @@
   .fg-dialog__close {
     display: inline-grid;
     flex: none;
-    width: var(--control-touch);
-    min-height: var(--control-touch);
+    width: var(--control-md);
+    min-height: var(--control-md);
     padding: 0;
     place-items: center;
     color: var(--color-muted);
@@ -1281,6 +1303,8 @@
   /* Touch: at tablet width every control size grows to --control-touch. This follows the per-size
    * rules above, so it wins at equal specificity. */
   @media (max-width: 800px) {
+    .fg-code-block__copy { min-width: var(--control-touch); min-height: var(--control-touch); }
+    .fg-dialog__close { width: var(--control-touch); min-height: var(--control-touch); }
     .fg-button[data-size],
     .fg-checkbox[data-size],
     .fg-slider[data-size],
@@ -1289,6 +1313,9 @@
     .fg-input[data-size],
     .fg-select[data-size] { height: var(--control-touch); }
     .fg-segmented[data-size] { --fg-segmented-item: var(--control-touch); }
+    /* An icon-only button grows on both sides, so it stays a circle. :is(:not([data-size]), [data-size])
+     * matches sized and unsized markup with the specificity of a size rule. */
+    .fg-button[data-icon-only]:is(:not([data-size]), [data-size]) { --fg-button-size: var(--control-touch); }
   }
 
   @media (max-width: 640px) {

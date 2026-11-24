@@ -12,9 +12,11 @@ export interface UiTabsProps {
   items: readonly UiTabItem[]
   label: string
   modelValue: string
+  /** `sm` tabs, for app screens, are `--control-sm` tall. Every size grows to `--control-touch` at tablet width. */
+  size?: 'sm' | 'md'
 }
 
-const { items, label, modelValue } = defineProps<UiTabsProps>()
+const { items, label, modelValue, size = 'md' } = defineProps<UiTabsProps>()
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: string): void
@@ -125,6 +127,7 @@ const moveFocus = (event: KeyboardEvent): void => {
       class="fg-tabs__list"
       role="tablist"
       :aria-label="label"
+      :data-size="size"
       :data-clipped="clipped"
       @keydown="moveFocus"
       @scroll.passive="measureClipping"

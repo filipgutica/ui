@@ -90,25 +90,31 @@ for (const { slug, name } of [
   { slug: 'dialog', name: 'Close dialog' },
   { slug: 'drawer', name: 'Close drawer' },
 ]) {
-  test(`centres the ${slug} close icon in its button`, async ({ page }) => {
-    await page.goto(`/#/sandbox/${slug}`)
-    await page.locator('.playground-stage').getByRole('button', { name: `Open ${slug}` }).click()
-    const close = page.getByRole('dialog').getByRole('button', { name })
-    // Measure both boxes in one frame: the drawer may still be sliding in.
-    // A text × has no box of its own; its ink sat about 2px low.
-    const offset = await close.evaluate((button) => {
-      const outer = button.getBoundingClientRect()
-      const icon = button.querySelector('svg')?.getBoundingClientRect()
-      if (!icon) return null
-      return {
-        x: icon.x + icon.width / 2 - (outer.x + outer.width / 2),
-        y: icon.y + icon.height / 2 - (outer.y + outer.height / 2),
-      }
+  for (const { width, size } of [{ width: 1280, size: 32 }, { width: 375, size: 44 }]) {
+    test(`centres the ${slug} close icon in a ${size}px button at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto(`/#/sandbox/${slug}`)
+      await page.locator('.playground-stage').getByRole('button', { name: `Open ${slug}` }).click()
+      const close = page.getByRole('dialog').getByRole('button', { name })
+      // Measure both boxes in one frame: the drawer may still be sliding in.
+      // A text × has no box of its own; its ink sat about 2px low.
+      const geometry = await close.evaluate((button) => {
+        const outer = button.getBoundingClientRect()
+        const icon = button.querySelector('svg')?.getBoundingClientRect()
+        if (!icon) return null
+        return {
+          width: outer.width,
+          height: outer.height,
+          x: icon.x + icon.width / 2 - (outer.x + outer.width / 2),
+          y: icon.y + icon.height / 2 - (outer.y + outer.height / 2),
+        }
+      })
+      expect(geometry).not.toBeNull()
+      expect([geometry!.width, geometry!.height]).toEqual([size, size])
+      expect(Math.abs(geometry!.x)).toBeLessThanOrEqual(0.5)
+      expect(Math.abs(geometry!.y)).toBeLessThanOrEqual(0.5)
     })
-    expect(offset).not.toBeNull()
-    expect(Math.abs(offset!.x)).toBeLessThanOrEqual(0.5)
-    expect(Math.abs(offset!.y)).toBeLessThanOrEqual(0.5)
-  })
+  }
 }
 
 for (const { slug, selector, properties } of [
@@ -481,10 +487,14 @@ test('copies code exactly and follows editor theme colors', async ({ page, conte
   const block = page.locator('.fg-code-block').first()
   const source = await block.locator('code').textContent()
   expect(await block.locator('.fg-code-block__line').first().evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
-  const copyBox = await block.getByRole('button', { name: 'Copy code' }).boundingBox()
-  expect(copyBox?.height ?? 0).toBeGreaterThanOrEqual(44)
-  expect(copyBox?.width ?? 0).toBeGreaterThanOrEqual(44)
-  await block.getByRole('button', { name: 'Copy code' }).click()
+  const copy = block.getByRole('button', { name: 'Copy code' })
+  for (const { width, size } of [{ width: 375, size: 44 }, { width: 1280, size: 32 }]) {
+    await page.setViewportSize({ width, height: 900 })
+    const copyBox = await copy.boundingBox()
+    expect.soft(copyBox?.height, `Copy height at ${width}px`).toBe(size)
+    expect(copyBox?.width ?? 0).toBeGreaterThanOrEqual(size)
+  }
+  await copy.click()
   await expect(block.getByRole('status')).toHaveText('Code copied to clipboard.')
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(source)
   await block.evaluate(element => {
@@ -511,14 +521,14 @@ test('keeps compact commands in one row and wraps longer code beside a usable co
   // Each prompt sits on its line's baseline, even if a phone browser resizes the text.
   await expect(block.locator('.fg-code-block__line').first()).toHaveCSS('align-items', 'baseline')
 
-  for (const width of [320, 390, 768, 1280]) {
+  for (const width of [320, 375, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 })
     const blockBox = await block.boundingBox()
     const codeBox = await block.locator('pre').boundingBox()
     const copyBox = await copy.boundingBox()
     expect(blockBox?.height ?? Infinity).toBeLessThanOrEqual(60)
-    expect(copyBox?.width ?? 0).toBeGreaterThanOrEqual(44)
-    expect(copyBox?.height ?? 0).toBeGreaterThanOrEqual(44)
+    const size = width <= 800 ? 44 : 32
+    expect.soft([copyBox?.width, copyBox?.height], `compact Copy at ${width}px`).toEqual([size, size])
     expect((codeBox?.x ?? 0) + (codeBox?.width ?? 0)).toBeLessThanOrEqual(copyBox?.x ?? 0)
     expect(Math.abs((codeBox?.y ?? 0) + (codeBox?.height ?? 0) / 2 -
       ((copyBox?.y ?? 0) + (copyBox?.height ?? 0) / 2))).toBeLessThan(2)
