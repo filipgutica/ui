@@ -32,21 +32,34 @@
     mask-image: linear-gradient(to right, transparent, #000 var(--space-6), #000 calc(100% - var(--space-6)), transparent);
   }
 
+  /* A tab has the button's box: the control height, the button's inline padding (--fg-tabs-pad),
+   * no block padding, and line height 1, so the label sits centred. */
   .fg-tabs__tab {
+    --fg-tabs-pad: 0.625rem;
     position: relative;
     flex: none;
+    display: inline-flex;
+    align-items: center;
     min-height: var(--control-md);
-    padding: var(--space-2) var(--space-3);
+    padding: 0 var(--fg-tabs-pad);
     border: 0;
     border-radius: var(--radius-inline);
     color: var(--color-muted);
     background: transparent;
     font: inherit;
     font-weight: var(--weight-medium);
+    line-height: 1;
     white-space: nowrap;
     cursor: pointer;
     /* Hover fades the tab's own fill and colour; the selected fill and its shadow are on ::before. */
     transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+  }
+
+  /* Small tabs, for app screens, line up with the sm controls beside them. */
+  .fg-tabs__list[data-size="sm"] .fg-tabs__tab {
+    --fg-tabs-pad: var(--space-2);
+    min-height: var(--control-sm);
+    font-size: var(--text-sm);
   }
 
   @media (hover: hover) { .fg-tabs__tab:hover:where(:not(:disabled)) { background: var(--color-row-hover); color: var(--color-text); } }
@@ -97,18 +110,20 @@
     outline-offset: var(--focus-offset);
   }
 
-  /* Forced colors discard the lifted shadow; compensate the border with padding. */
+  /* Forced colors discard the lifted shadow; compensate the border with inline padding. The
+   * height is a minimum, so the border fits inside it. */
   @media (forced-colors: active) {
     .fg-tabs__tab[aria-selected="true"] {
       border: 2px solid Highlight;
-      padding: calc(var(--space-2) - 2px) calc(var(--space-3) - 2px);
+      padding-inline: calc(var(--fg-tabs-pad) - 2px);
     }
     /* The border marks the selected tab, so there is no fill to glide. */
     .fg-tabs__tab[aria-selected="true"]::before { content: none; }
   }
 
+  /* Touch: tabs of every size grow to --control-touch. [data-size] matches the size rule above. */
   @media (max-width: 800px) {
-    .fg-tabs__tab { min-height: var(--control-touch); }
+    .fg-tabs__list[data-size] .fg-tabs__tab { min-height: var(--control-touch); }
   }
 
   @media (prefers-reduced-motion: reduce) {

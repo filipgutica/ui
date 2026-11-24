@@ -2,8 +2,8 @@ import { fileURLToPath } from 'node:url'
 
 import { expect, test, type Locator, type Page } from '@playwright/test'
 
-// Shape follows content: a lone icon on its own fill is a circle, and an icon-only segmented control
-// is a pill. See @filipgutica/design-system language/decisions.md.
+// Shape follows content: a lone icon on its own fill is a circle, an icon-only segmented control is
+// a pill, and a tab has the button's box. See @filipgutica/design-system language/decisions.md.
 
 const fixture = `/@fs${fileURLToPath(new URL('./fixtures/site.html', import.meta.url))}`
 
@@ -83,4 +83,32 @@ test('rounds the icon-only theme picker track and options, and keeps text segmen
   await page.goto('/#/sandbox/segmented-control')
   await expect(page.locator('.playground-stage .fg-segmented')).toHaveCSS('border-radius', '8px')
   await expect(page.locator('.playground-stage .fg-segmented__item').first()).toHaveCSS('border-radius', '6px')
+})
+
+test('gives tabs the button box: 32px, sm 28px, and 44px on phones', async ({ page }) => {
+  // The component page shows sm tabs; the sandbox shows the default md.
+  for (const [url, height, padding] of [['/#/components/tabs', 28, '8px'], ['/#/sandbox/tabs', 32, '10px']] as const) {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(url)
+    const tab = page.locator('.fg-tabs__tab').first()
+    await expect(tab).toBeVisible()
+    const box = await geometry(tab)
+    expect(box.height, `${url} at 1280px`).toBe(height)
+    expect(box.padding, `${url} inline padding`).toBe(padding)
+    // The list keeps its 4px padding, which keeps the selected tab's shadow whole.
+    await expect(page.locator('.fg-tabs__list').first()).toHaveCSS('padding-top', '4px')
+
+    await page.setViewportSize({ width: 375, height: 812 })
+    await expect.poll(async () => (await geometry(tab)).height, `${url} at 375px`).toBe(44)
+  }
+})
+
+test('keeps the selected tab its size when forced colors draw its border', async ({ page }) => {
+  await page.goto('/#/sandbox/tabs')
+  const selected = page.locator('.fg-tabs__tab[aria-selected="true"]')
+  const before = await geometry(selected)
+  await page.emulateMedia({ forcedColors: 'active' })
+  await expect(selected).toHaveCSS('border-top-width', '2px')
+  const after = await geometry(selected)
+  expect([after.width, after.height]).toEqual([before.width, before.height])
 })

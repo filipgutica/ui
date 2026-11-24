@@ -414,6 +414,7 @@ const codeExample = computed(() => language === 'bash' && codeVariant === 'compa
         v-else-if="slug === 'tabs'"
         v-model="selectedTab"
         label="Process captures"
+        :size="compact ? 'sm' : 'md'"
         :items="[{ value: 'list', label: 'List' }, { value: 'details', label: 'Details' }]"
       >
         <template #panel="{ value }">

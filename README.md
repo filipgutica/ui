@@ -85,6 +85,10 @@ right above the h1 of every page below a site's home page. `UiBreadcrumbs`
 renders without JavaScript, and `site.css` sets the trail in the monospace
 font.
 
+`UiTabs` take the button's box: tabs are 32px tall with 10px sides. Set
+`size="sm"` on app screens for 28px tabs with 8px sides and small text. Tabs of
+every size are 44px tall at 800px and below.
+
 ## Icon-only buttons
 
 Shape follows content: text gets the 8px corner, and a lone icon that acts on

@@ -80,6 +80,7 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'items', required: true, type: 'readonly UiTabItem[]', description: 'Ordered { value, label } items: unique values, visible labels. Empty arrays render no tabs or panels.' },
       { name: 'label', required: true, type: 'string', description: 'Accessible name for the tab list, such as \'Process captures\'.' },
       { name: 'modelValue', required: true, type: 'string', description: 'Selected item value. An unmatched value displays the first item without updating the model.' },
+      { name: 'size', required: false, type: "'sm' | 'md'", default: "'md'", description: 'Tab height: md is 32px, and sm, for app screens, is 28px with small text. Every size grows to 44px at tablet width.' },
     ],
     slots: [
       { name: 'panel', type: '{ value: string }', description: 'Receives { value } per item. Inactive panels stay mounted, retaining component state.' },
@@ -89,8 +90,8 @@ export const componentDocs: ComponentDoc[] = [
     ],
     example: {
       title: 'Related captures',
-      description: 'value chooses process list or process detail content.',
-      code: `<UiTabs\n  v-model="capture"\n  label="Process captures"\n  :items="[{ value: 'list', label: 'List' }, { value: 'details', label: 'Details' }]"\n>\n  <template #panel="{ value }">\n    <p v-if="value === 'list'">Process list capture</p>\n    <p v-else>Process details capture</p>\n  </template>\n</UiTabs>`,
+      description: 'value chooses process list or process detail content. size="sm" fits the tabs to an app screen.',
+      code: `<UiTabs\n  v-model="capture"\n  label="Process captures"\n  size="sm"\n  :items="[{ value: 'list', label: 'List' }, { value: 'details', label: 'Details' }]"\n>\n  <template #panel="{ value }">\n    <p v-if="value === 'list'">Process list capture</p>\n    <p v-else>Process details capture</p>\n  </template>\n</UiTabs>`,
     },
   },
   {
