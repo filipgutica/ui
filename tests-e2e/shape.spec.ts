@@ -60,6 +60,7 @@ test('documents an icon-only Send button as a 28px circle that keeps its name wh
   // Busy: the spinner replaces the icon, and the button stays the same circle.
   await send.evaluate(element => element.setAttribute('aria-busy', 'true'))
   await expect(send.locator('svg')).toBeHidden()
+  await expect(send).toHaveAccessibleName('Send')
   expect(await geometry(send)).toEqual(box)
 })
 
