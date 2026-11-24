@@ -10,7 +10,7 @@ export interface UiCodeBlockProps {
   title?: string
   copyable?: boolean
   lineNumbers?: boolean
-  /** Sets wrapping on mount and when changed. Readers can toggle it on multi-line blocks. */
+  /** Sets wrapping on mount and when changed. Readers can toggle it on every block but a compact one. */
   wrap?: boolean
   variant?: 'default' | 'compact' | 'embedded'
 }
@@ -29,8 +29,9 @@ defineSlots<{ actions?(): unknown }>()
 type CodeToken = { content: string; color?: string | undefined }
 // Compact and embedded blocks show icon-only actions beside the code.
 const iconOnly = computed(() => variant !== 'default')
-// A single line with a final newline still counts as one line.
-const showWrapToggle = computed(() => variant !== 'compact' && /\n./s.test(code))
+// Every block but a compact one offers Wrap lines, as the design system's code block does: a single
+// long line needs it as much as several.
+const showWrapToggle = computed(() => variant !== 'compact')
 const wrapping = ref(wrap)
 watch(() => wrap, value => { wrapping.value = value })
 // Compact commands may omit a language; typed source never receives a prompt.

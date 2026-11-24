@@ -16,7 +16,7 @@ describe('UiCodeBlock', () => {
     expect(wrapper.get('.fg-code-block__title').text()).toBe('Install')
     expect(wrapper.get('.fg-code-block__language').text()).toBe('sh')
     expect(wrapper.get('pre').attributes('aria-label')).toBe('Install')
-    expect(wrapper.get('button').text()).toBe('Copy')
+    expect(wrapper.get('button[aria-label="Copy code"]').text()).toBe('Copy')
     wrapper.unmount()
   })
 
@@ -24,7 +24,7 @@ describe('UiCodeBlock', () => {
     { label: 'source', variant: 'default', language: 'text' },
     { label: 'commands', variant: 'default', language: 'sh' },
     { label: 'example source', variant: 'embedded', language: 'text' },
-  ] as const)('puts Wrap lines directly before Copy for multi-line $label', async ({ variant, language }) => {
+  ] as const)('puts Wrap lines directly before Copy for $label', async ({ variant, language }) => {
     const wrapper = mount(UiCodeBlock, {
       props: { code: 'first line\nsecond line', variant, language },
       slots: { actions: '<button type="button">Custom action</button>' },
@@ -42,8 +42,9 @@ describe('UiCodeBlock', () => {
     await toggle.trigger('click')
     expect(toggle.attributes('aria-pressed')).toBe('false')
     expect(wrapper.attributes('data-wrap')).toBeUndefined()
+    // A single long line needs wrapping too, so it keeps the toggle.
     await wrapper.setProps({ code: 'one line\r\n' })
-    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(true)
     wrapper.unmount()
   })
 
@@ -110,14 +111,14 @@ describe('UiCodeBlock', () => {
       props: { code: 'pnpm add @filipgutica/ui', language: 'sh', variant: 'compact' },
     })
     await vi.waitFor(() => expect(wrapper.get('[role="status"]').text()).toContain('Syntax highlighting unavailable'))
-    await wrapper.get('button').trigger('click')
+    await wrapper.get('button[aria-label="Copy code"]').trigger('click')
     await flushPromises()
     expect(wrapper.get('[role="status"]').text()).toContain('Syntax highlighting unavailable')
     expect(wrapper.get('[role="status"]').text()).toContain('Code copied to clipboard.')
     expect(wrapper.get('[role="status"]').attributes('data-state')).toBeUndefined()
     // The error stays visible; the success message beside it is for the live region alone.
     expect(wrapper.get('.fg-code-block__success').text()).toBe('Code copied to clipboard.')
-    expect(wrapper.get('button').attributes('title')).toBe('Copy code')
+    expect(wrapper.get('button[aria-label="Copy code"]').attributes('title')).toBe('Copy code')
     wrapper.unmount()
   })
 
@@ -191,7 +192,7 @@ describe('UiCodeBlock', () => {
     expect(write).toHaveBeenLastCalledWith(code)
     expect(wrapper.get('[role="status"]').text()).toContain('Code copied')
     await wrapper.setProps({ code: 'updated source' })
-    await wrapper.get('button').trigger('click')
+    await wrapper.get('button[aria-label="Copy code"]').trigger('click')
     await flushPromises()
     expect(write).toHaveBeenLastCalledWith('updated source')
     wrapper.unmount()
@@ -217,20 +218,20 @@ describe('UiCodeBlock', () => {
   it.each(['default', 'compact', 'embedded'] as const)('reports clipboard failure and allows copying to be disabled in %s blocks', async (variant) => {
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'))
     const wrapper = mount(UiCodeBlock, { props: { code: 'example', variant } })
-    await wrapper.get('button').trigger('click')
+    await wrapper.get('button[aria-label="Copy code"]').trigger('click')
     await flushPromises()
     expect(wrapper.get('[role="status"]').text()).toContain('Could not copy')
-    expect(wrapper.get('button').attributes('aria-label')).toBe('Copy code')
-    if (variant === 'default') expect(wrapper.get('button').text()).toBe('Copy')
+    expect(wrapper.get('button[aria-label="Copy code"]').attributes('aria-label')).toBe('Copy code')
+    if (variant === 'default') expect(wrapper.get('button[aria-label="Copy code"]').text()).toBe('Copy')
     await wrapper.setProps({ copyable: false })
-    expect(wrapper.find('button').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="Copy code"]').exists()).toBe(false)
     wrapper.unmount()
   })
 
   it('keeps code available when the Clipboard API is unavailable', async () => {
     vi.stubGlobal('navigator', {})
     const wrapper = mount(UiCodeBlock, { props: { code: 'copy manually' } })
-    await wrapper.get('button').trigger('click')
+    await wrapper.get('button[aria-label="Copy code"]').trigger('click')
     expect(wrapper.get('[role="status"]').text()).toContain('Clipboard unavailable')
     expect(wrapper.get('code').text()).toBe('copy manually')
     wrapper.unmount()
