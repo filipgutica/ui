@@ -408,6 +408,11 @@ Typed source samples, including compact samples, use theme-matched syntax panels
 inset in the code block's frame. After a copy, Copy shows a tick for 1.5s.
 Default blocks with a title are source samples, including shell scripts.
 
+Multi-line source, command, and live example blocks offer **Wrap lines** beside
+**Copy**. Wrapping starts off unless the `wrap` prop is set. The reader's choice
+applies to that block until it unmounts or the prop changes. Copies preserve the
+source text and line breaks. Compact blocks use the `wrap` prop for wrapping.
+
 Use `.fg-site-hero` on a tool-home intro section. Its direct `h1` uses the
 56px display size (34px on phones). Wrap the lede paragraphs in
 `.fg-site-hero__lede`. Wrap the install block, metadata, and facts in

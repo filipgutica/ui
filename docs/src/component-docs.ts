@@ -581,6 +581,7 @@ export const componentDocs: ComponentDoc[] = [
     usage: [
       'Use variant="default" for source files. For short commands, use variant="compact". UiExample uses variant="embedded" for the source under a preview.',
       'For highlighting, choose vue, ts, typescript, js, javascript, json, yaml, yml, css, html, bash, sh, or shell.',
+      'Use Wrap lines beside Copy to fit long lines in a multi-line block. This setting applies to the current block.',
       'If copying fails or the clipboard API is unavailable, select the code to copy it manually.',
     ],
     props: [
@@ -590,10 +591,10 @@ export const componentDocs: ComponentDoc[] = [
       { name: 'variant', required: false, type: "'default' | 'compact' | 'embedded'", default: "'default'", description: 'Default puts labels and actions above code. Compact hides labels and puts actions beside code. Compact shows commands as normal code blocks with decorative \'$ \' prompts in the accent for bash, sh, shell, or text. Default adds the prompts only for bash, sh, or shell with an empty title. Embedded is for source inside another frame, such as UiExample: no labels, edge, corners, or shadow, with Copy in the top corner and active theme code colors for every language. Other blocks use active theme code colors.' },
       { name: 'copyable', required: false, type: 'boolean', default: 'true', description: 'Shows a copy button, disabled during copying. After a copy its icon is a tick for 1.5s. Live status reports success or failure.' },
       { name: 'lineNumbers', required: false, type: 'boolean', default: 'false', description: 'Shows line numbers from 1, hidden from assistive technology and omitted from copies.' },
-      { name: 'wrap', required: false, type: 'boolean', default: 'false', description: 'Wraps long lines to available width, including within words. When false, scrolls horizontally.' },
+      { name: 'wrap', required: false, type: 'boolean', default: 'false', description: 'Sets wrapping on mount and when changed. Multi-line blocks let readers toggle it. Wrapped lines break within long words and Copy preserves the original lines.' },
     ],
     slots: [
-      { name: 'actions', type: 'unknown', description: 'Custom controls before copy, available even with copyable set to false.' },
+      { name: 'actions', type: 'unknown', description: 'Custom controls before the built-in actions, available even with copyable set to false.' },
     ],
     events: [],
     example: {
@@ -692,7 +693,7 @@ export const componentDocs: ComponentDoc[] = [
     events: [],
     example: {
       title: 'Button with its source',
-      description: 'A live button above the source that renders it, with a caption below the frame. Copy sits in the top corner of the source.',
+      description: 'A live button above the source that renders it, with a caption below the frame. Multi-line sources put Wrap lines and Copy in the top corner.',
       code: `<UiExample language="vue" :code="source">\n  <UiButton variant="secondary">Save draft</UiButton>\n  <template #caption>\n    A secondary button for a reversible action.\n  </template>\n</UiExample>`,
     },
   },

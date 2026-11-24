@@ -20,6 +20,62 @@ describe('UiCodeBlock', () => {
     wrapper.unmount()
   })
 
+  it.each([
+    { label: 'source', variant: 'default', language: 'text' },
+    { label: 'commands', variant: 'default', language: 'sh' },
+    { label: 'example source', variant: 'embedded', language: 'text' },
+  ] as const)('puts Wrap lines directly before Copy for multi-line $label', async ({ variant, language }) => {
+    const wrapper = mount(UiCodeBlock, {
+      props: { code: 'first line\nsecond line', variant, language },
+      slots: { actions: '<button type="button">Custom action</button>' },
+    })
+    const toggle = wrapper.get('button[aria-label="Wrap lines"]')
+    expect(toggle.attributes('title')).toBe('Wrap lines')
+    expect(toggle.attributes('aria-pressed')).toBe('false')
+    expect(wrapper.attributes('data-wrap')).toBeUndefined()
+    expect(toggle.element.previousElementSibling?.textContent).toBe('Custom action')
+    expect(toggle.element.nextElementSibling).toBe(wrapper.get('button[aria-label="Copy code"]').element)
+    expect(toggle.element.compareDocumentPosition(wrapper.get('pre').element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    await toggle.trigger('click')
+    expect(toggle.attributes('aria-pressed')).toBe('true')
+    expect(wrapper.attributes('data-wrap')).toBe('true')
+    await toggle.trigger('click')
+    expect(toggle.attributes('aria-pressed')).toBe('false')
+    expect(wrapper.attributes('data-wrap')).toBeUndefined()
+    await wrapper.setProps({ code: 'one line\r\n' })
+    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('preserves the wrap prop for compact blocks without adding a toggle', async () => {
+    const wrapper = mount(UiCodeBlock, {
+      props: { code: 'first line\nsecond line', variant: 'compact' },
+    })
+    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(false)
+    expect(wrapper.attributes('data-wrap')).toBeUndefined()
+    await wrapper.setProps({ wrap: true })
+    expect(wrapper.attributes('data-wrap')).toBe('true')
+    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('keeps Wrap lines available without Copy and applies changes to the wrap prop', async () => {
+    const wrapper = mount(UiCodeBlock, {
+      props: { code: 'first line\nsecond line', variant: 'embedded', copyable: false, wrap: true },
+    })
+    const toggle = wrapper.get('button[aria-label="Wrap lines"]')
+    expect(wrapper.find('button[aria-label="Copy code"]').exists()).toBe(false)
+    expect(toggle.attributes('aria-pressed')).toBe('true')
+    await wrapper.setProps({ wrap: false })
+    expect(toggle.attributes('aria-pressed')).toBe('false')
+    await toggle.trigger('click')
+    expect(toggle.attributes('aria-pressed')).toBe('true')
+    await wrapper.setProps({ wrap: true })
+    await toggle.trigger('click')
+    expect(toggle.attributes('aria-pressed')).toBe('false')
+    wrapper.unmount()
+  })
+
   it('omits compact header labels while preserving labelled code, copying, and custom actions', async () => {
     const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
     const code = 'pnpm add @filipgutica/ui'
@@ -75,7 +131,7 @@ describe('UiCodeBlock', () => {
       expect(tags).toContain('strong')
     })
     expect(wrapper.get('code').element.textContent).toBe(code)
-    await wrapper.get('button').trigger('click')
+    await wrapper.get('button[aria-label="Copy code"]').trigger('click')
     expect(write).toHaveBeenLastCalledWith(code)
     wrapper.unmount()
   })
@@ -130,7 +186,7 @@ describe('UiCodeBlock', () => {
     const wrapper = mount(UiCodeBlock, { props: { code, language: 'vue', lineNumbers: true } })
     expect(wrapper.find('script').exists()).toBe(false)
     expect(wrapper.findAll('.fg-code-block__text').map(line => line.element.textContent).join('')).toBe(code)
-    await wrapper.get('button').trigger('click')
+    await wrapper.get('button[aria-label="Copy code"]').trigger('click')
     await flushPromises()
     expect(write).toHaveBeenLastCalledWith(code)
     expect(wrapper.get('[role="status"]').text()).toContain('Code copied')
