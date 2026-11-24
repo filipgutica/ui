@@ -22,8 +22,9 @@ const geometry = (locator: Locator) => locator.evaluate((element) => {
 // keep its square box beside it instead of stretching into a tall pill.
 const addIconButtonRow = (page: Page) => page.evaluate(() => {
   const icon = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10" stroke="currentColor" /></svg>'
-  const buttons = (['primary', 'secondary', 'danger'] as const).flatMap(variant => (['sm', 'md', 'lg'] as const).map(size =>
-    `<button type="button" class="fg-button" data-icon-only data-variant="${variant}" data-size="${size}" aria-label="Add ${variant} ${size}">${icon}</button>`))
+  // Unsized markup, as a stylesheet-only consumer may write it, is md.
+  const buttons = (['primary', 'secondary', 'danger'] as const).flatMap(variant => (['sm', 'md', 'lg', ''] as const).map(size =>
+    `<button type="button" class="fg-button" data-icon-only data-variant="${variant}"${size ? ` data-size="${size}"` : ''} aria-label="Add ${variant} ${size || 'unsized'}">${icon}</button>`))
   document.body.insertAdjacentHTML('beforeend', `<div id="icon-row" style="display: flex; gap: 8px; width: 100%">${buttons.join('')}<div style="height: 80px; flex: 1"></div></div>`)
 })
 
@@ -31,10 +32,10 @@ test('draws icon-only buttons as circles at every size, 44px on phones, beside a
   await page.goto('/#/components/button')
   await addIconButtonRow(page)
   const buttons = page.locator('#icon-row .fg-button')
-  await expect(buttons).toHaveCount(9)
+  await expect(buttons).toHaveCount(12)
   const sizes = { sm: 28, md: 32, lg: 36 }
   for (const button of await buttons.all()) {
-    const size = await button.getAttribute('data-size') as keyof typeof sizes
+    const size = (await button.getAttribute('data-size') ?? 'md') as keyof typeof sizes
     const box = await geometry(button)
     expect([box.width, box.height], `${await button.getAttribute('aria-label')} at 1280px`).toEqual([sizes[size], sizes[size]])
     expect(box.radius).toBeGreaterThanOrEqual(box.width / 2)
@@ -57,9 +58,12 @@ test('documents an icon-only Send button as a 28px circle that keeps its name wh
   // The labelled button beside it keeps the 8px corner.
   await expect(page.locator('.fg-example__stage').getByRole('button', { name: 'Inspect evidence', exact: true })).toHaveCSS('border-radius', '8px')
 
-  // Busy: the spinner replaces the icon, and the button stays the same circle.
-  await send.evaluate(element => element.setAttribute('aria-busy', 'true'))
+  // Busy, as UiButton renders loading (tests/button.test.ts): the spinner replaces the icon, and the
+  // button stays the same circle.
+  await send.evaluate((element) => { element.setAttribute('aria-busy', 'true'); element.setAttribute('disabled', '') })
   await expect(send.locator('svg')).toBeHidden()
+  expect(await send.evaluate(element => getComputedStyle(element, '::before').content)).toBe('""')
+  expect(await send.evaluate(element => getComputedStyle(element, '::before').width)).not.toBe('auto')
   await expect(send).toHaveAccessibleName('Send')
   expect(await geometry(send)).toEqual(box)
 })
@@ -112,4 +116,13 @@ test('keeps the selected tab its size when forced colors draw its border', async
   await expect(selected).toHaveCSS('border-top-width', '2px')
   const after = await geometry(selected)
   expect([after.width, after.height]).toEqual([before.width, before.height])
+})
+
+test('grows tabs in an unsized list to 44px on phones', async ({ page }) => {
+  await page.goto('/#/components/tabs')
+  await page.evaluate(() => document.body.insertAdjacentHTML('beforeend', '<div id="bare-tabs" class="fg-tabs"><div class="fg-tabs__list" role="tablist" aria-label="Bare"><button type="button" class="fg-tabs__tab" role="tab" aria-selected="true">Overview</button></div></div>'))
+  const tab = page.locator('#bare-tabs .fg-tabs__tab')
+  expect((await geometry(tab)).height).toBe(32)
+  await page.setViewportSize({ width: 375, height: 812 })
+  expect((await geometry(tab)).height).toBe(44)
 })

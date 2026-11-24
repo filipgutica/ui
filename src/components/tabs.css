@@ -121,9 +121,10 @@
     .fg-tabs__tab[aria-selected="true"]::before { content: none; }
   }
 
-  /* Touch: tabs of every size grow to --control-touch. [data-size] matches the size rule above. */
+  /* Touch: tabs of every size grow to --control-touch. :is(:not([data-size]), [data-size]) matches sized and
+   * unsized lists with the specificity of the size rule above. */
   @media (max-width: 800px) {
-    .fg-tabs__list[data-size] .fg-tabs__tab { min-height: var(--control-touch); }
+    .fg-tabs__list:is(:not([data-size]), [data-size]) .fg-tabs__tab { min-height: var(--control-touch); }
   }
 
   @media (prefers-reduced-motion: reduce) {

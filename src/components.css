@@ -1313,8 +1313,9 @@
     .fg-input[data-size],
     .fg-select[data-size] { height: var(--control-touch); }
     .fg-segmented[data-size] { --fg-segmented-item: var(--control-touch); }
-    /* An icon-only button grows on both sides, so it stays a circle. */
-    .fg-button[data-icon-only][data-size] { --fg-button-size: var(--control-touch); }
+    /* An icon-only button grows on both sides, so it stays a circle. :is(:not([data-size]), [data-size])
+     * matches sized and unsized markup with the specificity of a size rule. */
+    .fg-button[data-icon-only]:is(:not([data-size]), [data-size]) { --fg-button-size: var(--control-touch); }
   }
 
   @media (max-width: 640px) {
