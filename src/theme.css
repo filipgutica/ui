@@ -95,6 +95,7 @@
   --radius-field: 8px;
   --radius-mark: 4px;
   --radius-pill: 999px;
+  --radius-circle: 999px;
   --duration-fast: 120ms;
   --duration: 180ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);

@@ -78,7 +78,7 @@
   },
   "homepage": "https://github.com/filipgutica/ui#readme",
   "dependencies": {
-    "@filipgutica/design-system": "1.0.35",
+    "@filipgutica/design-system": "1.0.36",
     "@vueuse/core": "^14.4.0",
     "reka-ui": "^2.10.4",
     "shiki": "^3.23.0"
