@@ -34,6 +34,8 @@ const iconOnly = computed(() => variant !== 'default')
 const showWrapToggle = computed(() => variant !== 'compact')
 const wrapping = ref(wrap)
 watch(() => wrap, value => { wrapping.value = value })
+// A compact block has no toggle, so only the prop wraps it, even after a reader turned wrapping on.
+const wrapped = computed(() => showWrapToggle.value ? wrapping.value : wrap)
 // Compact commands may omit a language; typed source never receives a prompt.
 // Embedded source sits under a live example, so it is never a command.
 const command = computed(() => {
@@ -92,7 +94,7 @@ const copyCode = (): Promise<void> => copy(code)
   <div
     class="fg-code-block"
     :data-command="command || undefined"
-    :data-wrap="wrapping ? 'true' : undefined"
+    :data-wrap="wrapped ? 'true' : undefined"
     :data-line-numbers="lineNumbers"
     :data-variant="variant"
   >

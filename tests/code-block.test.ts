@@ -43,7 +43,7 @@ describe('UiCodeBlock', () => {
     expect(toggle.attributes('aria-pressed')).toBe('false')
     expect(wrapper.attributes('data-wrap')).toBeUndefined()
     // A single long line needs wrapping too, so it keeps the toggle.
-    await wrapper.setProps({ code: 'one line\r\n' })
+    await wrapper.setProps({ code: 'one line' })
     expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(true)
     wrapper.unmount()
   })
@@ -57,6 +57,16 @@ describe('UiCodeBlock', () => {
     await wrapper.setProps({ wrap: true })
     expect(wrapper.attributes('data-wrap')).toBe('true')
     expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('drops a reader\'s wrapping when the block becomes compact without the wrap prop', async () => {
+    const wrapper = mount(UiCodeBlock, { props: { code: 'first line\nsecond line' } })
+    await wrapper.get('button[aria-label="Wrap lines"]').trigger('click')
+    expect(wrapper.attributes('data-wrap')).toBe('true')
+    await wrapper.setProps({ variant: 'compact' })
+    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(false)
+    expect(wrapper.attributes('data-wrap')).toBeUndefined()
     wrapper.unmount()
   })
 

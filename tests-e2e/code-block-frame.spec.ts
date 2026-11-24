@@ -101,6 +101,10 @@ test.describe('Wrap lines', () => {
     await toggle.click()
     await expect(toggle).toHaveAttribute('aria-pressed', 'false')
     await expect.poll(horizontalOverflow).toBeGreaterThan(0)
+    // Copy gives the same source with wrapping off.
+    await page.evaluate(() => navigator.clipboard.writeText(''))
+    await copy.click()
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(source.join(''))
   })
 
   test('sizes the toggle and spaces it from Copy on desktop and phones', async ({ page }) => {
