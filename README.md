@@ -46,16 +46,19 @@ one, import it in place of Graphite Indigo, after `theme.css`:
 
 Each theme file has one `:root` block and one `:root.dark` block, so dark mode
 uses the same `.dark` class as the base theme. A theme can also set its own
-fonts and `--color-nav-current-text`.
+fonts, its base radius (`--radius-base`), and `--color-nav-current-text`.
+`--radius-base` (8px by default) sets every corner but the pill and the circle:
+rows, actions, and fields take it, small marks half of it, and panels one and a
+half times it.
 
 The Catppuccin and GitHub palettes are third-party work. They ship under
 [their licences](src/themes/THIRD_PARTY_NOTICES.md), in `src/themes/`.
 
-`theme.css` loads the package's own IBM Plex Sans and IBM Plex Mono latin woff2
+`theme.css` loads the package's own Inter and JetBrains Mono latin woff2
 files (400, 500, 600), with `font-display: swap` and system fallbacks. It makes
 no remote font requests. The files come from Fontsource 5.3.0 and ship under
-their included [Sans OFL](src/fonts/OFL-IBM-Plex-Sans.txt) and
-[Mono OFL](src/fonts/OFL-IBM-Plex-Mono.txt) licences. `fonts.css` and `fonts/*`
+their included [Inter OFL](src/fonts/OFL-Inter.txt) and
+[JetBrains Mono OFL](src/fonts/OFL-JetBrains-Mono.txt) licences. `fonts.css` and `fonts/*`
 are also exported for applications that import assets separately.
 
 ## Use
@@ -383,12 +386,9 @@ rows stay in place with every row shown and no disclosure, as the design
 system's section rail does. Without it they sit in the closed disclosure, as a
 page's contents list does. With JavaScript the two are the same.
 
-Section headings in `.fg-site-docs` and `.fg-site-prose` use the terminal
-identity's decorative `## ` mark, with `0.08em` tracking. Set `--heading-mark`
-on a page or section to change it; `--heading-mark: none` removes it. The
-default is `--heading-mark: "## "`. The mark is excluded from accessible text.
-Navigation rows in the rail and the drawer are `--row`
-(2.25rem) tall, and `--control-touch` at 800px and below.
+Titles and section headings in `.fg-site-docs` and `.fg-site-prose` use
+`--font-ui`, with no mark before them. Navigation rows in the rail and the
+drawer are `--row` (2.25rem) tall, and `--control-touch` at 800px and below.
 
 Project sites set `--color-project` on `:root` and `:root.dark` for their hue.
 Set `--color-project-dark` to the dark variant in both appearances, so capture tab
@@ -467,7 +467,7 @@ visually hidden text, and `.fg-site-skip` for a skip link that appears on focus.
 Add `fg-site-docs` to the element that wraps a project page's header, rail,
 main content, and footer. The shell then supplies:
 
-- the frame: the header across the top, the `--sidebar` rail beside `main`, and
+- the frame: the header across the top, the `--sidebar-width` rail beside `main`, and
   the footer on the frame edges. At 800px and below the rail stacks above `main`.
 - element defaults inside the shell, plus the page background and font on
   `body`: box sizing, heading sizes and margins, paragraph measure, links,
@@ -475,7 +475,7 @@ main content, and footer. The shell then supplies:
   rule that outranks the page's own `display` rules.
 - `.fg-site-footer` for the footer and `.fg-site-legend` for a `dl` that explains
   what a capture shows. Legend columns are at least `--site-legend-column` wide,
-  `--sidebar` by default; set it on the legend to fit more entries in a row.
+  `--sidebar-width` by default; set it on the legend to fit more entries in a row.
 
 ```vue
 <template>
@@ -557,7 +557,7 @@ pnpm docs:dev
 pnpm verify
 ```
 
-The theme token values and the IBM Plex fonts live in
+The theme token values and the Inter and JetBrains Mono fonts live in
 [`@filipgutica/design-system`](https://github.com/filipgutica/design-system).
 `pnpm themes:build` builds `src/theme.css`, `src/themes/` (every class-flavour
 theme the package ships, with its licence and notice files), `src/fonts.css`,

@@ -24,11 +24,10 @@
     line-height: var(--leading-tight);
     text-wrap: balance;
   }
-  .fg-site-docs :where(h1) { max-width: 22ch; font: var(--weight-semibold) var(--text-3xl) / 1.08 var(--font-mono); letter-spacing: var(--tracking-tight); }
-  .fg-site-docs :where(h2) { font-family: var(--font-mono); font-size: var(--text-xl); }
+  .fg-site-docs :where(h1) { max-width: 22ch; font: var(--weight-semibold) var(--text-3xl) / 1.08 var(--font-ui); letter-spacing: var(--tracking-tight); }
+  .fg-site-docs :where(h2) { font-family: var(--font-ui); font-size: var(--text-xl); }
   .fg-site-docs :where(h3) { font-family: var(--font-ui); font-size: var(--text-lg); }
   :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2) { padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); }
-  :is(.fg-site-docs main, .fg-site-prose) :where(section > h2, section > :is(header, hgroup) > h2)::before { content: var(--heading-mark, '## ') / ''; color: var(--color-project); letter-spacing: 0.08em; }
   .fg-site-docs :where(p) { max-width: var(--measure); }
   /* Tab panels and other enhanced markup use the hidden attribute, so it outranks the page's own
    * display rules. until-found keeps the browser's find-in-page behavior. */
@@ -52,13 +51,13 @@
 }
 
 @layer components {
-  /* Docs shell: header across the top, the --sidebar rail beside main, and the footer
+  /* Docs shell: header across the top, the --sidebar-width rail beside main, and the footer
    * on the frame edges. Header, rail, main, and footer are direct children. */
   .fg-site-docs {
     display: grid;
-    grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     column-gap: var(--space-8);
-    max-width: calc(var(--page-max) + var(--sidebar) + var(--space-8) + var(--space-12));
+    max-width: calc(var(--page-max) + var(--sidebar-width) + var(--space-8) + var(--space-12));
     margin-inline: auto;
     padding-inline: var(--space-6);
   }
@@ -101,10 +100,10 @@
   @media (hover: hover) { .fg-site-footer a:hover { color: var(--color-text); text-decoration: underline; } }
 
   /* Legend: a dl of what a capture shows, with one div per dt and dd pair. Columns are at
-   * least --site-legend-column wide (default --sidebar); a page can lower it to fit more. */
+   * least --site-legend-column wide (default --sidebar-width); a page can lower it to fit more. */
   .fg-site-legend {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(var(--site-legend-column, var(--sidebar)), 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--site-legend-column, var(--sidebar-width)), 100%), 1fr));
     gap: 0 var(--space-6);
     margin: 0;
     font-size: var(--text-sm);
@@ -705,15 +704,14 @@
     letter-spacing: var(--tracking-tight);
     text-wrap: balance;
   }
-  .fg-site-prose :where(h1) { font-family: var(--font-mono); font-size: var(--text-3xl); line-height: 1.08; }
+  .fg-site-prose :where(h1) { font-family: var(--font-ui); font-size: var(--text-3xl); line-height: 1.08; }
   /* Hero titles sit in the components layer so they also outrank the prose defaults above. */
   .fg-site-hero > h1 {
     max-width: none;
     font-size: var(--text-display);
     line-height: 1.04;
-    word-spacing: -0.12em;
   }
-  .fg-site-prose :where(h2) { font-family: var(--font-mono); font-size: var(--text-xl); }
+  .fg-site-prose :where(h2) { font-family: var(--font-ui); font-size: var(--text-xl); }
   .fg-site-prose :where(h3, h4) { font-size: var(--text-lg); }
   .fg-site-prose :where(p, ul, ol) { max-width: var(--measure); margin: 0; }
   .fg-site-prose :where(p, ul, ol) + :where(p, ul, ol) { margin-top: var(--space-4); }
