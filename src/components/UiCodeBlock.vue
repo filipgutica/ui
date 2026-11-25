@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 
 import { useClipboardCopy } from '../use-clipboard-copy.js'
 import CopyIcon from './CopyIcon.vue'
@@ -31,11 +31,15 @@ type CodeToken = { content: string; color?: string | undefined }
 const iconOnly = computed(() => variant !== 'default')
 // Every block but a compact one offers Wrap lines, as the design system's code block does: a single
 // long line needs it as much as several.
-const showWrapToggle = computed(() => variant !== 'compact')
+// The toggle needs script, so it appears once the block mounts: server-rendered or static HTML shows no
+// button that cannot work.
+const mounted = ref(false)
+onMounted(() => { mounted.value = true })
+const showWrapToggle = computed(() => mounted.value && variant !== 'compact')
 const wrapping = ref(wrap)
 watch(() => wrap, value => { wrapping.value = value })
 // A compact block has no toggle, so only the prop wraps it, even after a reader turned wrapping on.
-const wrapped = computed(() => showWrapToggle.value ? wrapping.value : wrap)
+const wrapped = computed(() => variant !== 'compact' ? wrapping.value : wrap)
 // Compact commands may omit a language; typed source never receives a prompt.
 // Embedded source sits under a live example, so it is never a command.
 const command = computed(() => {

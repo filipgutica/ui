@@ -1,5 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createSSRApp, h } from 'vue'
+import { renderToString } from 'vue/server-renderer'
 
 import { UiCodeBlock } from '../src/index.js'
 
@@ -9,6 +11,16 @@ afterEach(() => {
 })
 
 describe('UiCodeBlock', () => {
+  it('renders no Wrap lines button in server HTML, where it could not work, and adds it once mounted', async () => {
+    const props = { code: 'first line\nsecond line', language: 'text', copyable: false }
+    const html = await renderToString(createSSRApp({ render: () => h(UiCodeBlock, props) }))
+    expect(html).not.toContain('Wrap lines')
+    const wrapper = mount(UiCodeBlock, { props })
+    await flushPromises()
+    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
   it('preserves the default header labels and accessible code label', () => {
     const wrapper = mount(UiCodeBlock, {
       props: { code: 'pnpm add @filipgutica/ui', language: 'sh', title: 'Install' },
@@ -29,6 +41,7 @@ describe('UiCodeBlock', () => {
       props: { code: 'first line\nsecond line', variant, language },
       slots: { actions: '<button type="button">Custom action</button>' },
     })
+    await flushPromises()
     const toggle = wrapper.get('button[aria-label="Wrap lines"]')
     expect(toggle.attributes('title')).toBe('Wrap lines')
     expect(toggle.attributes('aria-pressed')).toBe('false')
@@ -62,6 +75,7 @@ describe('UiCodeBlock', () => {
 
   it('drops a reader\'s wrapping when the block becomes compact without the wrap prop', async () => {
     const wrapper = mount(UiCodeBlock, { props: { code: 'first line\nsecond line' } })
+    await flushPromises()
     await wrapper.get('button[aria-label="Wrap lines"]').trigger('click')
     expect(wrapper.attributes('data-wrap')).toBe('true')
     await wrapper.setProps({ variant: 'compact' })
@@ -74,6 +88,7 @@ describe('UiCodeBlock', () => {
     const wrapper = mount(UiCodeBlock, {
       props: { code: 'first line\nsecond line', variant: 'embedded', copyable: false, wrap: true },
     })
+    await flushPromises()
     const toggle = wrapper.get('button[aria-label="Wrap lines"]')
     expect(wrapper.find('button[aria-label="Copy code"]').exists()).toBe(false)
     expect(toggle.attributes('aria-pressed')).toBe('true')
