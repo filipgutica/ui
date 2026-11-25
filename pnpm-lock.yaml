@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@filipgutica/design-system':
-        specifier: 1.0.37
-        version: 1.0.37
+        specifier: 1.0.38
+        version: 1.0.38
       '@vueuse/core':
         specifier: ^14.4.0
         version: 14.4.0(vue@3.5.42(typescript@5.9.3))
@@ -266,8 +266,8 @@ packages:
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@filipgutica/design-system@1.0.37':
-    resolution: {integrity: sha512-jGDpYL2ybXyqrio12XXa4lhbZGi5DsWErREhbA6PGVCAg2z923YXhOMJn97Ig7eaNmnqm/Zrb8afWGCIKVUk4g==}
+  '@filipgutica/design-system@1.0.38':
+    resolution: {integrity: sha512-oKR2AiOmgzb+8KTa8KOnNv06krygUfMJmntGDjmKfGBTLaLRuOSj5/5aFSY0mndwnuaHKXAPEsllXp/TWKIrxw==}
     engines: {node: '>=22.12'}
 
   '@floating-ui/core@1.8.0':
@@ -3035,7 +3035,7 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@filipgutica/design-system@1.0.37':
+  '@filipgutica/design-system@1.0.38':
     dependencies:
       jsonc-parser: 3.3.1
 
