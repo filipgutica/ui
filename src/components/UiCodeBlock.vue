@@ -31,11 +31,13 @@ type CodeToken = { content: string; color?: string | undefined }
 const iconOnly = computed(() => variant !== 'default')
 // Every block but a compact one offers Wrap lines, as the design system's code block does: a single
 // long line needs it as much as several.
-// The toggle needs script, so it appears once the block mounts: server-rendered or static HTML shows no
-// button that cannot work.
+// Every block but a compact one has a place for Wrap lines. The toggle needs script, so server-rendered or
+// static HTML holds an invisible placeholder of its size there, and the button replaces it once the block
+// mounts: no button that cannot work, and no shift when it appears.
+const hasWrapToggle = computed(() => variant !== 'compact')
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
-const showWrapToggle = computed(() => mounted.value && variant !== 'compact')
+const showWrapToggle = computed(() => mounted.value && hasWrapToggle.value)
 const wrapping = ref(wrap)
 watch(() => wrap, value => { wrapping.value = value })
 // A compact block has no toggle, so only the prop wraps it, even after a reader turned wrapping on.
@@ -103,7 +105,7 @@ const copyCode = (): Promise<void> => copy(code)
     :data-variant="variant"
   >
     <div
-      v-if="variant === 'default' || showWrapToggle || copyable || $slots.actions"
+      v-if="variant === 'default' || hasWrapToggle || copyable || $slots.actions"
       class="fg-code-block__header"
     >
       <span
@@ -137,6 +139,12 @@ const copyCode = (): Promise<void> => copy(code)
             <path d="M2.5 4h11M2.5 8h9a2 2 0 0 1 0 4H8.5M10 10.5 8.5 12l1.5 1.5M2.5 12h3" />
           </svg>
         </button>
+        <span
+          v-else-if="hasWrapToggle"
+          class="fg-code-block__wrap-toggle"
+          data-placeholder
+          aria-hidden="true"
+        />
         <button
           v-if="copyable"
           type="button"

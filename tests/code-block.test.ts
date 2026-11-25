@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createSSRApp, h } from 'vue'
+import { createSSRApp, h, nextTick } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 
 import { UiCodeBlock } from '../src/index.js'
@@ -11,14 +11,26 @@ afterEach(() => {
 })
 
 describe('UiCodeBlock', () => {
-  it('renders no Wrap lines button in server HTML, where it could not work, and adds it once mounted', async () => {
-    const props = { code: 'first line\nsecond line', language: 'text', copyable: false }
+  it('holds Wrap lines\' place in server HTML without a button, and hydrates into the button with no warnings', async () => {
+    const props = { code: 'first line\nsecond line', language: 'text', variant: 'embedded', copyable: false } as const
     const html = await renderToString(createSSRApp({ render: () => h(UiCodeBlock, props) }))
-    expect(html).not.toContain('Wrap lines')
-    const wrapper = mount(UiCodeBlock, { props })
-    await flushPromises()
-    expect(wrapper.find('button[aria-label="Wrap lines"]').exists()).toBe(true)
-    wrapper.unmount()
+    expect(html).not.toContain('<button')
+    expect(html).toContain('fg-code-block__wrap-toggle')
+    const container = document.createElement('div')
+    container.innerHTML = html
+    document.body.append(container)
+    const pre = container.querySelector('pre')
+    const warnings: string[] = []
+    const app = createSSRApp({ render: () => h(UiCodeBlock, props) })
+    app.config.warnHandler = (message) => { warnings.push(message) }
+    app.mount(container)
+    await nextTick()
+    expect(warnings).toEqual([])
+    expect(container.querySelector('pre')).toBe(pre)
+    expect(container.querySelector('button[aria-label="Wrap lines"]')).not.toBeNull()
+    expect(container.querySelector('[data-placeholder]')).toBeNull()
+    app.unmount()
+    container.remove()
   })
 
   it('preserves the default header labels and accessible code label', () => {
