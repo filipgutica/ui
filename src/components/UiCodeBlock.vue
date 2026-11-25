@@ -10,6 +10,7 @@ export interface UiCodeBlockProps {
   title?: string
   copyable?: boolean
   lineNumbers?: boolean
+  /** Sets wrapping on mount and when changed. Readers can toggle it on every block but a compact one. */
   wrap?: boolean
   variant?: 'default' | 'compact' | 'embedded'
 }
@@ -26,8 +27,15 @@ const {
 
 defineSlots<{ actions?(): unknown }>()
 type CodeToken = { content: string; color?: string | undefined }
-// Compact and embedded blocks show Copy as an icon in the code's corner, with no labels.
+// Compact and embedded blocks show icon-only actions beside the code.
 const iconOnly = computed(() => variant !== 'default')
+// Every block but a compact one offers Wrap lines, as the design system's code block does: a single
+// long line needs it as much as several.
+const showWrapToggle = computed(() => variant !== 'compact')
+const wrapping = ref(wrap)
+watch(() => wrap, value => { wrapping.value = value })
+// A compact block has no toggle, so only the prop wraps it, even after a reader turned wrapping on.
+const wrapped = computed(() => showWrapToggle.value ? wrapping.value : wrap)
 // Compact commands may omit a language; typed source never receives a prompt.
 // Embedded source sits under a live example, so it is never a command.
 const command = computed(() => {
@@ -86,12 +94,12 @@ const copyCode = (): Promise<void> => copy(code)
   <div
     class="fg-code-block"
     :data-command="command || undefined"
-    :data-wrap="wrap"
+    :data-wrap="wrapped ? 'true' : undefined"
     :data-line-numbers="lineNumbers"
     :data-variant="variant"
   >
     <div
-      v-if="variant === 'default' || copyable || $slots.actions"
+      v-if="variant === 'default' || showWrapToggle || copyable || $slots.actions"
       class="fg-code-block__header"
     >
       <span
@@ -104,6 +112,27 @@ const copyCode = (): Promise<void> => copy(code)
       >{{ language }}</span>
       <div class="fg-code-block__actions">
         <slot name="actions" />
+        <button
+          v-if="showWrapToggle"
+          type="button"
+          class="fg-code-block__wrap-toggle fg-quiet-action"
+          aria-label="Wrap lines"
+          title="Wrap lines"
+          :aria-pressed="wrapping"
+          @click="wrapping = !wrapping"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M2.5 4h11M2.5 8h9a2 2 0 0 1 0 4H8.5M10 10.5 8.5 12l1.5 1.5M2.5 12h3" />
+          </svg>
+        </button>
         <button
           v-if="copyable"
           type="button"

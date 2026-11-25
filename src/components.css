@@ -54,25 +54,30 @@
   }
   .fg-code-block__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
   .fg-code-block__language { color: var(--color-muted); }
-  .fg-code-block__actions { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; flex-shrink: 0; }
-  .fg-code-block__copy {
+  .fg-code-block__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; flex-shrink: 0; }
+  :is(.fg-code-block__copy, .fg-code-block__wrap-toggle) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
     min-width: var(--control-md);
     min-height: var(--control-md);
+  }
+  .fg-code-block__copy {
+    gap: 0.375rem;
     padding: 0 0.375rem;
   }
-  /* Copy is muted at rest. The code block has its own palette, so on hover and while the tick
-   * shows (data-copied) it takes the block's text colour. */
-  .fg-code-block .fg-code-block__copy { color: var(--color-muted); }
-  .fg-code-block .fg-code-block__copy[data-copied] { color: var(--color-code-text); }
-  @media (hover: hover) { .fg-code-block .fg-code-block__copy:hover:where(:not(:disabled)) { color: var(--color-code-text); } }
-  .fg-code-block__copy svg { width: 1rem; height: 1rem; }
+  .fg-code-block__wrap-toggle { width: var(--control-md); padding: 0; }
+  /* Code actions take the block's text colour on hover, while the tick shows, and while wrapping is on. */
+  .fg-code-block :is(.fg-code-block__copy, .fg-code-block__wrap-toggle) { color: var(--color-muted); }
+  .fg-code-block :is(.fg-code-block__copy[data-copied], .fg-code-block__wrap-toggle[aria-pressed="true"]) { color: var(--color-code-text); }
+  @media (hover: hover) {
+    .fg-code-block :is(.fg-code-block__copy, .fg-code-block__wrap-toggle):hover:where(:not(:disabled)) { color: var(--color-code-text); }
+  }
+  .fg-code-block__wrap-toggle:where([aria-pressed="true"]) { background: color-mix(in srgb, currentColor 6%, transparent); }
+  :is(.fg-code-block__copy, .fg-code-block__wrap-toggle) svg { width: 1rem; height: 1rem; }
   /* Inset: the code block clips its content. */
   .fg-code-block__pre:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
-  .fg-code-block .fg-code-block__copy:focus-visible { outline-offset: calc(var(--focus-width) * -1); }
+  .fg-code-block :is(.fg-code-block__copy, .fg-code-block__wrap-toggle):focus-visible { outline-offset: calc(var(--focus-width) * -1); }
   .fg-figure__plate:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
   /* The source is an inset panel. It sits --space-1 inside the frame, so its corners are concentric with the frame's. */
   .fg-code-block__pre {
@@ -95,7 +100,7 @@
   .fg-code-block[data-wrap="true"] .fg-code-block__text { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
   .fg-code-block__status:empty { display: none; }
   .fg-code-block__status:not(:empty) { display: block; padding: var(--space-2) var(--space-3); font-size: var(--text-xs); }
-  /* Compact and embedded blocks put an icon-only Copy beside the code instead of in a header row. */
+  /* Compact and embedded blocks put icon-only actions beside the code instead of in a header row. */
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -112,7 +117,6 @@
   .fg-code-block[data-variant="compact"] .fg-code-block__header { align-self: center; }
   .fg-code-block[data-variant="embedded"] .fg-code-block__header { padding: var(--space-1); }
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__actions {
-    gap: var(--space-1);
     margin-left: 0;
   }
   .fg-code-block:is([data-variant="compact"], [data-variant="embedded"]) .fg-code-block__copy {
@@ -1303,7 +1307,8 @@
   /* Touch: at tablet width every control size grows to --control-touch. This follows the per-size
    * rules above, so it wins at equal specificity. */
   @media (max-width: 800px) {
-    .fg-code-block__copy { min-width: var(--control-touch); min-height: var(--control-touch); }
+    :is(.fg-code-block__copy, .fg-code-block__wrap-toggle) { min-width: var(--control-touch); min-height: var(--control-touch); }
+    .fg-code-block__wrap-toggle { width: var(--control-touch); }
     .fg-dialog__close { width: var(--control-touch); min-height: var(--control-touch); }
     .fg-button[data-size],
     .fg-checkbox[data-size],
@@ -1337,6 +1342,8 @@
   }
 
   @media (forced-colors: active) {
+    .fg-code-block__wrap-toggle[aria-pressed="true"] { border-color: Highlight; }
+    .fg-code-block__wrap-toggle[aria-pressed="true"] svg { forced-color-adjust: none; color: Highlight; }
     /* Value marks keep their fill when the system removes author backgrounds. */
     .fg-progress__indicator,
     .fg-score__pip[data-filled="true"],

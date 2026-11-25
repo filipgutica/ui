@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 import type { Locator, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 
@@ -7,6 +9,7 @@ import { contrast } from '../tests/contrast.js'
 // the browser as the catalogue's tests/catalogue/catalogue.spec.ts measures them.
 
 const tick = 'M3.5 8.5l3 3 6-7'
+const codeFixture = `/@fs${fileURLToPath(new URL('./fixtures/code-block.html', import.meta.url))}`
 
 const stubClipboard = (page: Page) => page.addInitScript(() => {
   // A test sets window.failCopy to make the next copies fail.
@@ -56,6 +59,103 @@ const alphaOf = (value: string) => {
   const alpha = value.match(/^(?:rgba\(.*, |color\(srgb .* \/ )([\d.]+)\)$/)
   return alpha ? Number(alpha[1]) : 1
 }
+
+test.describe('Wrap lines', () => {
+  test('wraps a long URL without moving its line number or changing the copied source', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.setViewportSize({ width: 375, height: 900 })
+    await page.goto(codeFixture)
+    const panel = page.getByLabel('Runbook', { exact: true })
+    const block = page.locator('.fg-code-block').filter({ has: panel })
+    const toggle = block.getByRole('button', { name: 'Wrap lines' })
+    const copy = block.getByRole('button', { name: 'Copy code' })
+    const command = page.locator('.fg-code-block[data-command="true"]')
+    const commandToggle = command.getByRole('button', { name: 'Wrap lines' })
+    const horizontalOverflow = () => panel.evaluate(element => element.scrollWidth - element.clientWidth)
+    const source = await panel.locator('.fg-code-block__text').allTextContents()
+
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await expect.poll(horizontalOverflow).toBeGreaterThan(0)
+    await expect(commandToggle).toHaveAttribute('aria-pressed', 'false')
+
+    await toggle.focus()
+    await page.keyboard.press('Space')
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    await expect.poll(horizontalOverflow).toBe(0)
+    await expect(commandToggle).toHaveAttribute('aria-pressed', 'false')
+    const firstLine = panel.locator('.fg-code-block__line').first()
+    expect(await firstLine.evaluate(line => {
+      const number = line.querySelector('.fg-code-block__number')!.getBoundingClientRect()
+      const text = line.querySelector('.fg-code-block__text')!.getBoundingClientRect()
+      return text.height > number.height && Math.abs(number.top - text.top) < 1
+    })).toBe(true)
+
+    await page.keyboard.press('Tab')
+    await expect(copy).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(block.getByRole('status')).toHaveText('Code copied to clipboard.')
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(source.join(''))
+    await page.keyboard.press('Tab')
+    await expect(panel).toBeFocused()
+
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await expect.poll(horizontalOverflow).toBeGreaterThan(0)
+    // Copy gives the same source with wrapping off.
+    await page.evaluate(() => navigator.clipboard.writeText(''))
+    await copy.click()
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(source.join(''))
+  })
+
+  test('sizes the toggle and spaces it from Copy on desktop and phones', async ({ page }) => {
+    await page.goto(codeFixture)
+    const block = page.locator('.fg-code-block').first()
+    const toggle = block.getByRole('button', { name: 'Wrap lines' })
+    const copy = block.getByRole('button', { name: 'Copy code' })
+    await expect(toggle).toBeVisible()
+    for (const { width, size } of [{ width: 1280, size: 32 }, { width: 375, size: 44 }]) {
+      await page.setViewportSize({ width, height: 900 })
+      const toggleRect = (await toggle.boundingBox())!
+      const copyRect = (await copy.boundingBox())!
+      expect([toggleRect.width, toggleRect.height], `toggle at ${width}px`).toEqual([size, size])
+      expect(copyRect.x - (toggleRect.x + toggleRect.width), `gap at ${width}px`).toBe(4)
+    }
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const color = () => toggle.evaluate(button => getComputedStyle(button).color)
+    const muted = await color()
+    const codeText = await block.evaluate(element => getComputedStyle(element).color)
+    expect(muted).not.toBe(codeText)
+    await toggle.hover()
+    await expect.poll(color).toBe(codeText)
+    await toggle.click()
+    await page.mouse.move(0, 0)
+    await expect.poll(color).toBe(codeText)
+    await expect.poll(() => toggle.evaluate(button => getComputedStyle(button).backgroundColor).then(alphaOf)).toBeCloseTo(0.06, 3)
+  })
+
+  test('keeps a Highlight border and icon while pressed in forced colors', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' })
+    await page.goto(codeFixture)
+    const toggle = page.getByRole('button', { name: 'Wrap lines' }).first()
+    await expect(toggle).toBeVisible()
+    const highlight = await page.evaluate(() => {
+      const probe = document.createElement('span')
+      probe.style.cssText = 'color: Highlight; forced-color-adjust: none'
+      document.body.append(probe)
+      const color = getComputedStyle(probe).color
+      probe.remove()
+      return color
+    })
+    await expect(toggle).not.toHaveCSS('border-top-color', highlight)
+    await toggle.click()
+    for (const hovered of [false, true]) {
+      if (hovered) await toggle.hover()
+      else await page.mouse.move(0, 0)
+      await expect(toggle).toHaveCSS('border-top-color', highlight)
+      await expect(toggle.locator('svg path')).toHaveCSS('stroke', highlight)
+    }
+  })
+})
 
 test.describe('code block frame', () => {
   test.use({ viewport: { width: 1280, height: 900 } })
