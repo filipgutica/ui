@@ -460,7 +460,8 @@ test.describe('phone', () => {
       await held
       await route.continue()
     })
-    await page.setViewportSize({ width: 720, height: 844 })
+    // At 750px the links overflow the strip in the fallback face and fit once Inter loads.
+    await page.setViewportSize({ width: 750, height: 844 })
     // The load event waits for the fonts, so do not wait for it.
     await page.goto(pagesFixture, { waitUntil: 'domcontentloaded' })
     const strip = page.getByRole('navigation', { name: 'Site links' })

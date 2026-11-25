@@ -171,7 +171,7 @@ describe('Design-system token vendoring', () => {
 
     expect(css.match(/:root\.dark\s*\{/g)).toHaveLength(1)
     expect(css).not.toContain('@media')
-    expect(block(':root')).toContain('--font-ui: "IBM Plex Sans"')
+    expect(block(':root')).toContain('--font-ui: "Inter"')
     expect(block(':root')).toContain('--color-nav-current-text: var(--color-text);')
     expect(block(':root.dark')).toContain('--color-bg: #11111b;')
     expect(block(':root.dark')).toContain('--color-border: #7f849c;')

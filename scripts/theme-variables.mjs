@@ -70,7 +70,6 @@ export const themeOnlyTokens = [
 // Variables that src/theme.css declares with values of its own: they are not design-system tokens.
 export const ownVariables = [
   '--row-compact',
-  '--heading-mark',
   '--color-shadow',
   '--shadow-control',
   '--shadow-popover',

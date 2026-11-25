@@ -43,11 +43,11 @@ pre,
 }
 .skip-link:focus { transform: none; }
 
-/* The component rail is 40px wider than --sidebar, so Find's placeholder fits beside the room the
- * search field keeps for its clear button, and the shortcut switch's label fits on one line. The
- * article keeps --page-max. In px, as --sidebar is, so the frame keeps its width when the reader
- * enlarges text. */
-:root { --docs-rail: calc(var(--sidebar) + 40px); }
+/* The component rail is 40px wider than --sidebar-width, so Find's placeholder fits beside the
+ * room the search field keeps for its clear button, and the shortcut switch's label fits on one
+ * line. The article keeps --page-max. In px, as --sidebar-width is, so the frame keeps its width
+ * when the reader enlarges text. */
+:root { --docs-rail: calc(var(--sidebar-width) + 40px); }
 
 /* The shared header aligns with the rail and article frame below it. */
 .fg-site-header { position: sticky; top: 0; --site-frame: calc(var(--docs-rail) + var(--page-max)); }
@@ -88,7 +88,7 @@ pre,
 /* Tailwind preflight removes list markers; the Usage list keeps them, inside the prose column. */
 .content-page > section[aria-labelledby="usage-heading"] > ul { padding-inline-start: 1.25em; list-style: disc; }
 .content-page > section[aria-labelledby="usage-heading"] > ul > li + li { margin-top: var(--space-2); }
-.home-page .intro h1 { font-size: var(--text-display); line-height: 1.04; word-spacing: -0.12em; }
+.home-page .intro h1 { font-size: var(--text-display); line-height: 1.04; }
 .content-page h3:not(.fg-card__title) { margin: 0 0 var(--space-1); }
 .component-name { display: inline-block; margin-top: var(--space-1); color: var(--color-muted); font-size: var(--text-sm); }
 .page-heading {
