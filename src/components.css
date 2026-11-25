@@ -67,6 +67,8 @@
     padding: 0 0.375rem;
   }
   .fg-code-block__wrap-toggle { width: var(--control-md); padding: 0; }
+  /* Before the block mounts, an invisible placeholder holds Wrap lines' place. */
+  .fg-code-block__wrap-toggle[data-placeholder] { visibility: hidden; }
   /* Code actions take the block's text colour on hover, while the tick shows, and while wrapping is on. */
   .fg-code-block :is(.fg-code-block__copy, .fg-code-block__wrap-toggle) { color: var(--color-muted); }
   .fg-code-block :is(.fg-code-block__copy[data-copied], .fg-code-block__wrap-toggle[aria-pressed="true"]) { color: var(--color-code-text); }
