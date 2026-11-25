@@ -110,7 +110,9 @@ for (const { slug, name } of [
         }
       })
       expect(geometry).not.toBeNull()
-      expect([geometry!.width, geometry!.height]).toEqual([size, size])
+      // Mid-slide boxes can be a float step off, such as 32.0000076.
+      expect(geometry!.width).toBeCloseTo(size, 2)
+      expect(geometry!.height).toBeCloseTo(size, 2)
       expect(Math.abs(geometry!.x)).toBeLessThanOrEqual(0.5)
       expect(Math.abs(geometry!.y)).toBeLessThanOrEqual(0.5)
     })
