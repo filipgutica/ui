@@ -699,19 +699,20 @@
   .fg-site-prose { font-size: var(--text-reading); line-height: var(--leading); }
   .fg-site-prose :where(h1, h2, h3, h4) {
     margin: 0;
+    font-family: var(--font-ui);
     font-weight: var(--weight-semibold);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
     text-wrap: balance;
   }
-  .fg-site-prose :where(h1) { font-family: var(--font-ui); font-size: var(--text-3xl); line-height: 1.08; }
+  .fg-site-prose :where(h1) { font-size: var(--text-3xl); line-height: 1.08; }
   /* Hero titles sit in the components layer so they also outrank the prose defaults above. */
   .fg-site-hero > h1 {
     max-width: none;
     font-size: var(--text-display);
     line-height: 1.04;
   }
-  .fg-site-prose :where(h2) { font-family: var(--font-ui); font-size: var(--text-xl); }
+  .fg-site-prose :where(h2) { font-size: var(--text-xl); }
   .fg-site-prose :where(h3, h4) { font-size: var(--text-lg); }
   .fg-site-prose :where(p, ul, ol) { max-width: var(--measure); margin: 0; }
   .fg-site-prose :where(p, ul, ol) + :where(p, ul, ol) { margin-top: var(--space-4); }

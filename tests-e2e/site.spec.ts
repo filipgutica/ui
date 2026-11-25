@@ -494,12 +494,12 @@ test('hides [hidden] elements over page display rules and sizes inline code one 
     for (const wrapper of ['', 'header', 'hgroup']) {
       const content = wrapper ? `<${wrapper}><h2>Section</h2></${wrapper}>` : '<h2>Section</h2>'
       await page.locator(root === 'fg-site-docs' ? 'main' : 'body').evaluate((element, markup) => element.insertAdjacentHTML('beforeend', markup),
-        `<article class="${root}" id="heading-case"><h1>Page</h1><section>${content}</section></article>`)
+        `<article class="${root}" id="heading-case" style="font-family: serif"><h1>Page</h1><section>${content}<h3>Topic</h3></section></article>`)
       const heading = page.locator('#heading-case h2')
       await expect(heading).toHaveCSS('border-top-width', '1px')
-      // Titles and section headings are --font-ui, and section headings have no mark before them
-      // (design system 1.0.39, Headings).
-      for (const level of ['h1', 'h2']) {
+      // Headings are --font-ui even where the host page sets another font, and section headings
+      // have no mark before them (design system 1.0.39, Headings).
+      for (const level of ['h1', 'h2', 'h3']) {
         expect(await page.locator(`#heading-case ${level}`).evaluate(element => getComputedStyle(element).fontFamily), `${root} ${level}`).toMatch(/^"?Inter"?,/)
       }
       expect(await heading.evaluate(element => getComputedStyle(element, '::before').content)).toBe('none')
