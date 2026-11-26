@@ -23,7 +23,8 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
 // which clip at 320px; ?pages=4 makes the fifth current instead of the second. ?tool gives it a tool
 // site's project and two links, as annoterm has. ?long adds six groups to the rail, so it is taller
 // than a short window, as the design-system catalogue's is. ?contents makes the rail hold the site's pages and
-// moves the sections into the contents list beside main, as on a site with several pages.
+// moves the sections into the contents list beside main, as on a site with several pages; ?nocontents then
+// leaves the contents list out, as on a page with no sections.
 const params = new URLSearchParams(location.search)
 const shell = params.has('shell')
 const find = params.has('find') ? { label: 'Find a section', noun: 'section' } : undefined
@@ -69,7 +70,7 @@ const pages = [{ items: [
     <UiSiteNav
       :label="contents ? 'Documentation' : 'On this page'"
       :groups="contents ? pages : [...groups, ...more]"
-      :contents="contents ? [...groups, ...more] : undefined"
+      :contents="contents && !params.has('nocontents') ? [...groups, ...more] : undefined"
       :find="find"
       :header-menu="shell"
     />
