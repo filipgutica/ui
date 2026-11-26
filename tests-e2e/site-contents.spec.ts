@@ -99,6 +99,8 @@ test('when the frame is too narrow for three columns, the list is a closed discl
   await page.goto(`${site}?contents`)
   const summary = page.locator('.fg-site-contents__summary')
   await expect(summary).toBeHidden()
+  // The component has opened the list beside the column, so narrowing tests closing it.
+  await expect(page.locator('.fg-site-contents__menu')).toHaveAttribute('open', '')
   // Closing the list resizes the element the component observes; that must not raise a resize-loop error.
   await page.evaluate(() => {
     (window as unknown as { errors: string[] }).errors = []
@@ -108,6 +110,7 @@ test('when the frame is too narrow for three columns, the list is a closed discl
   await expect(summary).toHaveText('On this page: Install')
   await expect(contents(page)).toBeHidden()
   await expect(page.locator('.fg-site-contents__menu')).not.toHaveAttribute('open')
+  await page.evaluate(() => new Promise(requestAnimationFrame))
   expect(await page.evaluate(() => (window as unknown as { errors: string[] }).errors)).toEqual([])
   const [disclosure, main, rail] = await Promise.all([summary.boundingBox(), page.locator('main').boundingBox(), pages(page).boundingBox()])
   expect(disclosure!.y + disclosure!.height).toBeLessThanOrEqual(main!.y)
@@ -116,6 +119,49 @@ test('when the frame is too narrow for three columns, the list is a closed discl
   await summary.click()
   await expect(contents(page)).toBeVisible()
   await expect(current(page)).toHaveText('Install')
+})
+
+// WebKit shows no closed disclosure's rows; this style does the same in any browser.
+const hideClosedRows = '.fg-site-contents__menu:not([open]) > .fg-site-contents__content { display: none !important; }'
+
+test('after a deep link the current row comes into view once the list opens', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 124 })
+  await page.addInitScript((css) => {
+    // Before the page's own scripts run, so the rows are hidden from the first frame.
+    new MutationObserver((_, observer) => {
+      if (!document.head) return
+      document.head.append(Object.assign(document.createElement('style'), { textContent: css }))
+      observer.disconnect()
+    }).observe(document, { childList: true, subtree: true })
+  }, hideClosedRows)
+  await page.goto(`${site}?contents&find&long#commands`)
+  // The page marks Commands before the list opens, as a deep link does.
+  await expect(page.locator('.fg-site-contents__menu')).toHaveAttribute('open', '')
+  await expect(current(page)).toHaveText('Commands')
+  const list = page.locator('.fg-site-contents__content')
+  await expect.poll(async () => {
+    const box = (await list.boundingBox())!
+    const row = (await current(page).boundingBox())!
+    return row.y >= box.y - 1 && row.y + row.height <= box.y + box.height + 1
+  }).toBe(true)
+})
+
+test('after a phone, a narrow frame mounts the list closed', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 800 })
+  await page.goto(`${site}?contents`)
+  await expect(page.locator('.fg-site-contents__menu')).toHaveAttribute('open', '')
+  await page.setViewportSize({ width: 390, height: 800 })
+  await expect(page.locator('.fg-site-contents')).toHaveCount(0)
+  // Record a list that mounts open, even for one frame.
+  await page.evaluate(() => {
+    (window as unknown as { openedOnMount: boolean }).openedOnMount = false
+    new MutationObserver(records => records.forEach(record => record.addedNodes.forEach((node) => {
+      if (node instanceof Element && node.querySelector('.fg-site-contents__menu[open]')) (window as unknown as { openedOnMount: boolean }).openedOnMount = true
+    }))).observe(document.body, { childList: true, subtree: true })
+  })
+  await page.setViewportSize({ width: 1000, height: 800 })
+  await expect(page.locator('.fg-site-contents__summary')).toBeVisible()
+  expect(await page.evaluate(() => (window as unknown as { openedOnMount: boolean }).openedOnMount)).toBe(false)
 })
 
 test.describe('on a phone', () => {

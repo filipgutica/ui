@@ -107,6 +107,8 @@ const syncBreakpoint = (): void => {
     && (root.value?.contains(active) || contentsRoot.value?.contains(active))
   const leavingFocusedTrigger = media?.matches === false && mobile.value && !open.value && toggle() === active
   mobile.value = media?.matches === true
+  // On phones the list leaves the page, so the observer cannot report it; it comes back closed.
+  if (mobile.value) besideColumn.value = false
   if (!mobile.value) open.value = false
   if (leavingFocusedRail) void nextTick(() => toggle()?.focus({ preventScroll: true }))
   else if (leavingFocusedTrigger) focusFirstLink()
@@ -148,10 +150,11 @@ const keepContentsInView = (): void => {
   const { top, bottom } = row.getBoundingClientRect()
   if (top < from || bottom > box.bottom) list.scrollTop += (top + bottom) / 2 - (from + box.bottom) / 2
 }
-watch(activeId, keepContentsInView, { flush: 'post' })
 // Beside the column the list is open. CSS decides where it sits, by the frame's width; the list is sticky
 // only there. CSS alone cannot show a closed disclosure's rows in WebKit, so the list opens here.
 const besideColumn = ref(false)
+// The current row may be set before the list opens, as after a deep link, so check again once it opens.
+watch([activeId, besideColumn], keepContentsInView, { flush: 'post' })
 // Opening or closing the list resizes the observed element, so it waits a frame to avoid a resize loop.
 useResizeObserver(contentsRoot, () => requestAnimationFrame(() => {
   const menu = contentsRoot.value?.querySelector('.fg-site-contents__menu')
