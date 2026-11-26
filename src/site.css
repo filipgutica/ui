@@ -813,7 +813,7 @@
      * the frame fits three columns, the list is a closed disclosure above main, beside the rail. */
     .fg-site-docs:has(> .fg-site-contents) {
       container: site-docs / inline-size;
-      grid-template-columns: var(--sidebar-width) minmax(0, 1fr) auto;
+      grid-template-columns: calc(var(--sidebar-width) + var(--space-8)) minmax(0, 1fr) auto;
       column-gap: 0;
       max-width: calc(var(--page-max) + 2 * var(--sidebar-width) + 2 * var(--space-8) + var(--space-12));
     }

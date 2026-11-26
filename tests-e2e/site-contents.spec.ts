@@ -93,6 +93,21 @@ test.describe('beside the column', () => {
   })
 })
 
+test('beside a contents list, the rail and main keep the widths they have without one', async ({ page }) => {
+  // Wide enough for both frames to reach their max-width.
+  await page.setViewportSize({ width: 1600, height: 800 })
+  const widths = async (query: string) => {
+    await page.goto(`${site}?${query}`)
+    await expect(page.locator('.fg-site-rail')).toHaveAttribute('data-enhanced', 'true')
+    return page.evaluate(() => ({
+      rail: document.querySelector('.fg-site-rail__menu')!.getBoundingClientRect().width,
+      main: document.querySelector('main')!.getBoundingClientRect().width,
+    }))
+  }
+  // The rail's rows are the pages in both; only the contents list differs.
+  expect(await widths('contents')).toEqual(await widths('contents&nocontents'))
+})
+
 test('when the frame is too narrow for three columns, the list is a closed disclosure above main, named for the section', async ({ page }) => {
   // The window keeps its width; only the frame narrows, so a viewport breakpoint could not pass this.
   await page.setViewportSize({ width: 1440, height: 800 })
