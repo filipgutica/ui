@@ -142,8 +142,10 @@ const keepContentsInView = (): void => {
   const row = list?.querySelector<HTMLElement>('a[aria-current="location"]')
   if (!list || !row || mobile.value || list.matches(':hover') || list.contains(document.activeElement)) return
   const box = list.getBoundingClientRect()
+  // The heading sticks to the top of the list, so a row under it is out of view too.
+  const below = list.querySelector<HTMLElement>('.fg-site-contents__label')?.getBoundingClientRect().bottom ?? box.top
   const { top, bottom } = row.getBoundingClientRect()
-  if (top < box.top || bottom > box.bottom) centre(list, row)
+  if (top < Math.max(box.top, below) || bottom > box.bottom) centre(list, row)
 }
 watch(activeId, keepContentsInView, { flush: 'post' })
 // Focus moving between rows fires focusout too, so check once focus has settled.
@@ -159,7 +161,8 @@ const openAutoFocus = (event: Event): void => {
   const dialog = event.target
   const body = dialog.querySelector<HTMLElement>('.fg-drawer__body')
   // The first current row in drawer order: the contents list's location, which comes first, or the rail's.
-  const current = dialog.querySelector<HTMLElement>(':is(.fg-site-contents__nav, .fg-site-rail__nav) a[aria-current]:not([hidden])')
+  // The contents list hides while Find has a query.
+  const current = dialog.querySelector<HTMLElement>(':is(.fg-site-contents__content:not([hidden]) .fg-site-contents__nav, .fg-site-rail__nav) a[aria-current]:not([hidden])')
   if (body && current) centre(body, current)
   const field = dialog.querySelector<HTMLInputElement>('.fg-site-find__input')
   // A tap never focuses Find, even with no current row in view, so no on-screen keyboard opens.

@@ -68,6 +68,27 @@ test.describe('beside the column', () => {
     await page.mouse.move(600, 10)
     await expect.poll(() => list.evaluate(el => el.scrollTop)).toBeLessThan(scrolled)
   })
+
+  test('a current row left under the heading counts as out of view', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 420 })
+    await page.goto(`${site}?contents&long`)
+    const list = page.locator('.fg-site-contents__content')
+    const heading = page.getByRole('heading', { name: 'On this page' })
+    await list.hover()
+    await page.evaluate(() => window.scrollTo(0, document.getElementById('commands')!.offsetTop))
+    await expect(current(page)).toHaveText('Commands')
+    // Scroll the list so the current row's top sits just inside the list, behind the sticky heading.
+    await list.evaluate((el) => {
+      const row = el.querySelector('a[aria-current="location"]')!
+      el.scrollTop += row.getBoundingClientRect().top - el.getBoundingClientRect().top - 2
+    })
+    expect((await current(page).boundingBox())!.y).toBeLessThan((await heading.boundingBox())!.y + (await heading.boundingBox())!.height)
+    await page.mouse.move(600, 10)
+    await expect.poll(async () => {
+      const h = (await heading.boundingBox())!
+      return (await current(page).boundingBox())!.y >= h.y + h.height
+    }).toBe(true)
+  })
 })
 
 test('when the frame is too narrow for three columns, the list is a closed disclosure above main, named for the section', async ({ page }) => {
@@ -105,6 +126,23 @@ test.describe('on a phone', () => {
     await drawer.getByRole('link', { name: 'Commands' }).click()
     await expect(drawer).toBeHidden()
     await expect(page.locator('#commands')).toBeFocused()
+  })
+
+  test('a keyboard open while Find has a query focuses a visible row, not one in the hidden contents list', async ({ page }) => {
+    await page.goto(`${site}?contents&find`)
+    const trigger = page.getByRole('button', { name: 'Documentation: Guide' })
+    await trigger.click()
+    const drawer = page.getByRole('dialog', { name: 'Documentation' })
+    await drawer.locator('.fg-site-find__input').fill('guide')
+    await expect(drawer.locator('.fg-site-contents__content')).toBeHidden()
+    // Escape in Find would clear the query first, so close with the button.
+    await drawer.getByRole('button', { name: /^Close/ }).click()
+    await expect(drawer).toBeHidden()
+    await expect(trigger).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(drawer.getByRole('link', { name: 'Guide' })).toBeFocused()
+    // With the contents list hidden, no rule sits above the rail.
+    expect(await drawer.locator('.fg-site-rail__content').evaluate(el => getComputedStyle(el).borderTopWidth)).toBe('0px')
   })
 })
 

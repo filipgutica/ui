@@ -15,11 +15,12 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Dialog/drawer pointer dismissal, focus return, and standalone capture viewer sizing.
+    // Dialog/drawer pointer dismissal, focus return, standalone capture viewer sizing, and the contents
+    // list's details-content rules.
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testMatch: ['dialog.spec.ts', 'drawer.spec.ts', 'capture-viewer.spec.ts'],
+      testMatch: ['dialog.spec.ts', 'drawer.spec.ts', 'capture-viewer.spec.ts', 'site-contents.spec.ts'],
     },
   ],
   webServer: {

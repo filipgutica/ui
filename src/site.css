@@ -371,7 +371,7 @@
     white-space: nowrap;
   }
   /* In the drawer the contents list comes first, then a rule and the rail, each under its heading. */
-  .fg-drawer__body > .fg-site-contents__content + .fg-site-rail__content {
+  .fg-drawer__body > .fg-site-contents__content:not([hidden]) + .fg-site-rail__content {
     margin-block-start: var(--space-4);
     padding-block-start: var(--space-4);
     border-top: 1px solid var(--color-border-subtle);
