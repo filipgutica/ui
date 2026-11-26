@@ -93,6 +93,36 @@ describe('UiSiteNav', () => {
     hydrated.unmount()
   })
 
+  it('renders contents as their own closed list after the rail, with the pip marker, and hydrates without mismatches', async () => {
+    const pages: readonly UiSiteNavGroup[] = [{ items: [{ label: 'Guide', href: '/guide', current: true }, { label: 'Reference', href: '/reference' }] }]
+    const contents: readonly UiSiteNavGroup[] = [{ items: [{ label: 'Install', href: '#install' }, { label: 'Commands', href: '#commands' }] }]
+    const app = () => createSSRApp({ render: () => h(UiSiteNav, { label: 'Documentation', groups: pages, contents, class: 'docs-rail' }) })
+    const container = document.body.appendChild(document.createElement('div'))
+    container.innerHTML = await renderToString(app())
+
+    // The rail keeps its attributes and only its pages; the contents list follows it as a sibling.
+    const [rail, list] = [...container.children]
+    expect(rail?.classList.contains('docs-rail')).toBe(true)
+    expect(rail?.querySelectorAll('a')).toHaveLength(2)
+    expect(list?.classList.contains('fg-site-contents')).toBe(true)
+    expect(list?.querySelector('details:not([open]) > summary')?.textContent?.trim()).toBe('On this page')
+    const nav = list?.querySelector('nav')
+    expect(nav?.classList.contains('fg-site-rail__nav')).toBe(false)
+    expect(container.querySelector(`[id="${nav?.getAttribute('aria-labelledby')}"]`)?.textContent?.trim()).toBe('On this page')
+    expect(nav?.querySelector('[aria-current="location"]')?.getAttribute('href')).toBe('#install')
+    expect(rail?.querySelector('[aria-current="location"]')).toBeNull()
+
+    mockViewport({ mobile: false })
+    const warn = vi.spyOn(console, 'warn')
+    const error = vi.spyOn(console, 'error')
+    const hydrated = app()
+    hydrated.mount(container)
+    await nextTick()
+    expect(warn).not.toHaveBeenCalled()
+    expect(error).not.toHaveBeenCalled()
+    hydrated.unmount()
+  })
+
   it('opens the rail on desktop and replaces it with a drawer trigger on phones', async () => {
     const viewport = mockViewport({ mobile: false })
     const wrapper = await mountNav()

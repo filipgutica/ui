@@ -379,6 +379,26 @@ sets `window.findScope` (the `UiSiteFindScope` type) before the reader types:
 `filter(words)` returns `{ count, one, many }` for the announcement, and
 `keeps(link)` gets each row's resolved `URL` and says whether it stays.
 
+`contents` gives a rail of pages the current page's sections, as the design
+system's contents list ("On this page") beside the column. Pass `#id` links in
+groups, as for the rail. The rail keeps one level: put the pages in `groups` and
+the sections in `contents`, never both in `groups`. The list renders after the
+rail, so place `UiSiteNav` before `main` in `.fg-site-docs`. Its current section
+takes the location pip, not the rail's fill.
+
+- **Beside main:** when the frame fits three columns (a 66rem content box), the
+  list sits right of `main`. It is sticky at the page's scroll offset, its rows
+  scroll on their own under the heading, and it keeps the current row in view
+  except while the pointer is over it or focus is inside it.
+- **Narrow frame:** a container query on `.fg-site-docs` puts it in a closed
+  disclosure above `main`, labelled "On this page: <current section>".
+- **Phone:** the rail's trigger keeps its label, such as "Documentation: Guide",
+  and its drawer shows "On this page" first, then a rule and the rail. The
+  contents hide while Find has a query.
+- **Without JavaScript:** it is a closed disclosure, after the rail's.
+
+`UiSiteNav` passes its attributes, such as `class`, to the rail.
+
 `headerMenu` keeps its name, but it no longer puts Find and Menu buttons in the
 header: design system 1.0.8 replaced them with the labelled trigger, which every
 rail now shows. With `headerMenu`, at 800px and below and without JavaScript, the

@@ -22,7 +22,8 @@ const captures = ['Browse', 'Select', 'Review', 'List', 'Dry run'].map(label => 
 // grouped, searchable rows. ?pages gives the header the design system site's project and five pages,
 // which clip at 320px; ?pages=4 makes the fifth current instead of the second. ?tool gives it a tool
 // site's project and two links, as annoterm has. ?long adds six groups to the rail, so it is taller
-// than a short window, as the design-system catalogue's is.
+// than a short window, as the design-system catalogue's is. ?contents makes the rail hold the site's pages and
+// moves the sections into the contents list beside main, as on a site with several pages.
 const params = new URLSearchParams(location.search)
 const shell = params.has('shell')
 const find = params.has('find') ? { label: 'Find a section', noun: 'section' } : undefined
@@ -49,6 +50,12 @@ const more = params.has('long')
       items: Array.from({ length: 4 }, (_, row) => ({ label: `Topic ${group * 4 + row + 1}`, href: `#topic-${group * 4 + row + 1}` })),
     }))
   : []
+const contents = params.has('contents')
+const pages = [{ items: [
+  { label: 'Overview', href: '/overview' },
+  { label: 'Guide', href: '/guide', current: true },
+  { label: 'Reference', href: '/reference' },
+] }]
 </script>
 
 <template>
@@ -60,8 +67,9 @@ const more = params.has('long')
       :projects-url="null"
     />
     <UiSiteNav
-      label="On this page"
-      :groups="[...groups, ...more]"
+      :label="contents ? 'Documentation' : 'On this page'"
+      :groups="contents ? pages : [...groups, ...more]"
+      :contents="contents ? [...groups, ...more] : undefined"
       :find="find"
       :header-menu="shell"
     />
