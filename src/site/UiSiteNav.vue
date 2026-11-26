@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { UiSiteFindScope } from './find-scope.js'
 
-import { createReusableTemplate, useStorage } from '@vueuse/core'
+import { createReusableTemplate, useResizeObserver, useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 
 import UiButton from '../components/UiButton.vue'
@@ -46,24 +46,37 @@ export interface UiSiteNavProps {
    * shows the labelled trigger that opens the drawer.
    */
   headerMenu?: boolean
+  /**
+   * The current page's sections, for a rail that holds the site's pages. They render as a sticky
+   * contents list ("On this page") beside main, a closed disclosure before main when the frame is
+   * too narrow for three columns, and the first list in the drawer on phones. Links are `#id` links.
+   */
+  contents?: readonly UiSiteNavGroup[]
 }
 
-const { label, groups, find = undefined, headerMenu = false } = defineProps<UiSiteNavProps>()
+defineOptions({ inheritAttrs: false })
+
+const { label, groups, find = undefined, headerMenu = false, contents = [] } = defineProps<UiSiteNavProps>()
 
 // Keep in sync with the max-width: 800px rules for .fg-site-rail in site.css.
 const MOBILE_QUERY = '(max-width: 800px)'
 // Shared by every site in the family, as the appearance choice is.
 const SHORTCUTS_KEY = 'tool-site-shortcuts'
 
+const CONTENTS_LABEL = 'On this page'
+
 const contentId = useId()
+const contentsId = useId()
 const statusId = useId()
 const root = ref<HTMLElement>()
+const contentsRoot = ref<HTMLElement>()
+const hasContents = contents.some(group => group.items.length > 0)
 const enhanced = ref(false)
 const mobile = ref(false)
 const open = ref(false)
 // Section links are read once; pages keep their in-page links stable.
 const activeId = useActiveSection({
-  targetIds: groups.flatMap(group => group.items)
+  targetIds: [...groups, ...contents].flatMap(group => group.items)
     .flatMap(({ href }) => href.startsWith('#') && href.length > 1 ? [href.slice(1)] : []),
 })
 const currentPage = computed(() => groups.flatMap(group => group.items).find(item => item.current)?.label)
@@ -71,6 +84,13 @@ const currentSection = computed(() => groups.flatMap(group => group.items).find(
 const disclosureLabel = computed(() => {
   const current = currentPage.value ?? currentSection.value
   return current ? `${label}: ${current}` : label
+})
+// The collapsed contents list names its current row once the page tracks it, as the phone trigger does.
+const contentsSummary = computed(() => {
+  const current = enhanced.value
+    ? contents.flatMap(group => group.items).find(item => item.href === `#${activeId.value}`)?.label
+    : undefined
+  return current ? `${CONTENTS_LABEL}: ${current}` : CONTENTS_LABEL
 })
 let media: MediaQueryList | undefined
 let destination: HTMLElement | null = null
@@ -83,9 +103,12 @@ const focusFirstLink = (): void => {
 // Moves focus to the matching control when the rail and the drawer trigger swap.
 const syncBreakpoint = (): void => {
   const active = document.activeElement
-  const leavingFocusedRail = media?.matches === true && !mobile.value && root.value?.contains(active)
+  const leavingFocusedRail = media?.matches === true && !mobile.value
+    && (root.value?.contains(active) || contentsRoot.value?.contains(active))
   const leavingFocusedTrigger = media?.matches === false && mobile.value && !open.value && toggle() === active
   mobile.value = media?.matches === true
+  // On phones the list leaves the page, so the observer cannot report it; it comes back closed.
+  if (mobile.value) besideColumn.value = false
   if (!mobile.value) open.value = false
   if (leavingFocusedRail) void nextTick(() => toggle()?.focus({ preventScroll: true }))
   else if (leavingFocusedTrigger) focusFirstLink()
@@ -114,6 +137,34 @@ const centre = (box: HTMLElement, row: HTMLElement): void => {
   box.scrollTop += b.top - a.top - a.height / 2 + b.height / 2
 }
 
+// Beside the column, the contents list keeps its current row in view by scrolling only its own list.
+// It leaves the list alone while the pointer is over it or focus is inside it, and catches up when they leave.
+const keepContentsInView = (): void => {
+  const list = contentsRoot.value?.querySelector<HTMLElement>('.fg-site-contents__content')
+  const row = list?.querySelector<HTMLElement>('a[aria-current="location"]')
+  if (!list || !row || mobile.value || list.matches(':hover') || list.contains(document.activeElement)) return
+  const box = list.getBoundingClientRect()
+  // The heading sticks to the top of the list, so the rows show only below it: a row under it is out
+  // of view too, and the row centres in the part below it.
+  const from = Math.max(box.top, list.querySelector<HTMLElement>('.fg-site-contents__label')?.getBoundingClientRect().bottom ?? box.top)
+  const { top, bottom } = row.getBoundingClientRect()
+  if (top < from || bottom > box.bottom) list.scrollTop += (top + bottom) / 2 - (from + box.bottom) / 2
+}
+// Beside the column the list is open. CSS decides where it sits, by the frame's width; the list is sticky
+// only there. CSS alone cannot show a closed disclosure's rows in WebKit, so the list opens here.
+const besideColumn = ref(false)
+// The current row may be set before the list opens, as after a deep link, so check again once it opens.
+watch([activeId, besideColumn], keepContentsInView, { flush: 'post' })
+// Opening or closing the list resizes the observed element, so it waits a frame to avoid a resize loop.
+useResizeObserver(contentsRoot, () => requestAnimationFrame(() => {
+  const menu = contentsRoot.value?.querySelector('.fg-site-contents__menu')
+  besideColumn.value = menu ? getComputedStyle(menu).position === 'sticky' : false
+}))
+// Focus moving between rows fires focusout too, so check once focus has settled.
+const catchUp = (): void => {
+  requestAnimationFrame(keepContentsInView)
+}
+
 const openAutoFocus = (event: Event): void => {
   const how = opening
   opening = undefined
@@ -121,7 +172,9 @@ const openAutoFocus = (event: Event): void => {
   event.preventDefault()
   const dialog = event.target
   const body = dialog.querySelector<HTMLElement>('.fg-drawer__body')
-  const current = dialog.querySelector<HTMLElement>('.fg-site-rail__nav a[aria-current]:not([hidden])')
+  // The first current row in drawer order: the contents list's location, which comes first, or the rail's.
+  // The contents list hides while Find has a query.
+  const current = dialog.querySelector<HTMLElement>(':is(.fg-site-contents__content:not([hidden]) .fg-site-contents__nav, .fg-site-rail__nav) a[aria-current]:not([hidden])')
   if (body && current) centre(body, current)
   const field = dialog.querySelector<HTMLInputElement>('.fg-site-find__input')
   // A tap never focuses Find, even with no current row in view, so no on-screen keyboard opens.
@@ -303,6 +356,7 @@ onUnmounted(() => {
 <template>
   <div
     ref="root"
+    v-bind="$attrs"
     class="fg-site-rail"
     :data-enhanced="enhanced"
     :data-header-menu="headerMenu || undefined"
@@ -441,6 +495,17 @@ onUnmounted(() => {
           {{ disclosureLabel }}
         </UiButton>
       </template>
+      <!-- The current page's sections come first, then the rail. They hide while Find filters the rail. -->
+      <SiteNavLinks
+        v-if="hasContents"
+        :content-id="contentsId"
+        :label="CONTENTS_LABEL"
+        :groups="contents"
+        :active-id="activeId"
+        block="fg-site-contents"
+        :hidden="query.trim() !== '' || undefined"
+        @navigate="navigate"
+      />
       <SiteNavLinks
         :content-id="contentId"
         :label="label"
@@ -460,5 +525,36 @@ onUnmounted(() => {
         </template>
       </SiteNavLinks>
     </UiDrawer>
+  </div>
+  <!-- The contents list beside main. In a frame too narrow for three columns it is a closed disclosure before
+    main; beside the column it is open, and without JavaScript CSS shows its rows there, except in WebKit.
+    On phones it moves into the drawer. -->
+  <div
+    v-if="hasContents && (!enhanced || !mobile)"
+    ref="contentsRoot"
+    class="fg-site-contents"
+  >
+    <details
+      class="fg-site-contents__menu"
+      :open="besideColumn"
+    >
+      <summary
+        class="fg-button fg-site-contents__summary"
+        data-variant="secondary"
+        data-size="lg"
+        :aria-controls="contentsId"
+      >
+        {{ contentsSummary }}
+      </summary>
+      <SiteNavLinks
+        :content-id="contentsId"
+        :label="CONTENTS_LABEL"
+        :groups="contents"
+        :active-id="activeId"
+        block="fg-site-contents"
+        @pointerleave="catchUp"
+        @focusout="catchUp"
+      />
+    </details>
   </div>
 </template>

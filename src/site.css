@@ -312,6 +312,71 @@
   .fg-site-rail__group + .fg-site-rail__group { margin-top: var(--space-2); }
   .fg-site-rail__group-label { margin-block-end: var(--space-1); }
 
+  /* Contents list (UiSiteNav contents): the current page's sections, "On this page", beside main on a
+   * site whose rail holds its pages. Its rows take the location pip, not the rail's fill. Without
+   * JavaScript, and in a frame too narrow for three columns, it is a closed disclosure before main. */
+  .fg-site-contents {
+    min-width: 0;
+    color: var(--color-text);
+    font-family: var(--font-ui);
+    font-size: var(--text-md);
+    line-height: var(--leading);
+  }
+  .fg-site-contents__nav { display: grid; gap: var(--space-2); }
+  .fg-site-contents__label,
+  .fg-site-contents__group-label {
+    margin: 0;
+    padding-inline: var(--space-3);
+    color: var(--color-muted);
+    font-family: var(--font-ui);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+  }
+  .fg-site-contents__group { display: grid; gap: 2px; }
+  .fg-site-contents__group + .fg-site-contents__group { margin-top: var(--space-2); }
+  .fg-site-contents__group-label { margin-block-end: var(--space-1); }
+  .fg-site-contents__content[hidden] { display: none; }
+  /* The disclosure's summary is a secondary button with a chevron, as the rail's is on phones. It takes
+   * the field corner, and block padding lets a label that wraps grow it. */
+  .fg-site-contents__summary {
+    display: flex;
+    gap: var(--space-3);
+    width: max-content;
+    max-width: 100%;
+    white-space: normal;
+    text-align: start;
+    align-items: center;
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-field);
+    list-style: none;
+  }
+  .fg-site-contents__summary[data-size] { padding-block: var(--space-2); }
+  .fg-site-contents__summary::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    transform: rotate(45deg);
+  }
+  .fg-site-contents__summary::-webkit-details-marker { display: none; }
+  .fg-site-contents__menu[open] > .fg-site-contents__content { padding-block-start: var(--space-4); }
+  /* The summary names the list there, so the heading only names the nav. */
+  .fg-site-contents__menu .fg-site-contents__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* In the drawer the contents list comes first, then a rule and the rail, each under its heading. */
+  .fg-drawer__body > .fg-site-contents__content:not([hidden]) + .fg-site-rail__content {
+    margin-block-start: var(--space-4);
+    padding-block-start: var(--space-4);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
   /* Find (UiSiteNav find): a search field with a leading icon and a trailing / key hint. It filters
    * the rows below it; the empty state sits where the rows were. */
   .fg-site-find { margin-block-end: var(--space-3); }
@@ -741,6 +806,57 @@
     /* With Find, the rows scroll and Find and the settings stay put. */
     .fg-site-rail__content:has(> .fg-site-find) { display: flex; flex-direction: column; overflow: visible; }
     .fg-site-rail__content:has(> .fg-site-find) > .fg-site-rail__nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.125rem; }
+
+    /* With a contents list the frame grows a third track for it. The frame is the query container, so
+     * the list moves by the frame's width, not the window's. The tracks have no gap: the rail and the
+     * list carry the --space-8 gutters, so a list that leaves its track leaves no gutter behind. Until
+     * the frame fits three columns, the list is a closed disclosure above main, beside the rail. */
+    .fg-site-docs:has(> .fg-site-contents) {
+      container: site-docs / inline-size;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr) auto;
+      column-gap: 0;
+      max-width: calc(var(--page-max) + 2 * var(--sidebar-width) + 2 * var(--space-8) + var(--space-12));
+    }
+    .fg-site-docs:has(> .fg-site-contents) > .fg-site-rail { grid-row: span 2; margin-inline-end: var(--space-8); }
+    .fg-site-docs > .fg-site-contents { grid-column: 2; padding-block-start: var(--space-8); }
+    .fg-site-docs:has(> .fg-site-contents) > main { grid-column: 2; }
+  }
+  /* Two --sidebar-width columns, two --space-8 gutters, and a reading column of about 34rem. */
+  @container site-docs (min-width: 66rem) {
+    .fg-site-docs > .fg-site-contents {
+      grid-column: 3;
+      grid-row: 2 / span 2;
+      align-self: stretch;
+      width: var(--sidebar-width);
+      margin-inline-start: var(--space-8);
+      padding: 0;
+    }
+    .fg-site-docs > main { grid-row: 2 / span 2; }
+    /* Beside the column the list is sticky at the page's one scroll offset, as the rail's menu is, and
+     * stops at the footer rule. Its rows scroll on their own under the heading. */
+    .fg-site-contents__menu { position: sticky; top: var(--space-6); padding-block-start: var(--space-4); }
+    .fg-site-contents__summary { display: none; }
+    .fg-site-contents__menu::details-content { content-visibility: visible; }
+    .fg-site-contents__menu:not([open]) > .fg-site-contents__content { display: block; }
+    /* The menu is open here, so the [open] selector replaces the open disclosure's top padding. */
+    .fg-site-contents__menu > .fg-site-contents__content,
+    .fg-site-contents__menu[open] > .fg-site-contents__content {
+      max-height: calc(100dvh - var(--space-6) - 2 * var(--space-4));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.125rem;
+    }
+    .fg-site-contents__menu .fg-site-contents__label {
+      position: sticky;
+      top: -0.125rem;
+      z-index: 1;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      padding-block: 0.125rem var(--space-1);
+      background: var(--color-bg);
+    }
   }
   /* Explicit opt-in keeps the hero independent of page-owned install and capture markup. */
   .fg-site-hero { display: grid; gap: var(--space-6); }
@@ -793,6 +909,8 @@
       position: static;
       padding-block: var(--space-2);
     }
+    .fg-site-contents { padding-block: var(--space-2); }
+    .fg-site-contents__summary { min-height: var(--control-touch); }
     .fg-site-rail__summary,
     .fg-site-rail__toggle {
       display: flex;
@@ -837,7 +955,7 @@
     /* With headerMenu the rows stay open in place without JavaScript, so the summary has nothing to do. */
     .fg-site-rail[data-header-menu] .fg-site-rail__summary { display: none; }
     /* The drawer title already shows the label; the heading still names the nav. */
-    .fg-drawer__content .fg-site-rail__label {
+    .fg-drawer__content:not(:has(.fg-site-contents__nav)) .fg-site-rail__label {
       position: absolute;
       width: 1px;
       height: 1px;

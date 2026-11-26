@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import type { UiSiteNavGroup, UiSiteNavItem } from './UiSiteNav.vue'
 
-const { contentId, label, groups, activeId, visible = undefined } = defineProps<{
+const { contentId, label, groups, activeId, visible = undefined, block = 'fg-site-rail' } = defineProps<{
   contentId: string
   label: string
   groups: readonly UiSiteNavGroup[]
   activeId: string | undefined
   /** The rows Find keeps; undefined shows every row. */
   visible?: ReadonlySet<UiSiteNavItem> | undefined
+  /** The class prefix: the rail's, or the contents list's, whose location row takes the pip instead of the fill. */
+  block?: 'fg-site-rail' | 'fg-site-contents'
 }>()
 
 const emit = defineEmits<{
@@ -37,23 +39,23 @@ const shown = (item: UiSiteNavItem): boolean => visible?.has(item) ?? true
 <template>
   <div
     :id="contentId"
-    class="fg-site-rail__content"
+    :class="`${block}__content`"
   >
     <slot name="before" />
     <nav
-      class="fg-site-rail__nav fg-site-nav"
+      :class="[`${block}__nav`, 'fg-site-nav']"
       :aria-labelledby="labelId"
     >
       <h2
         :id="labelId"
-        class="fg-site-rail__label"
+        :class="`${block}__label`"
       >
         {{ label }}
       </h2>
       <div
         v-for="(group, index) in groups"
         :key="group.label ?? index"
-        class="fg-site-rail__group"
+        :class="`${block}__group`"
         :role="group.label ? 'group' : undefined"
         :aria-labelledby="group.label ? groupLabelId(index) : undefined"
         :hidden="!group.items.some(shown)"
@@ -61,7 +63,7 @@ const shown = (item: UiSiteNavItem): boolean => visible?.has(item) ?? true
         <span
           v-if="group.label"
           :id="groupLabelId(index)"
-          class="fg-site-rail__group-label"
+          :class="`${block}__group-label`"
         >{{ group.label }}</span>
         <a
           v-for="item in group.items"
