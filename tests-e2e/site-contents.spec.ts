@@ -23,6 +23,8 @@ test.describe('beside the column', () => {
     expect(await page.locator('.fg-site-contents__menu').evaluate(el => el.getBoundingClientRect().top)).toBeCloseTo(offset, 0)
     await expect(page.getByRole('heading', { name: 'On this page' })).toBeVisible()
     await expect(page.locator('.fg-site-contents__summary')).toBeHidden()
+    // The component opens the disclosure there; WebKit shows no closed disclosure's rows.
+    await expect(page.locator('.fg-site-contents__menu')).toHaveAttribute('open', '')
     // A location in a contents list takes the pip, not the rail's fill; the rail keeps its current page.
     expect(await current(page).evaluate(a => getComputedStyle(a, '::before').width)).toBe('3px')
     expect(await current(page).evaluate(a => getComputedStyle(a).backgroundColor)).toBe('rgba(0, 0, 0, 0)')
@@ -100,6 +102,7 @@ test('when the frame is too narrow for three columns, the list is a closed discl
   await page.locator('.fg-site-docs').evaluate((frame) => { (frame as HTMLElement).style.maxWidth = '1000px' })
   await expect(summary).toHaveText('On this page: Install')
   await expect(contents(page)).toBeHidden()
+  await expect(page.locator('.fg-site-contents__menu')).not.toHaveAttribute('open')
   const [disclosure, main, rail] = await Promise.all([summary.boundingBox(), page.locator('main').boundingBox(), pages(page).boundingBox()])
   expect(disclosure!.y + disclosure!.height).toBeLessThanOrEqual(main!.y)
   expect(disclosure!.x).toBeGreaterThan(rail!.x + rail!.width)
@@ -158,7 +161,10 @@ test.describe('without JavaScript', () => {
     return { context, noScript }
   }
 
-  test('beside a wide column the list shows every row', async ({ browser, page }) => {
+  test('beside a wide column the list shows every row', async ({ browser, browserName, page }) => {
+    // WebKit keeps a closed disclosure's rows hidden whatever the CSS, so without JavaScript the list
+    // stays shut there. With JavaScript the component opens it. Tracked in apps-home#11.
+    test.fixme(browserName === 'webkit', 'WebKit cannot show a closed <details> with CSS')
     const { context, noScript } = await staticPage({ browser, page, width: 1440 })
     await expect(contents(noScript).getByRole('link')).toHaveText(['Install', 'Commands'])
     await expect(noScript.locator('.fg-site-contents__summary')).toBeHidden()

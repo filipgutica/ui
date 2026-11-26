@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { UiSiteFindScope } from './find-scope.js'
 
-import { createReusableTemplate, useStorage } from '@vueuse/core'
+import { createReusableTemplate, useResizeObserver, useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue'
 
 import UiButton from '../components/UiButton.vue'
@@ -149,6 +149,13 @@ const keepContentsInView = (): void => {
   if (top < from || bottom > box.bottom) list.scrollTop += (top + bottom) / 2 - (from + box.bottom) / 2
 }
 watch(activeId, keepContentsInView, { flush: 'post' })
+// Beside the column the list is open. CSS decides where it sits, by the frame's width; the list is sticky
+// only there. CSS alone cannot show a closed disclosure's rows in WebKit, so the list opens here.
+const besideColumn = ref(false)
+useResizeObserver(contentsRoot, () => {
+  const menu = contentsRoot.value?.querySelector('.fg-site-contents__menu')
+  besideColumn.value = menu ? getComputedStyle(menu).position === 'sticky' : false
+})
 // Focus moving between rows fires focusout too, so check once focus has settled.
 const catchUp = (): void => {
   requestAnimationFrame(keepContentsInView)
@@ -515,14 +522,18 @@ onUnmounted(() => {
       </SiteNavLinks>
     </UiDrawer>
   </div>
-  <!-- The contents list beside main. Without JavaScript, or in a frame too narrow for three columns, it is a
-    closed disclosure before main; CSS keeps it open beside the column. On phones it moves into the drawer. -->
+  <!-- The contents list beside main. In a frame too narrow for three columns it is a closed disclosure before
+    main; beside the column it is open, and without JavaScript CSS shows its rows there, except in WebKit.
+    On phones it moves into the drawer. -->
   <div
     v-if="hasContents && (!enhanced || !mobile)"
     ref="contentsRoot"
     class="fg-site-contents"
   >
-    <details class="fg-site-contents__menu">
+    <details
+      class="fg-site-contents__menu"
+      :open="besideColumn"
+    >
       <summary
         class="fg-button fg-site-contents__summary"
         data-variant="secondary"

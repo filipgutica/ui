@@ -836,10 +836,11 @@
      * stops at the footer rule. Its rows scroll on their own under the heading. */
     .fg-site-contents__menu { position: sticky; top: var(--space-6); padding-block-start: var(--space-4); }
     .fg-site-contents__summary { display: none; }
-    /* Chromium hides a closed disclosure's content with content-visibility, WebKit with display. */
-    .fg-site-contents__menu::details-content { content-visibility: visible; display: block; }
+    .fg-site-contents__menu::details-content { content-visibility: visible; }
     .fg-site-contents__menu:not([open]) > .fg-site-contents__content { display: block; }
-    .fg-site-contents__menu .fg-site-contents__content {
+    /* The menu is open here, so the [open] selector replaces the open disclosure's top padding. */
+    .fg-site-contents__menu > .fg-site-contents__content,
+    .fg-site-contents__menu[open] > .fg-site-contents__content {
       max-height: calc(100dvh - var(--space-6) - 2 * var(--space-4));
       overflow-y: auto;
       overscroll-behavior: contain;
