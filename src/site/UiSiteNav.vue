@@ -142,10 +142,11 @@ const keepContentsInView = (): void => {
   const row = list?.querySelector<HTMLElement>('a[aria-current="location"]')
   if (!list || !row || mobile.value || list.matches(':hover') || list.contains(document.activeElement)) return
   const box = list.getBoundingClientRect()
-  // The heading sticks to the top of the list, so a row under it is out of view too.
-  const below = list.querySelector<HTMLElement>('.fg-site-contents__label')?.getBoundingClientRect().bottom ?? box.top
+  // The heading sticks to the top of the list, so the rows show only below it: a row under it is out
+  // of view too, and the row centres in the part below it.
+  const from = Math.max(box.top, list.querySelector<HTMLElement>('.fg-site-contents__label')?.getBoundingClientRect().bottom ?? box.top)
   const { top, bottom } = row.getBoundingClientRect()
-  if (top < Math.max(box.top, below) || bottom > box.bottom) centre(list, row)
+  if (top < from || bottom > box.bottom) list.scrollTop += (top + bottom) / 2 - (from + box.bottom) / 2
 }
 watch(activeId, keepContentsInView, { flush: 'post' })
 // Focus moving between rows fires focusout too, so check once focus has settled.

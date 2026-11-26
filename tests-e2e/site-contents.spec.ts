@@ -69,8 +69,8 @@ test.describe('beside the column', () => {
     await expect.poll(() => list.evaluate(el => el.scrollTop)).toBeLessThan(scrolled)
   })
 
-  test('a current row left under the heading counts as out of view', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 420 })
+  for (const height of [420, 124]) test(`a current row left under the heading counts as out of view, and comes back clear of it (${height}px)`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height })
     await page.goto(`${site}?contents&long`)
     const list = page.locator('.fg-site-contents__content')
     const heading = page.getByRole('heading', { name: 'On this page' })
