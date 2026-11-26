@@ -99,10 +99,16 @@ test('when the frame is too narrow for three columns, the list is a closed discl
   await page.goto(`${site}?contents`)
   const summary = page.locator('.fg-site-contents__summary')
   await expect(summary).toBeHidden()
+  // Closing the list resizes the element the component observes; that must not raise a resize-loop error.
+  await page.evaluate(() => {
+    (window as unknown as { errors: string[] }).errors = []
+    addEventListener('error', e => (window as unknown as { errors: string[] }).errors.push(e.message))
+  })
   await page.locator('.fg-site-docs').evaluate((frame) => { (frame as HTMLElement).style.maxWidth = '1000px' })
   await expect(summary).toHaveText('On this page: Install')
   await expect(contents(page)).toBeHidden()
   await expect(page.locator('.fg-site-contents__menu')).not.toHaveAttribute('open')
+  expect(await page.evaluate(() => (window as unknown as { errors: string[] }).errors)).toEqual([])
   const [disclosure, main, rail] = await Promise.all([summary.boundingBox(), page.locator('main').boundingBox(), pages(page).boundingBox()])
   expect(disclosure!.y + disclosure!.height).toBeLessThanOrEqual(main!.y)
   expect(disclosure!.x).toBeGreaterThan(rail!.x + rail!.width)

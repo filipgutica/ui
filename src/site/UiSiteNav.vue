@@ -152,10 +152,11 @@ watch(activeId, keepContentsInView, { flush: 'post' })
 // Beside the column the list is open. CSS decides where it sits, by the frame's width; the list is sticky
 // only there. CSS alone cannot show a closed disclosure's rows in WebKit, so the list opens here.
 const besideColumn = ref(false)
-useResizeObserver(contentsRoot, () => {
+// Opening or closing the list resizes the observed element, so it waits a frame to avoid a resize loop.
+useResizeObserver(contentsRoot, () => requestAnimationFrame(() => {
   const menu = contentsRoot.value?.querySelector('.fg-site-contents__menu')
   besideColumn.value = menu ? getComputedStyle(menu).position === 'sticky' : false
-})
+}))
 // Focus moving between rows fires focusout too, so check once focus has settled.
 const catchUp = (): void => {
   requestAnimationFrame(keepContentsInView)
